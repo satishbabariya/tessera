@@ -6,4 +6,3 @@
 * [ ] 📝 Changelog update
 * [ ] 🚦 Tests (or not relevant)
 * [ ] C-API, if public C++ API changed
-* [ ] `bindgen/spec.yml`, if public C++ API changed
