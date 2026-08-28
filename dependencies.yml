@@ -1,7 +1,5 @@
 PACKAGE_NAME: realm-core
 VERSION: 14.14.0
-OPENSSL_VERSION: 3.3.1
-ZLIB_VERSION: 1.2.13
-# Set to track a release branch on 10/9/24.
-BAAS_VERSION: 670fb61d897b7d0007167843
-BAAS_VERSION_TYPE: patchid
+# Tessera: minimum acceptable OpenSSL supplied by the environment. Formerly
+# OPENSSL_VERSION, which pinned a prebuilt tarball fetched from static.realm.io.
+OPENSSL_MIN_VERSION: 3.0.0

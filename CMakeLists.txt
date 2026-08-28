@@ -22,7 +22,6 @@ include(GetVersion)
 include(CheckCXXCompilerFlag)
 include(CheckCXXSourceCompiles)
 include(CheckCXXSourceRuns)
-include(AcquireRealmDependency)
 
 include(CodeCoverage)
 
@@ -300,17 +299,19 @@ elseif(REALM_ENABLE_ENCRYPTION AND CMAKE_SYSTEM_NAME MATCHES "Linux|Android")
 endif()
 
 if(REALM_NEEDS_OPENSSL OR REALM_FORCE_OPENSSL)
-    option(REALM_USE_SYSTEM_OPENSSL "Look for an external OpenSSL installation instead of using prebuilt one." OFF)
+    # Tessera: OpenSSL is always supplied by the environment (system package,
+    # toolchain, or integrator-provided). The former alternative -- downloading
+    # a prebuilt tarball from static.realm.io -- made every build depend on
+    # infrastructure the project does not control. See
+    # docs/findings/0a-supply-chain.md.
+    #
+    # OpenSSL cannot be built via FetchContent: it has no CMakeLists.txt and
+    # configures through a Perl script. Integrators cross-compiling for Android
+    # or Windows must therefore provide OpenSSL themselves and point CMake at
+    # it via OPENSSL_ROOT_DIR.
     set(_REALM_USE_OPENSSL_DEFAULT_VERIFY_PATHS ON)
-    if(NOT REALM_USE_SYSTEM_OPENSSL AND (ANDROID OR WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Linux"))
-        # Use our own prebuilt OpenSSL
-        realm_acquire_dependency(openssl ${DEP_OPENSSL_VERSION} OPENSSL_CMAKE_INCLUDE_FILE)
 
-        include(${OPENSSL_CMAKE_INCLUDE_FILE})
-        set(_REALM_USE_OPENSSL_DEFAULT_VERIFY_PATHS OFF)
-    endif()
-
-    find_package(OpenSSL REQUIRED)
+    find_package(OpenSSL ${DEP_OPENSSL_MIN_VERSION} REQUIRED)
     set(REALM_HAVE_OPENSSL ON)
     option(REALM_USE_SYSTEM_OPENSSL_PATHS "Use the system OpenSSL certificate store (specified by the OPENSSLDIR environment variable) at runtime for TLS handshake." ${_REALM_USE_OPENSSL_DEFAULT_VERIFY_PATHS})
     string(REGEX MATCH "^([0-9]+)\\.([0-9]+)" OPENSSL_VERSION_MAJOR_MINOR "${OPENSSL_VERSION}")
@@ -324,13 +325,7 @@ endif()
 # Just use -lz and let Xcode figure it out
 # Emscripten does provide Zlib, but it doesn't work with find_package and is handled specially
 if(NOT APPLE AND NOT EMSCRIPTEN AND NOT TARGET ZLIB::ZLIB)
-    if(WIN32 OR (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND REALM_LINUX_TOOLCHAIN))
-        find_package(ZLIB)
-        if (NOT ZLIB_FOUND)
-            realm_acquire_dependency(zlib ${DEP_ZLIB_VERSION} ZLIB_CMAKE_INCLUDE_FILE)
-            include(${ZLIB_CMAKE_INCLUDE_FILE})
-        endif()
-    elseif(ANDROID)
+    if(ANDROID)
         # On Android FindZLIB chooses the static libz over the dynamic one, but this leads to issues
         # (see https://github.com/android/ndk/issues/1179)
         # We want to link against the stub library instead of statically linking anyway,
@@ -385,7 +380,6 @@ if(REALM_ENABLE_SYNC)
 endif()
 export(TARGETS ${REALM_EXPORTED_TARGETS} NAMESPACE Realm:: FILE RealmTargets.cmake)
 configure_file(tools/cmake/RealmConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/RealmConfig.cmake @ONLY)
-configure_file(tools/cmake/AcquireRealmDependency.cmake ${CMAKE_CURRENT_BINARY_DIR}/AcquireRealmDependency.cmake @ONLY)
 
 # Make the project importable from the install directory
 install(EXPORT realm
@@ -396,11 +390,6 @@ install(EXPORT realm
         )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/RealmConfig.cmake
-        DESTINATION share/cmake/Realm
-        COMPONENT devel
-        )
-
-install(FILES tools/cmake/AcquireRealmDependency.cmake
         DESTINATION share/cmake/Realm
         COMPONENT devel
         )
