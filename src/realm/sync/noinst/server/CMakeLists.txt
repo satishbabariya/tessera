@@ -21,7 +21,7 @@ set(SERVER_HEADERS
 )
 
 
-add_library(SyncServer STATIC EXCLUDE_FROM_ALL ${SERVER_SOURCES} ${SERVER_HEADERS})
+add_library(SyncServer STATIC ${SERVER_SOURCES} ${SERVER_HEADERS})
 add_library(Realm::SyncServer ALIAS SyncServer)
 
 set_target_properties(SyncServer PROPERTIES
