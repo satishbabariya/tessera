@@ -2,11 +2,16 @@ This file explains how to build and install the Realm core library.
 
 ## Prerequisites
 
-To build the Realm core library, you need CMake 3.15 or newer and a
-standard set of build tools. This includes a C/C++ compiler and a
-build system like GNU make. Realm is thoroughly tested with both GCC
-and Clang. It is known to work with GCC 8.3 and newer, as well as with
-Clang 9 and newer. Your compiler must support C++17.
+To build the core library, you need CMake 3.25 or newer and a standard
+set of build tools. This includes a C/C++ compiler and a build system
+like GNU make or Ninja. The library is tested with both GCC and Clang.
+Your compiler must support C++20; GCC 13 or newer and Clang 18 or newer
+are the supported floors.
+
+Dependencies (OpenSSL, zlib) are resolved from the environment via
+find_package. Nothing is downloaded at configure time. When
+cross-compiling for Android or Windows, supply your own OpenSSL and
+point CMake at it with OPENSSL_ROOT_DIR.
 
 To run the benchmarking suite (make benchmark) on Linux, you will need
 the development part of the 'procps' library.
