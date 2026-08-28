@@ -21,6 +21,8 @@
 
 #include <exception>
 #include <optional>
+#include <type_traits>
+#include <utility>
 
 namespace realm::util {
 

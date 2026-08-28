@@ -160,10 +160,13 @@ char (&ArraySizeHelper(const T (&array)[N]))[N];
 // protected members, or virtual functions, and all of its member
 // variables must themselves be PODs.
 
+// Tessera: neutralised. std::is_pod is deprecated in C++20, and libc++ now
+// marks it _LIBCPP_NO_SPECIALIZATIONS, making user specialisation a hard
+// error. Per the comment above, these specialisations only ever served
+// google3's compact_vector/sparse_hash_map, neither of which exists in this
+// tree; nothing here reads std::is_pod for an s2 type. The trailing typedef
+// is retained so existing `DECLARE_POD(foo);` call sites stay valid.
 #define DECLARE_POD(TypeName)                       \
-namespace std {                                    \
-template<> struct is_pod<TypeName> : true_type { }; \
-}                                                   \
 typedef int Dummy_Type_For_DECLARE_POD              \
 
 // We once needed a different technique to assert that a nested class
@@ -176,10 +179,8 @@ typedef int Dummy_Type_For_DECLARE_POD              \
 #define DECLARE_NESTED_POD(TypeName) DECLARE_POD(TypeName)
 
 // Declare that TemplateName<T> is a POD whenever T is
+// Tessera: neutralised for the same reason as DECLARE_POD above.
 #define PROPAGATE_POD_FROM_TEMPLATE_ARGUMENT(TemplateName)             \
-namespace std {                                                       \
-template <typename T> struct is_pod<TemplateName<T> > : std::is_trivial<T> { }; \
-}                                                                      \
 typedef int Dummy_Type_For_PROPAGATE_POD_FROM_TEMPLATE_ARGUMENT
 
 // Macro that does nothing if TypeName is a POD, and gives a compiler

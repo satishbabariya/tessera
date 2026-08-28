@@ -31,6 +31,7 @@
 #endif
 
 #include <csignal>
+#include <iterator>
 #include <iostream>
 #include <sstream>
 
