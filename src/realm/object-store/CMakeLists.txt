@@ -1,4 +1,3 @@
-add_subdirectory(c_api)
 
 set(SOURCES
     collection.cpp
@@ -86,7 +85,6 @@ set(HEADERS
     util/tagged_string.hpp
     util/uuid.hpp
 
-    c_api/conversion.hpp
 )
 
 if(REALM_ENABLE_SYNC)

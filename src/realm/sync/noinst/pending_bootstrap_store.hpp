@@ -21,7 +21,6 @@
 #include "realm/db.hpp"
 #include "realm/list.hpp"
 #include "realm/obj.hpp"
-#include "realm/object-store/c_api/util.hpp"
 #include "realm/sync/transform.hpp"
 #include "realm/util/buffer.hpp"
 #include "realm/util/logger.hpp"

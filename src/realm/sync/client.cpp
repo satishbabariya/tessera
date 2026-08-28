@@ -1,6 +1,7 @@
 #include <realm/sync/client.hpp>
 
 #include <realm/sync/config.hpp>
+#include <realm/transaction.hpp>
 #include <realm/sync/noinst/client_impl_base.hpp>
 #include <realm/sync/noinst/client_reset.hpp>
 #include <realm/sync/noinst/pending_bootstrap_store.hpp>

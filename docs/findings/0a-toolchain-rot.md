@@ -48,3 +48,41 @@ per the plan's third-party-patch rule so it survives a future s2 upgrade.
    with a mandatory `// Tessera:` marker.
 4. **Windows and Linux are unmeasured.** These findings are macOS/libc++ only.
    Expect a distinct set from libstdc++ and MSVC when CI lands in Task 4.
+
+## Addendum: Bison 3.8.2 is a hard Phase 0b prerequisite
+
+Surfaced from a configure warning during Task 9:
+
+```
+Could NOT find BISON: Found unsuitable version "2.3",
+but required is exact version "3.8.2" (found /usr/bin/bison)
+```
+
+`src/realm/parser/CMakeLists.txt:2-3` requires **exact** versions:
+`find_package(BISON 3.8.2 EXACT)` and `find_package(FLEX 2.6.4 EXACT)`. This
+host has bison 2.3 (the ancient GPLv2 version Apple ships) and flex 2.6.4
+(satisfied).
+
+**Today this is only a warning**, because the parser is built from checked-in
+generated files in `src/realm/parser/generated/`, and those are used when bison
+is absent.
+
+**In Phase 0b it becomes blocking.** The rename plan states that generated parser
+files must be *regenerated* from `query_bison.yy` / `query_flex.ll`, never
+hand-edited — and the generated files do carry `realm` identifiers
+(`query_bison.cpp`: 4, `query_flex.cpp`: 2), so they cannot simply be left alone
+either.
+
+Phase 0b must therefore either:
+
+1. Obtain bison exactly 3.8.2 — awkward on this host, since Homebrew is broken
+   (see the environment notes in `docs/baseline-2026-08-28.md`); or
+2. Relax the `EXACT` requirement to a minimum version and verify the generated
+   output still compiles and passes `test_parser.cpp`; or
+3. Treat the small number of `realm` identifiers in the generated files as an
+   exception to the never-hand-edit rule, documented as such.
+
+Option 2 is the most likely right answer — pinning a parser generator to one
+exact patch release is unusually strict — but it must be *verified*, not assumed,
+because a subtly different parser is among the worst kinds of regression to
+diagnose.

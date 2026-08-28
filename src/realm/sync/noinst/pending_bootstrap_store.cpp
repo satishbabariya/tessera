@@ -19,6 +19,8 @@
 #include "realm/sync/noinst/pending_bootstrap_store.hpp"
 
 #include "realm/binary_data.hpp"
+#include "realm/table_view.hpp"
+#include "realm/transaction.hpp"
 #include "realm/chunked_binary.hpp"
 #include "realm/data_type.hpp"
 #include "realm/db.hpp"

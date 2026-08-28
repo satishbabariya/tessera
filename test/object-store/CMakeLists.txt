@@ -29,8 +29,6 @@ set(SOURCES
     transaction_log_parsing.cpp
     uuid.cpp
     nested_collections.cpp
-    c_api/c_api.cpp
-    c_api/c_api_file_tests.c
 
     util/event_loop.cpp
     util/test_file.cpp
@@ -97,7 +95,7 @@ if(MSVC)
     target_compile_options(ObjectStoreTestLib PRIVATE /bigobj)
 endif()
 
-target_link_libraries(ObjectStoreTestLib Catch2::Catch2 ObjectStore RealmFFIStatic TestUtil)
+target_link_libraries(ObjectStoreTestLib Catch2::Catch2 ObjectStore TestUtil)
 enable_stdfilesystem(ObjectStoreTestLib)
 
 if(REALM_CURL_CACERTS)
