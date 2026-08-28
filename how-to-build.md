@@ -150,55 +150,15 @@ These are the available variables:
    testing process as soon as a check fails or an unexpected exception is thrown
    in a test.
 
-## Running [app] tests against a local BAAS instance
+## Developing inside a container
 
-If you already have a baas instance running, you can specify that directly via the
-`BAAS_BASE_URL` environment variable. You can run baas in a local docker container using
-instructions from [the wiki](https://wiki.corp.mongodb.com/display/10GEN/%28Device+Sync%29+Using+Docker+to+run+a+BAAS+server+instance).
-```
-export BAAS_BASE_URL=http://localhost:9090
-mkdir build.sync.ninja
-cmake -B build.sync.ninja -G Ninja -DREALM_ENABLE_AUTH_TESTS=1
-cmake --build build.sync.ninja --target realm-object-store-tests
-./build.sync.ninja/test/object-store/realm-object-store-tests -d=1
-```
+The former `.devcontainer` configuration was removed in Phase 0a: it existed
+to stand up a MongoDB Realm (BAAS) test-server container, a service that no
+longer exists. A fresh dev container that pins the toolchain would be a
+genuinely useful contribution -- it would spare contributors the host
+package-manager problems that this project's build is otherwise exposed to.
 
-## Running [app] tests against an on-demand BAASAAS container
-
-Due to MongoDB security policies, running baas requires company issued credentials.
-These are for MongoDB employees only, if you do not have these, reach out to
-#appx-device-sync-internal. Once you have a baasaas API key, it needs to be set
-in the shell environment.
-```
-export BAASAAS_API_KEY=<your API key here>
-mkdir build.sync.ninja
-cmake -B build.sync.ninja -G Ninja -DREALM_ENABLE_AUTH_TESTS=1
-cmake --build build.sync.ninja --target realm-object-store-tests
-./build.sync.ninja/test/object-store/realm-object-store-tests -d=1
-```
-You can tell the object-store tests to use a specific version of baas with the
-`BAASAAS_START_MODE` environment variable, which can either be `githash`, `patchid`,
-or `branch`. If you specify a start mode, you need to tell it which githash or
-branch name to start with via the `BAASAAS_REF_SPEC` environment variable. Omitting
-these will use the latest available commit from the main branch of baas.
-
-If you've started a baasaas container already via the baasaas CLI, you can tell
-the object-store tests to use that with the `BAASAAS_INSTANCE_ID` environment variable.
-
-
-### Developing inside a container
-
-The `.devcontainer` folders contains configuration for the [Visual Studio Code Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension, which allows you to develop inside the same Docker container that CI runs in, which is especially useful because it also sets up the MongoDB Realm Test Server container. Make sure you have the `Remote - Containers` extension installed (it's part of the recommended extensions list for this repository) and run the `Remote-Containers: Reopen in Container` (or `Rebuild and Reopen in Container`) command. VSCode will build the image described in `Dockerfile`, spin up a container group using Docker Compose, and reopen the workspace from inside the container.
-
-#### `ssh-agent` forwarding
-
-The dev container needs your SSH key to clone the realm-sync repository during build. Make sure your agent is running and configured as described [here](https://developer.github.com/v3/guides/using-ssh-agent-forwarding/#your-local-ssh-agent-must-be-running).
-
-#### Docker resources
-
-Assign more memory and CPU to Docker for faster builds. The link step may fail inside the container if there's not enough memory, too.
-
-### Memory debugging:
+## Memory debugging:
 
 Realm currently allows for uninitialized data to be written to a database
 file. This is not an error (technically), but it does cause Valgrind to report
@@ -208,7 +168,7 @@ following example:
 
     cmake -D REALM_ENABLE_ALLOC_SET_ZERO=ON -D CMAKE_BUILD_TYPE=Debug ..
 
-### Measuring test coverage:
+## Measuring test coverage:
 
 You can measure how much of the code is tested by adding the `-D REALM_COVERAGE=ON` option to the cmake call that generates the project.
 This will allow to produce coverage information which is then digestable by gcovr or lcov:
