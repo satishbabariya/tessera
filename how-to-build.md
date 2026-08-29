@@ -94,8 +94,8 @@ execution. For example, here is how to run only the `Foo` test and those whose
 names start with `Bar`, then how run all tests whose names start with `Foo`,
 except `Foo2` and those whose names end with an `X`:
 
-    UNITTEST_FILTER="Foo Bar*" ./realm-tests
-    UNITTEST_FILTER="Foo* - Foo2 *X" ./realm-tests
+    UNITTEST_FILTER="Foo Bar*" ./tessera-tests
+    UNITTEST_FILTER="Foo* - Foo2 *X" ./tessera-tests
 
 These are the available variables:
 
@@ -174,7 +174,7 @@ You can measure how much of the code is tested by adding the `-D REALM_COVERAGE=
 This will allow to produce coverage information which is then digestable by gcovr or lcov:
 
     cd test
-    ./realm-tests
+    ./tessera-tests
     gcovr --filter='.*src/realm.*'
 
 Alternatively you can run the script `tools/coverage.sh`.
