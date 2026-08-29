@@ -1047,6 +1047,17 @@ void SimpleReporter::summary(const SharedContext& context, const Summary& result
         logger.info("Spawned process with ident '%1' completed.", ident);
     }
     logger.info("Test time: %1", Timer::format(results_summary.elapsed_seconds));
+    // A test disabled by TEST_IF is not in num_executed_tests and, until this
+    // was added, was not in any other number the reporter printed either. The
+    // count was computed and discarded, so a test that the build compiled and
+    // the framework then switched off was indistinguishable from a test that
+    // ran. Shared_RobustAgainstDeathDuringWrite spent years in that state.
+    if (results_summary.num_disabled_tests >= 1) {
+        auto format = results_summary.num_disabled_tests == 1
+                          ? "Note: One test was disabled by its TEST_IF condition!"
+                          : "Note: %1 tests were disabled by their TEST_IF conditions!";
+        logger.info(format, results_summary.num_disabled_tests);
+    }
     if (results_summary.num_excluded_tests >= 1) {
         auto format = results_summary.num_excluded_tests == 1 ? "Note: One test was excluded!"
                                                               : "Note: %1 tests were excluded!";

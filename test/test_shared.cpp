@@ -1586,19 +1586,56 @@ TEST(Shared_WriterThreads)
 }
 
 
-#if !TESSERA_ENABLE_ENCRYPTION && defined(ENABLE_ROBUST_AGAINST_DEATH_DURING_WRITE)
-// this unittest has issues that has not been fully understood, but could be
-// related to interaction between posix robust mutexes and the fork() system call.
-// it has so far only been seen failing on Linux, so we enable it on ios.
-#if TESSERA_PLATFORM_APPLE
+// This test is the only thing in the project that exercises the crash-safety
+// claim: that a process dying mid-write leaves a database another process can
+// still open, verify and write, because a commit is a single top-ref swap and
+// there is nothing to replay.
+//
+// It had three guards and could not execute its body under any combination of
+// them. `!TESSERA_ENABLE_ENCRYPTION` excluded every configuration this project
+// builds and tests. `TESSERA_PLATFORM_APPLE` admitted Apple only. And the
+// runtime check below requires robust POSIX mutexes, which Apple does not
+// provide -- macOS reports _POSIX_THREADS as 200112L where thread.cpp requires
+// 200809L -- so on the one platform the guards allowed, the test returned
+// immediately and reported success over zero checks. See
+// docs/findings/0b-format-rejection-untested.md.
+//
+// The encryption guard is dropped because the test does not use a key: it
+// passes crypt_key(), which returns nullptr unless the suite was started with
+// --always-encrypt. That case is skipped explicitly below rather than at
+// compile time, so the reason is visible in the run.
+//
+// The platform guard is dropped because the runtime check is the correct and
+// sufficient gate. Windows is excluded because its pthreads port has no robust
+// mutexes, which the runtime check would also catch, but the fork() below is
+// POSIX regardless.
+//
+// The inherited comment claimed this "has so far only been seen failing on
+// Linux". That claim is old enough to predate the fork and cannot be true of
+// any run in this repository, since no run ever reached the body. Whether it
+// still describes reality is what enabling this establishes.
+//
+// It is NONCONCURRENT and gated with TEST_IF rather than returning early, for
+// two reasons.
+//
+// TEST_IF makes the framework report the test as excluded where it does not
+// apply. An early `return` reports "passed" over zero checks, which is what let
+// the previous version look healthy on Apple platforms for as long as it did.
+//
+// NONCONCURRENT because the test calls fork() from a process the runner has
+// filled with worker threads, and then does real work in the child: DB::create,
+// a write transaction, Group::verify. After fork() a child inherits exactly one
+// thread and every lock the others held, so any mutex held by another thread at
+// the moment of the call is held forever in the child. That is a candidate
+// explanation for the inherited comment's "issues that has not been fully
+// understood ... related to interaction between posix robust mutexes and the
+// fork() system call", and it is a hypothesis this change tests rather than a
+// diagnosis it asserts.
+#if defined(ENABLE_ROBUST_AGAINST_DEATH_DURING_WRITE) && !defined(_WIN32)
 
-// Not supported on Windows in particular? Keywords: winbug
-TEST(Shared_RobustAgainstDeathDuringWrite)
+NONCONCURRENT_TEST_IF(Shared_RobustAgainstDeathDuringWrite,
+                      RobustMutex::is_robust_on_this_platform && !test_util::is_always_encrypt_enabled())
 {
-    // Abort if robust mutexes are not supported on the current
-    // platform. Otherwise we would probably get into a dead-lock.
-    if (!RobustMutex::is_robust_on_this_platform)
-        return;
 
     // This test can only be conducted by spawning independent
     // processes which can then be terminated individually.
@@ -1663,11 +1700,8 @@ TEST(Shared_RobustAgainstDeathDuringWrite)
     }
 }
 
-#endif // on apple
-#endif // encryption enabled
+#endif // ENABLE_ROBUST_AGAINST_DEATH_DURING_WRITE && !_WIN32
 
-// not ios or android
-// #endif // defined TEST_ROBUSTNESS && defined ENABLE_ROBUST_AGAINST_DEATH_DURING_WRITE && !TESSERA_ENABLE_ENCRYPTION
 
 
 TEST(Shared_SpaceOveruse)

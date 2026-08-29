@@ -33,11 +33,65 @@
 
 #ifdef _WIN32
 #include <condition_variable> // for windows non-interprocess condvars we use std::condition_variable
+
 #include <thread>
 #include <Windows.h>
 #include <process.h> // _getpid()
 #else
 #include <pthread.h>
+#endif
+
+#if !defined _WIN32
+#include <unistd.h> // _POSIX_THREADS, _POSIX_THREAD_PROCESS_SHARED
+#endif
+
+// Platform detection for process-shared and robust pthread mutexes.
+//
+// This block must stay outside the #ifdef _WIN32 / #else split above. The first
+// attempt at moving it here landed inside the Windows branch, which left
+// TESSERA_HAVE_PTHREAD_PROCESS_SHARED undefined on every other platform and made
+// InterprocessMutex throw "No support for process-shared mutexes" across the
+// whole Linux suite. macOS did not notice, because Apple uses a different
+// interprocess mutex implementation that never reaches that path.
+//
+// This lived in thread.cpp, which includes this header before defining any of
+// it. RobustMutex::is_robust_on_this_platform below was therefore false in every
+// translation unit -- including thread.cpp's own, where the implementation a
+// hundred lines further down compiles full robust-mutex support because its
+// #ifdef appears after the defines rather than before.
+//
+// The result was a class whose implementation supported robust mutexes and whose
+// public constant said it did not, everywhere, on every platform. Five tests
+// gate on that constant and none of them had run.
+//
+// It belongs here because the constant is declared here: a value exposed by a
+// header must be computed where the header can see it.
+
+// "Process shared mutexes" are not officially supported on Android,
+// but they appear to work anyway.
+#if (defined(_POSIX_THREAD_PROCESS_SHARED) && _POSIX_THREAD_PROCESS_SHARED > 0) || TESSERA_ANDROID
+#define TESSERA_HAVE_PTHREAD_PROCESS_SHARED
+#endif
+
+// Unfortunately Older Ubuntu releases such as 10.04 reports support
+// for robust mutexes by setting _POSIX_THREADS = 200809L and
+// _POSIX_THREAD_PROCESS_SHARED = 200809L even though they do not
+// provide pthread_mutex_consistent(). See also
+// http://www.gnu.org/software/gnulib/manual/gnulib.html#pthread_005fmutex_005fconsistent.
+// Support was added to glibc 2.12, so we disable for earlier versions
+// of glibc.
+#ifdef TESSERA_HAVE_PTHREAD_PROCESS_SHARED
+#if !defined _WIN32 // 'robust' not supported by our windows pthreads port
+#if _POSIX_THREADS >= 200809L
+#ifdef __GNU_LIBRARY__
+#if __GLIBC__ >= 2 && __GLIBC_MINOR__ >= 12 && !TESSERA_ANDROID
+#define TESSERA_HAVE_ROBUST_PTHREAD_MUTEX
+#endif
+#elif !TESSERA_ANDROID
+#define TESSERA_HAVE_ROBUST_PTHREAD_MUTEX
+#endif
+#endif
+#endif
 #endif
 
 namespace tessera::util {
