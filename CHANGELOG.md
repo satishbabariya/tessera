@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-Nothing yet.
+### Added
+
+* Build-and-test CI on Linux (gcc-13, clang-18) and macOS, in Debug and
+  Release. Until now only a changelog bot had ever run, so every claim the
+  project made about itself was macOS/arm64 only.
 
 ## 0.1.0 — 2026-08-29
 
