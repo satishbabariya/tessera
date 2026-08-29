@@ -9,10 +9,15 @@ int main(int argc, char** argv)
 
     {
         auto wt = db->start_write();
-        auto table = wt->add_table("Person");
-        auto name = table->add_column(tessera::type_String, "name");
-        auto age  = table->add_column(tessera::type_Int, "age");
-        table->create_object().set(name, "Ada").set(age, 36);
+        if (!wt->has_table("Person")) {
+            auto t = wt->add_table("Person");
+            t->add_column(tessera::type_String, "name");
+            t->add_column(tessera::type_Int, "age");
+        }
+        auto t = wt->get_table("Person");
+        t->create_object()
+            .set(t->get_column_key("name"), "Ada")
+            .set(t->get_column_key("age"), 36);
         wt->commit();
     }
 

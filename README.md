@@ -57,10 +57,15 @@ auto db = tessera::DB::create(tessera::make_in_realm_history(), "app.tess");
 
 {
     auto wt = db->start_write();
-    auto table = wt->add_table("Person");
-    auto name = table->add_column(tessera::type_String, "name");
-    auto age  = table->add_column(tessera::type_Int, "age");
-    table->create_object().set(name, "Ada").set(age, 36);
+    if (!wt->has_table("Person")) {
+        auto table = wt->add_table("Person");
+        table->add_column(tessera::type_String, "name");
+        table->add_column(tessera::type_Int, "age");
+    }
+    auto table = wt->get_table("Person");
+    table->create_object()
+        .set(table->get_column_key("name"), "Ada")
+        .set(table->get_column_key("age"), 36);
     wt->commit();
 }
 

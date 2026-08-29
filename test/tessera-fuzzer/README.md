@@ -17,7 +17,7 @@ If you don't want to build manually, you can skip this section and jump to the `
 Run the fuzzer via AFL++:
 
 ```
-cd <realm-core-src> 
+cd <tessera-src> 
 mkdir build 
 cd build
 cmake -D CMAKE_BUILD_TYPE=${build_mode} 
@@ -36,7 +36,7 @@ afl-fuzz -t "$time_out"
 
 Run the fuzzer via libFuzzer (only with Clang)
 ```
-cd <realm-core-src>
+cd <tessera-src>
 mkdir build
 cd build
 cmake -D REALM_LIBFUZZER=ON 
@@ -53,14 +53,14 @@ cmake --build . --target realm-libfuzz
 ## Scripts
 
 `sh start_fuzz_afl.sh`
-Builds `realm-core` and `object-store` in `Debug` mode using the afl++ compiler `afl-cc` and starts 1 instance of `afl-fuzz`.
+Builds `tessera` and `object-store` in `Debug` mode using the afl++ compiler `afl-cc` and starts 1 instance of `afl-fuzz`.
 It expects `AFLPlusPlus` to be installed in your system and in general added to your `PATH`. 
 Optionally, the following arguments can be passed to the script:
 1) `<num_fuzzers>` the number of fuzzers to launch (by default 1).
 2) `<build_mode>` either `Release` or `Debug`.
 
 `sh start_lib_fuzzer.sh`
-Builds `realm-core` and `object-store` in `Debug` mode using the clang compiler and starts `realm-libfuzz`.
+Builds `tessera` and `object-store` in `Debug` mode using the clang compiler and starts `realm-libfuzz`.
 Optionally, the following arguments can be passed to the script:
 1) `<build_mode>` either `Release` or `Debug`. 
 2) `<corpus>` essentially  initial set of inputs for improving fuzzer efficiency.

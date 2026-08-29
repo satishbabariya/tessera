@@ -84,7 +84,7 @@ echo "Going to fuzz with AFL++: ${PWD}/${EXEC}"
 if [ "${num_fuzzers}" -eq 1 ]; then
     afl-fuzz -t "$time_out" \
         -m "$memory" \
-        -i "${ROOT_DIR}/test/realm-fuzzer/testcases" \
+        -i "${ROOT_DIR}/test/tessera-fuzzer/testcases" \
         -o "${FINDINGS_DIR}" \
         ${EXEC} @@
     exit 0
@@ -96,7 +96,7 @@ for i in $(seq 1 ${num_fuzzers}); do
     [[ $i -eq 1 ]] && flag="-M" || flag="-S"
    afl-fuzz -t "$time_out" \
        -m "$memory" \
-       -i "${ROOT_DIR}/test/realm-fuzzer/testcases" \
+       -i "${ROOT_DIR}/test/tessera-fuzzer/testcases" \
        -o "${FINDINGS_DIR}" \
        "${flag}" "fuzzer$i" \
        ${EXEC} @@ --name "fuzzer$i" >/dev/null 2>&1 &

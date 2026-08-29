@@ -1,4 +1,4 @@
-PACKAGE_NAME: realm-core
+PACKAGE_NAME: tessera
 VERSION: 14.14.0
 # Tessera: minimum acceptable OpenSSL supplied by the environment. Formerly
 # OPENSSL_VERSION, which pinned a prebuilt tarball fetched from static.realm.io.

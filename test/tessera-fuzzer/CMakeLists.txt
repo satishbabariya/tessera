@@ -23,12 +23,12 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/testcases)
 file(COPY ${AFL_SEEDS}
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/testcases)
 
-add_executable(realm-afl++ ${TEST_AFL_SOURCES})
-target_link_libraries(realm-afl++ TestUtil ObjectStore)
+add_executable(tessera-afl++ ${TEST_AFL_SOURCES})
+target_link_libraries(tessera-afl++ TestUtil ObjectStore)
 
 if(TESSERA_LIBFUZZER)
     if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-        add_executable(realm-libfuzz ${TEST_LIBFUZZER_SOURCES})
-        target_link_libraries(realm-libfuzz TestUtil ObjectStore)
+        add_executable(tessera-libfuzz ${TEST_LIBFUZZER_SOURCES})
+        target_link_libraries(tessera-libfuzz TestUtil ObjectStore)
     endif()
 endif()

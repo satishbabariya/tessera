@@ -70,7 +70,7 @@ else()
 endif()
 
 add_library(QueryParser STATIC ${TESSERA_PARSER_SOURCES} ${TESSERA_PARSER_GENERATED} ${TESSERA_PARSER_HEADERS} ${TESSERA_PARSER_EXTRAS})
-add_library(realm-parser ALIAS QueryParser)
+add_library(tessera-parser ALIAS QueryParser)
 add_library(Tessera::QueryParser ALIAS QueryParser)
 target_link_libraries(QueryParser PUBLIC Storage)
 set_target_properties(QueryParser PROPERTIES OUTPUT_NAME "tessera-parser")

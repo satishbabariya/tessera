@@ -1,5 +1,9 @@
-# NOTE: This is a common file that is overwritten by realm/ci-actions sync service
-# and should only be modified in that repository.
+# Requires a CHANGELOG.md entry on every pull request, or the 'no-changelog'
+# label. Working without a reviewer is exactly where mechanical discipline earns
+# its keep.
+#
+# The third-party actions below are pinned by commit SHA rather than by tag: a
+# tag can be moved to point at different code, a SHA cannot.
 
 name: "Check Changelog"
 on:

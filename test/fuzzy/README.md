@@ -15,7 +15,7 @@ check http://lcamtuf.coredump.cx/afl/ for release notes and install instructions
 
 `sh simple_start.sh`
 
-Builds `realm-core` and the fuzz target with `afl-clang++` and starts N instances of `afl-fuzz`, where N is the number of logical CPU processors.
+Builds `tessera` and the fuzz target with `afl-clang++` and starts N instances of `afl-fuzz`, where N is the number of logical CPU processors.
 
 `sh simple_stop.sh`
 

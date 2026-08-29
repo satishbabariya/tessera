@@ -67,7 +67,7 @@ MAGIC=$(dd if="$DBFILE" bs=1 skip=16 count=4 2>/dev/null)
 # The README's example is a claim about the API. Compile and run it verbatim.
 cp "$(dirname "$0")/readme-example.cpp" "$WORK/main.cpp"
 cmake --build "$WORK/build" -j4 > /dev/null
-README_OUT=$("$WORK/build/consumer" 2>&1 || true)
+README_OUT=$("$WORK/build/consumer" "$WORK/readme.tess" 2>&1 || true)
 case "$README_OUT" in
   *"found 1"*) ;;
   *) echo "FAIL: the README example no longer works: $README_OUT"; exit 1 ;;

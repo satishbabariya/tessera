@@ -346,7 +346,7 @@ configure_file(src/tessera/version_numbers.hpp.in src/tessera/version_numbers.hp
 
 set(DEPRECATED_CONFIG_FILE "${Tessera_SOURCE_DIR}/src/tessera/util/config.h")
 if(EXISTS "${DEPRECATED_CONFIG_FILE}")
-    message(FATAL_ERROR "${DEPRECATED_CONFIG_FILE} exists in the source directory, and will take precedence over the generated configuration in the build directory. Please remove this file before continuing. Alternatively, you can also clean your realm-core to remove this and other stale files: git clean -xfd")
+    message(FATAL_ERROR "${DEPRECATED_CONFIG_FILE} exists in the source directory, and will take precedence over the generated configuration in the build directory. Please remove this file before continuing. Alternatively, you can also clean your checkout to remove this and other stale files: git clean -xfd")
 endif()
 
 set(JSON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/json)
@@ -413,9 +413,9 @@ set(_single_config_generators
     "Unix Makefiles"
 )
 if(CMAKE_GENERATOR IN_LIST _single_config_generators)
-    set(CPACK_PACKAGE_NAME "realm-${CMAKE_BUILD_TYPE}")
+    set(CPACK_PACKAGE_NAME "tessera-${CMAKE_BUILD_TYPE}")
 else()
-    set(CPACK_PACKAGE_NAME "realm-\${CPACK_BUILD_CONFIG}")
+    set(CPACK_PACKAGE_NAME "tessera-\${CPACK_BUILD_CONFIG}")
 endif()
 
 include(CPack)
