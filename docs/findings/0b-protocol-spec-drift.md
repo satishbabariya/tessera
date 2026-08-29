@@ -61,6 +61,30 @@ STATE, TRANSACT), which are the ones dropped as the protocol evolved.
 So the spec's *structure* is sound and its *message vocabulary* is a superset of
 what is implemented. What it lacks is thirteen versions of refinement.
 
+## The message-level reconciliation, computed precisely
+
+Comparing the spec's documented messages against what `protocol_codec` parses:
+
+| | Count | Messages |
+|---|---|---|
+| Documented **and** implemented | 12 | BIND, DOWNLOAD, ERROR, IDENT, JSON_ERROR, LOG_MESSAGE, MARK, PING, PONG, UNBIND, UNBOUND, UPLOAD |
+| Documented, **not** implemented | 7 | ALLOC, CLIENT_VERSION, CLIENT_VERSION_REQUEST, HTTP, STATE, STATE_REQUEST, TRANSACT |
+| Implemented, **not** documented | 2 | QUERY_ERROR, TEST_COMMAND |
+
+Both undocumented messages fall outside a full-sync Tessera:
+
+- **QUERY_ERROR** carries a `query_version` parameter. It is flexible-sync
+  machinery and leaves with FLX.
+- **TEST_COMMAND** is `Session::send_test_command`, a test facility rather than
+  part of the protocol a peer must implement.
+
+**So for a full-sync Tessera, the spec's twelve documented-and-implemented
+messages are the complete message set, and nothing needs to be written from
+scratch.** The reconciliation is deletion plus semantic refresh, not authorship.
+
+That is a materially better position than the version number alone suggests, and
+it is why this was worth measuring rather than assuming in either direction.
+
 ## What Phase 1 should actually do
 
 Not "write a protocol specification" and not "publish the existing one as-is",
@@ -70,9 +94,10 @@ but a bounded reconciliation:
    probably not 14 — several of 9–14 exist only for FLX. Choosing the number is a
    design decision, and starting Tessera's protocol at 1 has the same argument
    behind it as restarting the file format at 1.
-2. Delete the spec's sections for messages the codec no longer parses
-   (ALLOC, CLIENT_VERSION, CLIENT_VERSION_REQUEST, STATE, STATE_REQUEST,
-   TRANSACT), after confirming each against the codec.
+2. Delete the spec's sections for the seven messages the codec no longer parses:
+   ALLOC, CLIENT_VERSION, CLIENT_VERSION_REQUEST, HTTP, STATE, STATE_REQUEST,
+   TRANSACT. Each was confirmed absent from the codec's dispatch, not merely
+   assumed obsolete.
 3. Fold versions 2–8 and 13 into the spec text, since those apply to full sync.
 4. Skip 9, 11, 12 and the FLX parts of 14.
 5. Re-title it for the version Tessera settles on.
