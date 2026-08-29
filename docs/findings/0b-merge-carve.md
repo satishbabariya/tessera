@@ -71,6 +71,41 @@ Without it, the carve would erode the first time someone needs a protocol type i
 `transform.cpp`, and the erosion would be invisible until someone tried to consume
 the merge engine on its own.
 
+## Addendum: the carve was incomplete, and the check could not see it
+
+Recorded 2026-08-29, found by the Android compile-only nightly job.
+
+Everything around the carve was correct. `tessera-merge` was a separate library,
+it linked `Storage` alone, `tools/check-merge-deps.sh` enforced that and was
+canary-tested, and this document explained why it mattered.
+
+And `add_subdirectory(merge)` sat inside `if(TESSERA_ENABLE_SYNC)`. **The
+library carved out of the sync monolith could not be built without it.** The
+claim "usable standalone" was false in the one configuration that would test it.
+
+Nothing detected this, for a specific reason: the check was reading `#include`
+directives. It answered *does merge reference sync?* The claim being made was
+*can merge exist without sync?* -- a question about the build graph, not the
+source. The check verified the property that was easy to inspect rather than the
+property being asserted.
+
+It surfaced only because the Android job disables sync (the NDK ships no
+OpenSSL), which made `Merge` exported but never built:
+
+```
+CMake Error at CMakeLists.txt:378 (export):
+  export given target "Merge" which is not built by this project.
+```
+
+That is a compile-only job on an unusual configuration doing exactly what such a
+job is for: testing a combination nobody had tried. Two earlier "fixes" to that
+job were each real, and each uncovered the next layer.
+
+`check-merge-deps.sh` now also requires `add_subdirectory(merge)` to be
+unconditional, and is canary-tested against that rule. Verified: with
+`-DTESSERA_ENABLE_SYNC=OFF -DTESSERA_ENABLE_ENCRYPTION=OFF`, the tree configures
+and `libtessera-merge.a` builds.
+
 ## Also fixed: the export set was still named `realm`
 
 `install(EXPORT realm ...)` appeared in five CMakeLists files. A bare CMake

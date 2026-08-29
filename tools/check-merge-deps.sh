@@ -19,4 +19,17 @@ if [ -n "$BAD" ]; then
     echo "$BAD"
     exit 1
 fi
-echo "PASS: tessera-merge depends only on storage"
+# Include hygiene is not the whole claim. The carve promises that the merge
+# engine can be *built* without sync, and for a while it could not:
+# add_subdirectory(merge) sat inside if(TESSERA_ENABLE_SYNC), so the library
+# carved out of the sync monolith could not exist without it. Nothing detected
+# that, because this check was reading #include directives and the unasked
+# question was whether merge can exist at all when sync is off.
+if ! grep -qE '^add_subdirectory\(merge\)' src/tessera/CMakeLists.txt; then
+    echo "FAIL: add_subdirectory(merge) is not unconditional in src/tessera/CMakeLists.txt"
+    echo "  tessera-merge must build whether or not sync is enabled; that is the"
+    echo "  property the carve exists to provide."
+    exit 1
+fi
+
+echo "PASS: tessera-merge depends only on storage, and builds without sync"

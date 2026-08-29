@@ -444,8 +444,13 @@ install(FILES ${PROJECT_BINARY_DIR}/src/tessera/util/config.h
 
 add_subdirectory(parser)
 add_subdirectory(object-store)
+# The merge engine depends on Storage and nothing else -- that is the whole
+# point of it being a separate library -- so it builds regardless of whether
+# sync does. It was briefly inside the sync conditional, which contradicted the
+# carve's premise and broke any build with sync disabled, because the root
+# CMakeLists exports Merge unconditionally.
+add_subdirectory(merge)
 if (TESSERA_ENABLE_SYNC)
-    add_subdirectory(merge)
     add_subdirectory(sync)
 endif()
 if(NOT TESSERA_BUILD_LIB_ONLY AND NOT WINDOWS_STORE)
