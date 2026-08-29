@@ -14,6 +14,9 @@ jobs:
   build:
     name: ${{ matrix.os }} ${{ matrix.compiler }} ${{ matrix.build_type }}
     runs-on: ${{ matrix.os }}
+    # No job timeout was set. A test that dead-locks would hold a runner for
+    # GitHub's six-hour default; the whole matrix finishes well inside 60.
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
