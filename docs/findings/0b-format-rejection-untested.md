@@ -41,6 +41,24 @@ missing test that something fails looks exactly like a passing test suite.
 | `RejectsOtherVersions` | versions 2, 10, 24 and 255 are all refused, including versions Realm reached and versions Tessera has not defined |
 | `RejectionNamesTheProblem` | the error message contains the offending version number |
 
+And four for the other claim about the bytes on disk, README's "Encryption at
+rest. Optional AES-256, applied per page below the engine":
+
+| | |
+|---|---|
+| `UnencryptedFileContainsThePlaintext` | the control: without a key the string *is* on the disk in the clear |
+| `EncryptedFileDoesNotContainThePlaintext` | with a key it is not, and neither is the table name -- "below the engine" means the engine's own structures too |
+| `OpensWithCorrectKey` | the positive control |
+| `RejectsOpenWithoutKey` / `RejectsOpenWithWrongKey` | an encrypted file is refused without the key and with a key that is one byte wrong |
+
+`test_encrypted_file_mapping.cpp` already covers the cryptor, page IVs,
+interrupted writes and concurrent mappings thoroughly -- thirteen tests, all
+about the mapping machinery being correct. None of them answers the question a
+reader of the claim actually asks, which is whether their data is on the disk in
+the clear. The control test is what makes the answer mean anything: it fails if
+the search is broken, and it demonstrates that the same string written without a
+key is trivially findable.
+
 They write a real database, close it, patch the 24-byte header on disk, and
 reopen. The header is duplicated in the test because `SlabAlloc::Header` is
 private; `test_transactions.cpp` already carried its own copy for the same
@@ -59,6 +77,37 @@ a deliberately broken engine:
     if (false) { /* mnemonic check */ } -> RejectsRealmMnemonic and
                                            RejectsForeignMnemonic both fail
 
+    DB::create(path)          -> EncryptedFileDoesNotContainThePlaintext fails
+      instead of DB::create(path,      on both the value and the table name
+      DBOptions(crypt_key(true)))
+    key left unmodified       -> RejectsOpenWithWrongKey fails, "Did not throw"
+
 This is the same discipline the `tools/check-*.sh` scripts are held to, applied
 to a test rather than a check. The reason is identical: a gate that cannot fail
 is not a gate, and the only way to know is to break the thing it guards.
+
+## The canary that lied
+
+The wrong-key canary reported success on its first run: the test passed even with
+the key left correct, which would have meant it was worthless.
+
+It was the canary that was wrong. The edit and the preceding file restore landed
+in the same second, and `make` treats a source file that is not *newer* than its
+object as up to date, so nothing recompiled and the previous binary ran. Forcing
+the rebuild produced the expected failure.
+
+This is reproducible in eight lines:
+
+    cmake -S . -B b -G "Unix Makefiles" && cmake --build b   # main returns 1
+    python3 -c "open('src/main.cpp','w').write('int main(){return 7;}')"
+    cmake --build b && ./b/app                               # still returns 1
+
+CI configures with `-G Ninja`, and its checkouts are fresh, so it has never shown
+this. Locally the generator defaults to `Unix Makefiles` on macOS. Whether Ninja
+avoids the same one-second window was not tested, because Homebrew on this
+machine is broken and ninja could not be installed -- so it is not claimed here.
+
+What is claimed: after an edit-build-test cycle fast enough to land inside one
+second, confirm the build actually compiled the file you changed. Four separate
+results today were measured against binaries that predated the change being
+measured.

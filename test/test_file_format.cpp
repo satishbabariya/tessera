@@ -26,6 +26,11 @@
 // Tessera writes says TESS; that is the writing half. Nothing exercised the
 // reading half: that a file which says something else is refused, and refused
 // with an error a person can act on.
+//
+// The same file carries the encryption-at-rest tests, for the same reason. Both
+// are claims about what the bytes on disk are, as opposed to claims about what
+// the engine does with them, and both were argued from the source rather than
+// measured.
 
 #include <tessera/db.hpp>
 #include <tessera/group.hpp>
@@ -33,12 +38,17 @@
 #include <tessera/transaction.hpp>
 #include <tessera/util/file.hpp>
 
+#include <algorithm>
+#include <array>
 #include <cstdint>
 #include <cstring>
+#include <vector>
 
 #include "test.hpp"
+#include "util/crypt_key.hpp"
 
 using namespace tessera;
+using tessera::test_util::crypt_key;
 
 namespace {
 
@@ -170,3 +180,131 @@ TEST(FileFormat_RejectionNamesTheProblem)
     }
     CHECK_NOT_EQUAL(std::string::npos, message.find("24"));
 }
+
+
+#if TESSERA_ENABLE_ENCRYPTION
+
+// README.md: "Encryption at rest. Optional AES-256, applied per page below the
+// engine."
+//
+// The encryption layer is thoroughly tested in test_encrypted_file_mapping.cpp,
+// which covers the cryptor, page IVs, interrupted writes and concurrent
+// mappings. All of that is about the mapping machinery being correct. None of it
+// answers the question a user of the claim actually asks, which is whether their
+// data is on the disk in the clear.
+
+namespace {
+
+std::vector<char> read_whole_file(const std::string& path)
+{
+    util::File file(path, util::File::mode_Read);
+    std::vector<char> buffer(size_t(file.get_size()));
+    if (!buffer.empty())
+        file.read(0, buffer.data(), buffer.size());
+    return buffer;
+}
+
+bool contains(const std::vector<char>& haystack, const std::string& needle)
+{
+    return std::search(haystack.begin(), haystack.end(), needle.begin(), needle.end()) != haystack.end();
+}
+
+} // unnamed namespace
+
+
+// The control. Without a key the string is on the disk in the clear, which is
+// what makes the encrypted case below meaningful rather than a test of whether
+// std::search works.
+TEST(EncryptionAtRest_UnencryptedFileContainsThePlaintext)
+{
+    SHARED_GROUP_TEST_PATH(path);
+    const std::string secret = "correct-horse-battery-staple";
+    {
+        DBRef db = DB::create(path);
+        auto wt = db->start_write();
+        auto table = wt->add_table("Secrets");
+        auto col = table->add_column(type_String, "value");
+        table->create_object().set(col, secret);
+        wt->commit();
+    }
+    CHECK(contains(read_whole_file(path), secret));
+}
+
+
+// The claim itself.
+TEST(EncryptionAtRest_EncryptedFileDoesNotContainThePlaintext)
+{
+    SHARED_GROUP_TEST_PATH(path);
+    const std::string secret = "correct-horse-battery-staple";
+    {
+        DBRef db = DB::create(path, DBOptions(crypt_key(true)));
+        auto wt = db->start_write();
+        auto table = wt->add_table("Secrets");
+        auto col = table->add_column(type_String, "value");
+        table->create_object().set(col, secret);
+        wt->commit();
+    }
+    CHECK_NOT(contains(read_whole_file(path), secret));
+
+    // And the column name, which is metadata rather than data: "below the
+    // engine" means the engine's own structures are encrypted too, not only the
+    // values a user stores.
+    CHECK_NOT(contains(read_whole_file(path), "Secrets"));
+}
+
+
+// An encrypted file opened without the key. test_encrypted_file_mapping.cpp
+// covers DecryptionFailed for corrupted pages; this is the case a person
+// actually meets, and it goes through DB::create rather than the mapping layer.
+TEST(EncryptionAtRest_RejectsOpenWithoutKey)
+{
+    SHARED_GROUP_TEST_PATH(path);
+    {
+        DBRef db = DB::create(path, DBOptions(crypt_key(true)));
+        auto wt = db->start_write();
+        wt->add_table("Thing");
+        wt->commit();
+    }
+    CHECK_THROW(DB::create(path), InvalidDatabase);
+}
+
+
+// Positive control for the two tests above: the correct key must open the file.
+// Without this, "throws when the key is wrong" is satisfied by an engine that
+// throws whatever key it is given.
+TEST(EncryptionAtRest_OpensWithCorrectKey)
+{
+    SHARED_GROUP_TEST_PATH(path);
+    {
+        DBRef db = DB::create(path, DBOptions(crypt_key(true)));
+        auto wt = db->start_write();
+        wt->add_table("Thing");
+        wt->commit();
+    }
+    DBRef db = DB::create(path, DBOptions(crypt_key(true)));
+    auto rt = db->start_read();
+    CHECK(rt->has_table("Thing"));
+}
+
+
+// And with a key that is not the right one.
+TEST(EncryptionAtRest_RejectsOpenWithWrongKey)
+{
+    SHARED_GROUP_TEST_PATH(path);
+    {
+        DBRef db = DB::create(path, DBOptions(crypt_key(true)));
+        auto wt = db->start_write();
+        wt->add_table("Thing");
+        wt->commit();
+    }
+
+    // crypt_key() returns a fixed 64-byte key; flipping one byte of a copy gives
+    // a key of the right shape that is not the right key.
+    std::array<char, 64> wrong;
+    std::memcpy(wrong.data(), crypt_key(true), wrong.size());
+    wrong[0] = char(wrong[0] ^ 0xFF);
+
+    CHECK_THROW(DB::create(path, DBOptions(wrong.data())), InvalidDatabase);
+}
+
+#endif // TESSERA_ENABLE_ENCRYPTION

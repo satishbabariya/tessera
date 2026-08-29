@@ -11,6 +11,15 @@
   other, format versions 2, 10, 24 and 255 are refused, and the error names the
   version it rejected. Each was confirmed to fail against a deliberately broken
   engine.
+* Four more in the same file for README's other claim about the bytes on disk,
+  "Encryption at rest. Optional AES-256, applied per page below the engine".
+  `test_encrypted_file_mapping.cpp` covers the cryptor, page IVs and concurrent
+  mappings in thirteen tests, none of which answers whether the data is on the
+  disk in the clear. These write a distinctive string, confirm it is findable in
+  an unencrypted file and absent from an encrypted one -- along with the table
+  name, since "below the engine" means the engine's own structures too -- and
+  check that an encrypted file is refused without the key and with a key that is
+  one byte wrong.
 
 ### Fixed
 
