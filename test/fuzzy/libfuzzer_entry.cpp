@@ -1,4 +1,5 @@
 #include <tessera/db.hpp>
+#include <tessera/disable_sync_to_disk.hpp>
 #include <tessera/history.hpp>
 #include "../fuzz_group.hpp"
 #include "../util/test_path.hpp"
