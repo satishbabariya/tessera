@@ -34,6 +34,21 @@
   and `<tessera/engine.hpp>` on their own. The README calls those two the public
   API, but the smoke test had only ever included `db.hpp` and friends, so nothing
   verified they were installed or self-contained.
+* The TLS certificates the SSL tests use expired on 25 October 2026. They are
+  re-issued for ten years from the existing keys and signing CA. Since the tests
+  complete a real handshake against them, the whole suite would have begun
+  failing on every platform at once, reported as certificate-verification errors
+  inside tests named for the socket behaviour they cover.
+
+### Added
+
+* `tools/check-cert-expiry.sh`, run in CI, fails when any test certificate is
+  within 180 days of expiry. The signing CA's issuance database shows the
+  certificates lapsed in 2018, 2020, 2021, 2022 and 2024; a long-dated
+  certificate still expires, but the next lapse now arrives as a sentence naming
+  the file and the date.
+* `certificate-authority/regenerate-server-certs.sh` replaces six blocks of
+  manual `openssl` invocation in a markdown file.
 
 ## 0.1.1 — 2026-08-29
 
