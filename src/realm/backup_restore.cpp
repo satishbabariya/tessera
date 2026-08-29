@@ -33,14 +33,20 @@ namespace realm {
 using VersionList = BackupHandler::VersionList;
 using VersionTimeList = BackupHandler::VersionTimeList;
 
+// Tessera: clean break. Only the current file format is accepted; files written
+// by older formats (10, 11, 20-23) are now rejected with
+// UnsupportedFileFormatVersion rather than upgraded in place. This makes the
+// upgrade machinery below unreachable. It is removed in Phase 0b, together with
+// the change of file-format identity (new magic, version reset to 1), because
+// those are one change and belong in one commit.
 // Note: accepted versions should have new versions added at front
-const VersionList BackupHandler::accepted_versions_ = {24, 23, 22, 21, 20, 11, 10};
+const VersionList BackupHandler::accepted_versions_ = {24};
 
 // the pair is <version, age-in-seconds>
 // we keep backup files in 3 months.
 static constexpr int three_months = 3 * 31 * 24 * 60 * 60;
-const VersionTimeList BackupHandler::delete_versions_{{23, three_months}, {22, three_months}, {21, three_months},
-                                                      {20, three_months}, {11, three_months}, {10, three_months}};
+// Tessera: no pre-v24 formats are accepted, so there are no legacy backups to age out.
+const VersionTimeList BackupHandler::delete_versions_{};
 
 
 // helper functions

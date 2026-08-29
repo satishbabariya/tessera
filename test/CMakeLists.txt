@@ -82,7 +82,6 @@ set(CORE_TEST_SOURCES
     test_transactions_lasse.cpp
     test_typed_links.cpp
     test_unresolved_links.cpp
-    test_upgrade_database.cpp
     test_utf8.cpp
     test_util_any.cpp
     test_util_backtrace.cpp
