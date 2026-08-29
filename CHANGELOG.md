@@ -4,6 +4,21 @@
 
 ### Fixed
 
+* `DB::upgrade_history_schema` calls `start_write()`, which is annotated
+  `REQUIRES(!m_mutex)`, and carried no annotation of its own. Clang's
+  thread-safety analysis could not prove the caller does not hold the lock and
+  warned at the call site. It is annotated now, so the contract is documented and
+  the compiler enforces it -- adding the annotation produced no new warning at
+  the caller, which is the evidence that the lock is genuinely not held there.
+* The `SynchronousTestTransport` barrier in `sync_test_utils.hpp` acquires a lock
+  in `block()` and releases it in `unblock()`, which clang's analysis cannot
+  follow across functions. It produced two warnings per translation unit, 22 of
+  the 23 `-Wthread-safety-analysis` warnings in a full build, and that noise is
+  why the one real warning was not visible. Both are annotated
+  `NO_THREAD_SAFETY_ANALYSIS` with the reason.
+
+### Fixed
+
 * The library called itself `realm-core`. `TESSERA_PRODUCT_NAME` still held the
   old name, so crash reports and the sync client and server startup logs all
   identified the process as `[realm-core-<version>]`.

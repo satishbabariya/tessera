@@ -30,6 +30,7 @@
 #include <tessera/sync/socket_provider.hpp>
 #include <tessera/sync/network/default_socket.hpp>
 
+#include <tessera/util/checked_mutex.hpp>
 #include <tessera/util/functional.hpp>
 #include <tessera/util/function_ref.hpp>
 
@@ -161,11 +162,18 @@ public:
         completion(do_http_request(request));
     }
 
-    void block()
+    // A deliberate barrier: block() takes the lock and holds it across calls, so
+    // send_request_to_server above stalls on it until unblock() releases it.
+    // Clang's thread-safety analysis cannot follow an acquire and a release that
+    // live in different functions, and reported two warnings here in every
+    // translation unit including this header -- 22 of the 23
+    // -Wthread-safety-analysis warnings in a full build, which is what kept the
+    // one real warning, in db.cpp, from being visible.
+    void block() NO_THREAD_SAFETY_ANALYSIS
     {
         m_mutex.lock();
     }
-    void unblock()
+    void unblock() NO_THREAD_SAFETY_ANALYSIS
     {
         m_mutex.unlock();
     }

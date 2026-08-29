@@ -615,7 +615,11 @@ private:
         m_alloc.reset_free_space_tracking();
     }
 
-    void upgrade_history_schema(int current_hist_schema_version, int target_hist_schema_version);
+    // REQUIRES(!m_mutex) because it calls start_write(), which requires it.
+    // Without the annotation clang's thread-safety analysis cannot prove the
+    // caller does not hold the lock, and warns at the call site instead.
+    void upgrade_history_schema(int current_hist_schema_version, int target_hist_schema_version)
+        REQUIRES(!m_mutex);
     void close_internal(std::unique_lock<util::InterprocessMutex>, bool allow_open_read_transactions)
         REQUIRES(!m_mutex);
 
