@@ -591,7 +591,7 @@ private:
     struct Header {
         uint64_t m_top_ref[2]; // 2 * 8 bytes
         // Info-block 8-bytes
-        uint8_t m_mnemonic[4];    // "T-DB"
+        uint8_t m_mnemonic[4];    // "TESS" (was "T-DB", a TightDB fossil)
         uint8_t m_file_format[2]; // See `library_file_format`
         uint8_t m_reserved;
         // bit 0 of m_flags is used to select between the two top refs.

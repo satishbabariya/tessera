@@ -1127,8 +1127,6 @@ void DB::open(const std::string& path, const DBOptions& options)
         // - attachment of the database file
         // - start of the async daemon
         // - stop of the async daemon
-        // - restore of a backup, if desired
-        // - backup of the realm file in preparation of file format upgrade
         // - DB beginning/ending a session
         // - Waiting for and signalling database changes
         {
@@ -1171,18 +1169,6 @@ void DB::open(const std::string& path, const DBOptions& options)
             current_file_format_version = alloc.get_committed_file_format_version();
             target_file_format_version =
                 Group::get_target_file_format_version_for_session(current_file_format_version, openers_hist_type);
-            BackupHandler backup(path, options.accepted_versions, options.to_be_deleted);
-            if (backup.must_restore_from_backup(current_file_format_version)) {
-                // we need to unmap before any file ops that'll change the realm
-                // file:
-                // (only strictly needed for Windows)
-                alloc.detach();
-                backup.restore_from_backup();
-                // finally, retry with the restored file instead of the original
-                // one:
-                continue;
-            }
-            backup.cleanup_backups();
 
             // From here on, if we fail in any way, we must detach the
             // allocator.
@@ -1203,9 +1189,6 @@ void DB::open(const std::string& path, const DBOptions& options)
                     throw;
                 }
             }
-            if (options.backup_at_file_format_change) {
-                backup.backup_realm_if_needed(current_file_format_version, target_file_format_version);
-            }
             using gf = _impl::GroupFriend;
             bool file_format_ok;
             // In shared mode (Realm file opened via a DB instance) this
@@ -1216,7 +1199,10 @@ void DB::open(const std::string& path, const DBOptions& options)
                 file_format_ok = (top_ref == 0);
             }
             else {
-                file_format_ok = backup.is_accepted_file_format(current_file_format_version);
+                // Tessera: acceptance was delegated to BackupHandler's version list,
+                // which existed to decide which older formats could be upgraded in
+                // place. With a single supported format there is nothing to decide.
+                file_format_ok = (current_file_format_version == Group::g_current_file_format_version);
             }
 
             if (TESSERA_UNLIKELY(!file_format_ok)) {
@@ -1291,11 +1277,10 @@ void DB::open(const std::string& path, const DBOptions& options)
                                                     path);
                 }
 
-                bool need_file_format_upgrade =
-                    current_file_format_version < target_file_format_version && top_ref != 0;
-                if (!options.allow_file_format_upgrade && (need_hist_schema_upgrade || need_file_format_upgrade)) {
-                    throw FileFormatUpgradeRequired(m_db_path);
-                }
+                // Tessera: a file whose format is not current is rejected before
+                // reaching here, so a file-format upgrade can no longer be needed.
+                // The history schema still versions independently and is upgraded
+                // in place below.
 
                 alloc.convert_from_streaming_form(top_ref);
                 try {
@@ -1441,11 +1426,18 @@ void DB::open(const std::string& path, const DBOptions& options)
         }
     }
 
-    // Upgrade file format and/or history schema
+    // Upgrade the history schema if needed. The file format itself is never
+    // upgraded: a file whose format is not current is rejected when opened.
     try {
         if (stored_hist_schema_version == -1) {
             // current_hist_schema_version has not been read. Read it now
             stored_hist_schema_version = start_read()->get_history_schema_version();
+        }
+        if (stored_hist_schema_version >= 0 && stored_hist_schema_version < openers_hist_schema_version &&
+            top_ref != 0) {
+            m_file_format_version = current_file_format_version ? current_file_format_version
+                                                                : target_file_format_version;
+            upgrade_history_schema(stored_hist_schema_version, openers_hist_schema_version); // Throws
         }
         if (current_file_format_version == 0) {
             // If the current file format is still undecided, no upgrade is
@@ -1460,8 +1452,6 @@ void DB::open(const std::string& path, const DBOptions& options)
         }
         else {
             m_file_format_version = current_file_format_version;
-            upgrade_file_format(options.allow_file_format_upgrade, target_file_format_version,
-                                stored_hist_schema_version, openers_hist_schema_version); // Throws
         }
     }
     catch (...) {
@@ -1958,6 +1948,33 @@ DB::~DB() noexcept
 // Note: close() and close_internal() may be called from the DB::~DB().
 // in that case, they will not throw. Throwing can only happen if called
 // directly.
+void DB::upgrade_history_schema(int current_hist_schema_version, int target_hist_schema_version)
+{
+    // Tessera: this is the surviving half of the former upgrade_file_format().
+    // That function did two independent jobs -- file-format upgrade and
+    // history-schema upgrade -- and only the first became obsolete when the
+    // format was reset to 1. The history schema still versions independently:
+    // converting a synced Realm to a local one changes it, which is why
+    // removing both halves broke SharedRealm::convert and two replication tests.
+    TESSERA_ASSERT(current_hist_schema_version <= target_hist_schema_version);
+    if (current_hist_schema_version >= target_hist_schema_version)
+        return;
+
+    auto wt = start_write();
+
+    // Re-check inside the transaction: another DB instance may have upgraded
+    // concurrently, in which case the schema is already at the target.
+    int current_2 = wt->get_history_schema_version();
+    TESSERA_ASSERT(current_2 == current_hist_schema_version || current_2 == target_hist_schema_version);
+    if (current_2 >= target_hist_schema_version)
+        return;
+
+    Replication* repl = get_replication();
+    repl->upgrade_history_schema(current_2);                   // Throws
+    wt->set_history_schema_version(target_hist_schema_version); // Throws
+    wt->commit();                                               // Throws
+}
+
 void DB::close(bool allow_open_read_transactions)
 {
     // make helper thread(s) terminate
@@ -2211,88 +2228,6 @@ bool DB::needs_file_format_upgrade(const std::string& file, Span<const char> enc
     return false;
 }
 
-void DB::upgrade_file_format(bool allow_file_format_upgrade, int target_file_format_version,
-                             int current_hist_schema_version, int target_hist_schema_version)
-{
-    // In a multithreaded scenario multiple threads may initially see a need to
-    // upgrade (maybe_upgrade == true) even though one onw thread is supposed to
-    // perform the upgrade, but that is ok, because the condition is rechecked
-    // in a fully reliable way inside a transaction.
-
-    // First a non-threadsafe but fast check
-    int current_file_format_version = m_file_format_version;
-    TESSERA_ASSERT(current_file_format_version <= target_file_format_version);
-    TESSERA_ASSERT(current_hist_schema_version <= target_hist_schema_version);
-    bool maybe_upgrade_file_format = (current_file_format_version < target_file_format_version);
-    bool maybe_upgrade_hist_schema = (current_hist_schema_version < target_hist_schema_version);
-    bool maybe_upgrade = maybe_upgrade_file_format || maybe_upgrade_hist_schema;
-    if (maybe_upgrade) {
-
-#ifdef TESSERA_DEBUG
-// This sleep() only exists in order to increase the quality of the
-// TEST(Upgrade_Database_2_3_Writes_New_File_Format_new) unit test.
-// The unit test creates multiple threads that all call
-// upgrade_file_format() simultaneously. This sleep() then acts like
-// a simple thread barrier that makes sure the threads meet here, to
-// increase the likelyhood of detecting any potential race problems.
-// See the unit test for details.
-//
-// NOTE: This sleep has been disabled because no problems have been found with
-// this code in a long while, and it was dramatically slowing down a unit test
-// in realm-sync.
-
-// millisleep(200);
-#endif
-
-        // WriteTransaction wt(*this);
-        auto wt = start_write();
-        bool dirty = false;
-
-        // We need to upgrade history first. We may need to access it during migration
-        // when processing the !OID columns
-        int current_hist_schema_version_2 = wt->get_history_schema_version();
-        // The history must either still be using its initial schema or have
-        // been upgraded already to the chosen target schema version via a
-        // concurrent DB object.
-        TESSERA_ASSERT(current_hist_schema_version_2 == current_hist_schema_version ||
-                     current_hist_schema_version_2 == target_hist_schema_version);
-        bool need_hist_schema_upgrade = (current_hist_schema_version_2 < target_hist_schema_version);
-        if (need_hist_schema_upgrade) {
-            if (!allow_file_format_upgrade)
-                throw FileFormatUpgradeRequired(this->m_db_path);
-
-            Replication* repl = get_replication();
-            repl->upgrade_history_schema(current_hist_schema_version_2); // Throws
-            wt->set_history_schema_version(target_hist_schema_version);  // Throws
-            dirty = true;
-        }
-
-        // File format upgrade
-        int current_file_format_version_2 = m_alloc.get_committed_file_format_version();
-        // The file must either still be using its initial file_format or have
-        // been upgraded already to the chosen target file format via a
-        // concurrent DB object.
-        TESSERA_ASSERT(current_file_format_version_2 == current_file_format_version ||
-                     current_file_format_version_2 == target_file_format_version);
-        bool need_file_format_upgrade = (current_file_format_version_2 < target_file_format_version);
-        if (need_file_format_upgrade) {
-            if (!allow_file_format_upgrade)
-                throw FileFormatUpgradeRequired(this->m_db_path);
-            wt->upgrade_file_format(target_file_format_version); // Throws
-            // Note: The file format version stored in the Realm file will be
-            // updated to the new file format version as part of the following
-            // commit operation. This happens in GroupWriter::commit().
-            if (m_upgrade_callback)
-                m_upgrade_callback(current_file_format_version_2, target_file_format_version); // Throws
-            dirty = true;
-        }
-        wt->set_file_format_version(target_file_format_version);
-        m_file_format_version = target_file_format_version;
-
-        if (dirty)
-            wt->commit(); // Throws
-    }
-}
 
 void DB::release_read_lock(ReadLockInfo& read_lock) noexcept
 {

@@ -85,7 +85,7 @@ util::File& SlabAlloc::get_file()
 
 inline constexpr SlabAlloc::Header SlabAlloc::empty_file_header = {
     {0, 0}, // top-refs
-    {'T', '-', 'D', 'B'},
+    {'T', 'E', 'S', 'S'},
     {0, 0}, // undecided file format
     0,      // reserved
     0       // flags (lsb is select bit)
@@ -98,7 +98,7 @@ void SlabAlloc::init_streaming_header(Header* streaming_header, int file_format_
     TESSERA_ASSERT(!util::int_cast_has_overflow<storage_type>(file_format_version));
     *streaming_header = {
         {0xFFFFFFFFFFFFFFFFULL, 0}, // top-refs
-        {'T', '-', 'D', 'B'},
+        {'T', 'E', 'S', 'S'},
         {storage_type(file_format_version), 0},
         0, // reserved
         0  // flags (lsb is select bit)
@@ -990,9 +990,9 @@ ref_type SlabAlloc::read_and_validate_header(util::File& file, const std::string
             // Also don't compare reserved fields.
             TESSERA_ASSERT_EX(header->m_flags == 0, header->m_flags, path);
             TESSERA_ASSERT_EX(header->m_mnemonic[0] == uint8_t('T'), header->m_mnemonic[0], path);
-            TESSERA_ASSERT_EX(header->m_mnemonic[1] == uint8_t('-'), header->m_mnemonic[1], path);
-            TESSERA_ASSERT_EX(header->m_mnemonic[2] == uint8_t('D'), header->m_mnemonic[2], path);
-            TESSERA_ASSERT_EX(header->m_mnemonic[3] == uint8_t('B'), header->m_mnemonic[3], path);
+            TESSERA_ASSERT_EX(header->m_mnemonic[1] == uint8_t('E'), header->m_mnemonic[1], path);
+            TESSERA_ASSERT_EX(header->m_mnemonic[2] == uint8_t('S'), header->m_mnemonic[2], path);
+            TESSERA_ASSERT_EX(header->m_mnemonic[3] == uint8_t('S'), header->m_mnemonic[3], path);
             TESSERA_ASSERT_EX(header->m_top_ref[0] == 0xFFFFFFFFFFFFFFFFULL, header->m_top_ref[0], path);
             TESSERA_ASSERT_EX(header->m_top_ref[1] == 0, header->m_top_ref[1], path);
             TESSERA_ASSERT_EX(footer->m_magic_cookie == footer_magic_cookie, footer->m_magic_cookie, path);
@@ -1046,8 +1046,8 @@ ref_type SlabAlloc::validate_header(const Header* header, const StreamingFooter*
         throw InvalidDatabase(util::format("file has an invalid size (%1).", size), path);
 
     // First four bytes of info block is file format id
-    if (TESSERA_UNLIKELY(!(char(header->m_mnemonic[0]) == 'T' && char(header->m_mnemonic[1]) == '-' &&
-                         char(header->m_mnemonic[2]) == 'D' && char(header->m_mnemonic[3]) == 'B'))) {
+    if (TESSERA_UNLIKELY(!(char(header->m_mnemonic[0]) == 'T' && char(header->m_mnemonic[1]) == 'E' &&
+                         char(header->m_mnemonic[2]) == 'S' && char(header->m_mnemonic[3]) == 'S'))) {
         if (is_encrypted) {
             // Encrypted files check the hmac on read, so there's a lot less
             // which could go wrong and have us still reach this point

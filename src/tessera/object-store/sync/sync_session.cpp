@@ -449,7 +449,6 @@ void SyncSession::download_fresh_realm(const sync::SessionErrorInfo& error_info)
     }
 
     DBOptions options;
-    options.allow_file_format_upgrade = false;
     options.enable_async_writes = false;
     if (!encryption_key.empty())
         options.encryption_key = encryption_key.data();

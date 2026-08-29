@@ -483,10 +483,8 @@ bool RealmCoordinator::open_db()
             options.temp_dir = util::normalize_dir(m_config.fifo_files_fallback_path);
         }
         options.encryption_key = m_config.encryption_key.data();
-        options.allow_file_format_upgrade = !m_config.disable_format_upgrade && !schema_mode_reset_file;
         options.clear_on_invalid_file = m_config.clear_on_invalid_file;
         if (history) {
-            options.backup_at_file_format_change = m_config.backup_at_file_format_change;
 #ifdef __EMSCRIPTEN__
             // Force the DB to be created in memory-only mode, ignoring the filesystem path supplied in the config.
             // This is so we can run an SDK on top without having to solve the browser persistence problem yet,

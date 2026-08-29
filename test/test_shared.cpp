@@ -505,8 +505,10 @@ TEST(Shared_ReadAfterCompact)
         sg->compact();
     }
     {
+        // Tessera: this test is about reading after compaction, not upgrades. It
+        // set allow_file_format_upgrade = false defensively; with a single
+        // supported format there is nothing to upgrade and the option is gone.
         DBOptions options;
-        options.allow_file_format_upgrade = false;
         DBRef sg = DB::create(make_in_realm_history(), path, options);
         auto rt = sg->start_read();
         auto table = rt->get_table("table");

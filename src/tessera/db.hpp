@@ -604,8 +604,6 @@ private:
     void do_async_commits();
 
     /// Upgrade file format and/or history schema
-    void upgrade_file_format(bool allow_file_format_upgrade, int target_file_format_version,
-                             int current_hist_schema_version, int target_hist_schema_version) REQUIRES(!m_mutex);
 
     int get_file_format_version() const noexcept;
 
@@ -617,6 +615,7 @@ private:
         m_alloc.reset_free_space_tracking();
     }
 
+    void upgrade_history_schema(int current_hist_schema_version, int target_hist_schema_version);
     void close_internal(std::unique_lock<util::InterprocessMutex>, bool allow_open_read_transactions)
         REQUIRES(!m_mutex);
 

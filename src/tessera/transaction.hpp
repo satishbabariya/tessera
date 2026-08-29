@@ -120,7 +120,6 @@ public:
         return m_transact_stage;
     }
 
-    void upgrade_file_format(int target_file_format_version);
 
     /// Task oriented/async interface for continuous transactions.
     // true if this transaction already holds the write mutex

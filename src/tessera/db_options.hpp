@@ -19,9 +19,11 @@
 #ifndef TESSERA_GROUP_SHARED_OPTIONS_HPP
 #define TESSERA_GROUP_SHARED_OPTIONS_HPP
 
+#include <tessera/util/logger.hpp>
+
 #include <functional>
+#include <memory>
 #include <string>
-#include <tessera/backup_restore.hpp>
 
 namespace tessera {
 
@@ -64,7 +66,6 @@ struct DBOptions {
     ///
     /// - the specified Realm file uses a deprecated file format, resulting a
     ///   the throwing of FileFormatUpgradeRequired.
-    bool allow_file_format_upgrade = true;
 
     /// Optionally allows a custom function to be called immediately after the
     /// Realm file is upgraded. The two parameters in the function are the
@@ -86,16 +87,13 @@ struct DBOptions {
     bool is_immutable = false;
 
     /// Disable automatic backup at file format upgrade by setting to false
-    bool backup_at_file_format_change = true;
 
     /// Disable creating new files if the DB to open does not already exist.
     bool no_create = false;
 
     /// List of versions we can upgrade from
-    BackupHandler::VersionList accepted_versions = BackupHandler::accepted_versions_;
 
     /// List of versions for which backup files are automatically removed at specified age.
-    BackupHandler::VersionTimeList to_be_deleted = BackupHandler::delete_versions_;
 
     /// Must be set for the async writes feature to be used. On some platforms
     /// this will make *all* writes async and then wait on the result, which has

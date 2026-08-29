@@ -770,7 +770,10 @@ private:
     /// upgrade logic in Group::upgrade_file_format(), AND the lists of accepted
     /// file formats and the version deletion list residing in "backup_restore.cpp"
 
-    static constexpr int g_current_file_format_version = 24;
+    // Tessera: reset to 1. This is a new format, not a continuation of Realm's:
+    // the magic mnemonic is TESS rather than T-DB, and no earlier version is
+    // accepted. See docs/findings/0b-file-format.md.
+    static constexpr int g_current_file_format_version = 1;
 
     int get_file_format_version() const noexcept;
     void set_file_format_version(int) noexcept;

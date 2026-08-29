@@ -69,8 +69,7 @@ set(TESSERA_SOURCES
     utilities.cpp
     uuid.cpp
     version.cpp
-    backup_restore.cpp
-) # TESSERA_SOURCES
+    ) # TESSERA_SOURCES
 
 set(UTIL_SOURCES
     util/backtrace.cpp
@@ -199,8 +198,7 @@ set(TESSERA_INSTALL_HEADERS
     uuid.hpp
     version.hpp
     version_id.hpp
-    backup_restore.hpp
-
+    
     impl/array_writer.hpp
     impl/changeset_input_stream.hpp
     impl/cont_transact_hist.hpp

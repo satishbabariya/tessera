@@ -148,8 +148,6 @@ struct RealmConfig {
 
     // Throw an exception rather than automatically upgrading the file
     // format. Used by the browser to warn the user that it'll modify
-    // the file.
-    bool disable_format_upgrade = false;
 
     // The Scheduler which this Realm should be bound to. If not supplied,
     // a default one for the current thread will be used.
@@ -169,8 +167,6 @@ struct RealmConfig {
     // is thrown.
     uint_fast64_t max_number_of_active_versions = std::numeric_limits<uint_fast64_t>::max();
 
-    // Disable automatic backup at file format upgrade by setting to false
-    bool backup_at_file_format_change = true;
 
     // By default converting a top-level table to embedded will fail if there
     // are any objects without exactly one incoming link. Enabling this makes

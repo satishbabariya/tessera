@@ -324,13 +324,11 @@ int Group::get_target_file_format_version_for_session(int current_file_format_ve
     // Please see Group::get_file_format_version() for information about the
     // individual file format versions.
 
-    if (requested_history_type == Replication::hist_None) {
-        if (current_file_format_version == 24) {
-            // We are able to open these file formats in RO mode
-            return current_file_format_version;
-        }
-    }
-
+    // Tessera: a special case here previously returned current_file_format_version
+    // when it was 24, so that v24 files could be opened read-only. With the format
+    // reset to 1 and no earlier version accepted, that branch was both dead (24 is
+    // rejected before reaching here) and a no-op when it did fire (it returned the
+    // value it was comparing against). Removed.
     return g_current_file_format_version;
 }
 
@@ -1377,7 +1375,11 @@ void Group::advance_transact(ref_type new_top_ref, util::InputStream* in, bool w
 
 void Group::prepare_top_for_history(int history_type, int history_schema_version, uint64_t file_ident)
 {
-    TESSERA_ASSERT(m_file_format_version >= 7);
+    // Tessera: was `>= 7`, a lower bound inherited from Realm's version lineage
+    // (formats were numbered 7..24). With the format reset to 1 that bound is
+    // meaningless; what this actually guards is that the format has been decided,
+    // which is what a non-zero version means.
+    TESSERA_ASSERT(m_file_format_version > 0);
     while (m_top.size() < s_hist_type_ndx) {
         m_top.add(0); // Throws
     }
