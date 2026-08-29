@@ -8,8 +8,10 @@
   compiled into no target and had never run, though it covers
   `tessera/util/enum.hpp`, which is installed as public API. It compiled and
   passed unchanged.
-* `tools/check-tests-compiled.sh`, run in CI, fails if any test source is not
-  referenced by the `CMakeLists.txt` that should compile it. A test file left out
+* `tools/check-test-sources-listed.sh`, run in CI, fails if any test source is
+  not named by the `CMakeLists.txt` that should compile it. It establishes that a
+  file is visible to the build, not that any particular configuration compiles it
+  -- 26 test files here are correctly conditional on `TESSERA_ENABLE_SYNC`. A test file left out
   of the build does not fail, does not appear as skipped and does not break
   anything, and the suite total is no help because nobody knows what it should
   be.

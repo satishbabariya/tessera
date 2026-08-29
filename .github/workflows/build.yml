@@ -49,7 +49,7 @@ jobs:
           tools/check-merge-deps.sh
           tools/check-header-tiers.sh
           tools/check-repo-hygiene.sh
-          tools/check-tests-compiled.sh
+          tools/check-test-sources-listed.sh
           tools/check-rename-residue.sh
           tools/check-cert-expiry.sh
 

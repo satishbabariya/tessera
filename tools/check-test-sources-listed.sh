@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
-# Fails if a test source file is not referenced by the CMakeLists that should
-# compile it.
+# Fails if a test source file is not named by the CMakeLists that should compile
+# it.
+#
+# What this does and does not establish, because the distinction is the whole
+# point of the check and getting it wrong would make the check another example
+# of the thing it guards against:
+#
+#   It establishes that the filename appears in the relevant CMakeLists.
+#   It does NOT establish that the file is compiled in any given configuration.
+#
+# Twenty-six test files here are listed inside `if(TESSERA_ENABLE_SYNC)` and are
+# correctly absent from a build with sync off. A check that demanded they be
+# compiled would be wrong. A check that claims they are compiled, on the strength
+# of finding their names, would be lying -- which is why this one is named for
+# what it inspects.
 #
 # A test file left out of the build is invisible in every direction. It does not
 # fail, because it does not run. It does not show as skipped, because the
@@ -27,8 +40,8 @@ check_dir() {
         base=$(basename "$file")
         checked=$((checked + 1))
         if ! grep -q "$base" "$cmakelists"; then
-            echo "FAIL: $file is not referenced in $cmakelists"
-            echo "      It compiles into no target, so its tests never run."
+            echo "FAIL: $file is not named in $cmakelists"
+            echo "      No target can compile it, so its tests can never run."
             status=1
         fi
     done
@@ -44,5 +57,5 @@ if [ "$checked" -eq 0 ]; then
     exit 1
 fi
 
-[ "$status" -eq 0 ] && echo "PASS: all $checked test sources are referenced by a CMakeLists"
+[ "$status" -eq 0 ] && echo "PASS: all $checked test sources are named by a CMakeLists"
 exit "$status"

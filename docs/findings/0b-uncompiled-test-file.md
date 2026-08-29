@@ -43,8 +43,17 @@ different branch. One did not.
 
 ## The check
 
-`tools/check-tests-compiled.sh` fails if any `test/*.cpp` is not named by the
-`CMakeLists.txt` that should compile it. It covers 133 files today.
+`tools/check-test-sources-listed.sh` fails if any `test/*.cpp` is not named by
+the `CMakeLists.txt` that should compile it. It covers 133 files today.
+
+It is named for what it inspects rather than for what one would like to conclude.
+The check establishes that a file is visible to the build; it does not establish
+that any given configuration compiles it. Twenty-six test files here are listed
+inside `if(TESSERA_ENABLE_SYNC)` and are correctly absent when sync is off. The
+first version of this check was called `check-tests-compiled.sh` and printed
+"all 133 test sources are referenced", which claimed more than it had looked at
+-- the exact failure this directory documents a dozen times over, reproduced in
+the check written to prevent it.
 
 Canary-tested twice: an unreferenced file fails it, and an empty tree fails it
 rather than passing over nothing -- the same guard every check in this project
