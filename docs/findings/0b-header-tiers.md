@@ -97,3 +97,43 @@ is enforced by tier documentation rather than by withholding the file.
 Revisiting this needs evidence about what consumers actually include, which does
 not exist yet because there are no consumers. A decision that requires data we do
 not have is better deferred than guessed.
+
+# Addendum (separate concern): the clean-clone test found what no gate could
+
+Recorded 2026-08-29, immediately before tagging v0.1.0.
+
+Every gate in this project ran against a working tree that already had its git
+submodules checked out. The first genuine clean clone -- `git clone` followed by
+the README's build command, exactly as a new user would -- failed at configure:
+
+```
+CMake Error at test/CMakeLists.txt:12 (add_subdirectory):
+  The source directory /tmp/cc/test/external/catch
+  does not contain a CMakeLists.txt file.
+```
+
+Two defects, neither visible to any existing check:
+
+1. **The README omitted `--recursive`.** Nothing tested from a fresh clone, so
+   nothing could have caught it.
+2. **The failure mode was hostile.** The error names a missing `CMakeLists.txt`
+   inside a third-party directory. It does not say "a submodule is missing", and
+   it does not say "you do not need this at all if you only want the library".
+
+The second is the more important fix. A missing Catch2 now disables the test
+suites with an actionable message instead of failing configure:
+
+```
+Tests are disabled: the Catch2 submodule is not checked out.
+  To build the tests, run:  git submodule update --init --recursive
+  To silence this warning:  cmake -DTESSERA_NO_TESTS=ON ...
+```
+
+**Someone who wants to use Tessera as a library should not be blocked by a test
+dependency.** That is the difference between a project a stranger can adopt and
+one they bounce off in the first two minutes.
+
+This is the sixth instance of a gate passing while the property it implied was
+false, and the only one that could not have been caught by widening an existing
+check -- it needed a different *kind* of test: not "does the tree build" but
+"does a stranger succeed".

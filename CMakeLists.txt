@@ -391,6 +391,19 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TesseraConfig.cmake
         COMPONENT devel
         )
 
+# The test suites need Catch2, which is a git submodule. A fresh clone without
+# `--recursive` does not have it, and the resulting CMake error names a missing
+# CMakeLists.txt rather than the actual problem. Someone who only wants the
+# library should not be blocked by a test dependency, so detect it and say so.
+if(NOT TESSERA_BUILD_LIB_ONLY AND NOT TESSERA_NO_TESTS
+   AND NOT EXISTS "${Tessera_SOURCE_DIR}/test/external/catch/CMakeLists.txt")
+    message(WARNING
+        "Tests are disabled: the Catch2 submodule is not checked out.\n"
+        "  To build the tests, run:  git submodule update --init --recursive\n"
+        "  To silence this warning:  cmake -DTESSERA_NO_TESTS=ON ...")
+    set(TESSERA_NO_TESTS ON)
+endif()
+
 if(NOT TESSERA_BUILD_LIB_ONLY AND NOT TESSERA_NO_TESTS)
     enable_testing()
     add_subdirectory(test)

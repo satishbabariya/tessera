@@ -35,9 +35,14 @@ Requires CMake 3.25+, a C++20 compiler (GCC 13+ or Clang 18+), OpenSSL and zlib
 from your system package manager.
 
 ```sh
+git clone --recursive https://github.com/satishbabariya/tessera
+cd tessera
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
+
+`--recursive` fetches Catch2, which the test suites need. Without it the library
+still builds and the tests are skipped with a warning.
 
 Nothing is downloaded at configure time. See [how-to-build.md](how-to-build.md)
 for platform specifics and cross-compilation.
