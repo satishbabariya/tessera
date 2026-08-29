@@ -328,7 +328,17 @@ set_target_properties(Storage PROPERTIES
 )
 
 if(TESSERA_USE_FAST_LINKER)
-    target_link_options(Storage PUBLIC ${TESSERA_USE_FAST_LINKER})
+    # BUILD_INTERFACE, not plain PUBLIC. This is a build-speed optimisation for
+    # compiling Tessera itself -- the tests and tools link faster with lld or
+    # gold. As a plain PUBLIC option it was baked into the exported target, so a
+    # consumer inherited -fuse-ld=lld from whatever linker happened to be
+    # available on the machine that built Tessera. A consumer using gcc then
+    # failed with "collect2: fatal error: cannot find 'ld'", because the flag
+    # names a linker their toolchain does not have.
+    #
+    # Found by the consumer smoke test on Linux/clang: every test suite passed
+    # and only the installed package was broken.
+    target_link_options(Storage PUBLIC $<BUILD_INTERFACE:${TESSERA_USE_FAST_LINKER}>)
 endif()
 
 target_compile_definitions(Storage PUBLIC

@@ -8,6 +8,16 @@
   Release. Until now only a changelog bot had ever run, so every claim the
   project made about itself was macOS/arm64 only.
 
+### Fixed
+
+* The installed CMake package no longer exports `-fuse-ld=lld` (or `gold`).
+  Tessera selects a faster linker for its own build, and that flag was applied
+  as a plain `PUBLIC` link option, so it was baked into the exported target: a
+  consumer inherited whichever linker happened to exist on the machine that
+  built Tessera. Building Tessera with clang and consuming it with gcc failed
+  with `collect2: fatal error: cannot find 'ld'`. Affects v0.1.0 when built on
+  a system where lld or gold is available, which does not include macOS.
+
 ## 0.1.0 — 2026-08-29
 
 ### The fork
