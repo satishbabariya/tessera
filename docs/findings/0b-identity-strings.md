@@ -10,6 +10,11 @@ the compiler. A survivor does not build.
 
 The residue that does build was never looked at.
 
+It is worse than that. The check was never wired into CI. It ran only when
+someone invoked it by hand, so even the four identifier patterns it did cover
+were unenforced for the whole of Phase 0b. Seven checks were listed in the
+workflow's invariant step; this was the eighth, and it was not among them.
+
 ## What was still there
 
 `src/tessera/version.hpp` defined the product name:
