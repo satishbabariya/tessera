@@ -78,6 +78,33 @@ jobs:
         env:
           UNITTEST_THREADS: 2
 
+      # The whole point of the change that enabled this test is that it had never
+      # executed its body. A test that goes dead again would show up as nothing:
+      # the suite total simply stops including it, and no one knows what the
+      # total should be. So assert directly that it ran and that it checked
+      # something.
+      #
+      # Linux only, because it needs robust POSIX mutexes. macOS reports
+      # _POSIX_THREADS as 200112L where the check requires 200809L, so the test
+      # is correctly disabled there and the framework now says so.
+      - name: The crash-safety test actually ran
+        if: runner.os == 'Linux'
+        run: |
+          export TMPDIR="$(mktemp -d)/"
+          out=$(UNITTEST_FILTER='Shared_RobustAgainstDeathDuringWrite' \
+                "$(tools/verify/test-binary.sh build tessera-tests)" 2>&1)
+          echo "$out" | tail -5
+          case "$out" in
+            *"All 1 tests passed (0 checks)"*)
+              echo "FAIL: it ran but checked nothing -- the runtime guard returned early"
+              exit 1 ;;
+            *"All 1 tests passed"*)
+              echo "OK: the crash-safety test ran and checked something" ;;
+            *)
+              echo "FAIL: the crash-safety test did not run at all"
+              exit 1 ;;
+          esac
+
       - name: ObjectStoreTests
         run: |
           export TMPDIR="$(mktemp -d)/"
