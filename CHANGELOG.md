@@ -65,6 +65,18 @@
   reports it as excluded where it does not apply instead of as a pass over zero
   checks, and is `NONCONCURRENT`, because it calls `fork()` from a runner full of
   worker threads and then does real work in the child.
+* `RobustMutex::is_robust_on_this_platform` was `false` in every translation
+  unit, on every platform, including `thread.cpp`'s own. The platform detection
+  was in `thread.cpp`, which includes `thread.hpp` twelve lines *before* defining
+  any of it, so the constant was evaluated with the macros undefined -- while the
+  implementation further down the same file compiled full robust-mutex support,
+  because its `#ifdef` appears after the defines. A class whose implementation
+  supported robust mutexes and whose public constant denied it. The detection now
+  lives in the header that declares the constant. Five tests gate on it.
+* The test framework computed `num_disabled_tests` and never printed it, so a
+  test switched off by its `TEST_IF` condition was invisible: absent from the
+  pass count and absent from every other number reported. There are 32 of them on
+  macOS.
 * The CI build job had no `timeout-minutes`. A dead-locking test would have held
   a runner for GitHub's six-hour default.
 
