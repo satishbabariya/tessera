@@ -53,10 +53,13 @@ of running these now.
 
 ## What is not covered
 
-- Only CoreTests runs under the sanitizers. SyncTests and ObjectStoreTests do
-  not, because they are substantially slower and the nightly already takes
-  around half an hour. Extending coverage to the sync suite would be worthwhile
-  before Phase 1 touches the sync client.
+- ObjectStoreTests does not run under the sanitizers.
+- **SyncTests now runs under ThreadSanitizer** (added immediately after this
+  finding was written). That is where the concurrency lives -- real in-process
+  servers, client sessions, and the merge engine running against them -- and it
+  is the code Phase 1 reworks. It runs only under TSan: the suite is slow, and
+  address and undefined-behaviour coverage of the same engine already comes from
+  CoreTests.
 - Linux x86-64 with clang only. The sanitizers are not run on macOS or with gcc.
 - `UNITTEST_THREADS=1`. Higher thread counts would exercise more interleavings,
   at the cost of runtime.

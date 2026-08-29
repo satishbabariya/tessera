@@ -35,6 +35,20 @@ jobs:
           "$(tools/verify/test-binary.sh build tessera-tests)"
         env: { UNITTEST_THREADS: 1 }
 
+      # The sync suite is where the concurrency lives: real in-process servers,
+      # client sessions, and the merge engine running against them. Phase 1
+      # reworks exactly this code, so a clean baseline here is worth more than
+      # one for the suite that will not change.
+      #
+      # Only under TSan. The sync tests are slow, and address and undefined
+      # behaviour are already covered by CoreTests over the same engine.
+      - name: SyncTests under thread sanitizer
+        if: matrix.san == 'thread'
+        run: |
+          export TMPDIR="$(mktemp -d)/"
+          "$(tools/verify/test-binary.sh build tessera-sync-tests)"
+        env: { UNITTEST_THREADS: 1 }
+
   # Tier-1 platforms that cannot run their own tests here. Compiling is a real
   # signal: three of this project's build failures were platform-specific
   # missing includes that only a different standard library revealed.
