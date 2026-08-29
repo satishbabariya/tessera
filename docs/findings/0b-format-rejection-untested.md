@@ -154,6 +154,37 @@ passed` is the same sentence in all three cases. A zero-check test is visible
 in the count, but only if someone reads per-test check counts, and no gate here
 does.
 
+## How many others
+
+Rather than assume the answer, every test name in `test/*.cpp` was run in its own
+process and its check count recorded. `tools/analyse-zero-check-tests.sh` does
+this; it takes minutes, because the check count is only reported per run and a
+run of the whole suite reports one total.
+
+Of 1,784 names: 512 are not in `CoreTests` at all -- they belong to the sync and
+object-store suites -- 1,166 ran and checked something, and **106 ran and checked
+nothing**.
+
+The 106 are almost entirely legitimate. `Query_DeepCopyLeak1`,
+`Table_DeleteCrash`, `Shared_StringIndexBug2`, `Compare_Core_utf8_invalid_crash`
+and about a hundred others are regression tests for sequences that once corrupted
+memory or leaked. Their assertion is that the process survives. There is nothing
+to count, and a check count of zero is the correct outcome.
+
+**Exactly one of the 106 returns early on a guard**, and it is the same guard:
+
+    test_thread.cpp  Thread_RobustMutexTryLock
+        if (!RobustMutex::is_robust_on_this_platform) return;
+
+So both of the project's tests of robust-mutex behaviour silently do nothing on
+macOS. The difference is that `Thread_RobustMutexTryLock` carries no compile-time
+guard, so it compiles and runs on Linux, where robust mutexes exist and CI is
+green. Robust mutexes are therefore known to work on the CI runners -- which is
+the strongest available prior for the experiment in the crash-safety change.
+
+The useful result here is the size of the class. One. The pattern that hid the
+crash-safety test is real and worth a tool, and it is not endemic.
+
 ## Canary-tested, in both directions
 
 Five passing tests prove nothing on their own. Each was confirmed to fail against
