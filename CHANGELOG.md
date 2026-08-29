@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-### Tessera 0.1.0 — the fork
+Nothing yet.
+
+## 0.1.0 — 2026-08-29
+
+### The fork
 
 First release of Tessera, forked from
 [realm-core](https://github.com/realm/realm-core) v14.14.0 (`f8752e180`).
