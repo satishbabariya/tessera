@@ -68,6 +68,9 @@ because the binary predated the changes being verified.
 
 ## The clean-clone test
 
+`tools/verify/clean-clone-test.sh` automates this. Run it against the published
+repository, not a local path -- the point is to exercise what a stranger gets.
+
 The only honest test of "can someone use this" is doing what they would do, with
 no local knowledge:
 
