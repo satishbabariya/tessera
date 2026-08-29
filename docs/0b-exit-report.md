@@ -202,3 +202,48 @@ installed to `share/cmake/Realm/` where `find_package(Tessera)` would never look
 - `reports DNS error` is network-flaky and must not gate merges.
 - The test suite leaks temporary directories; a large `TMPDIR` degrades some
   tests by four orders of magnitude.
+
+---
+
+## Addendum, later the same day
+
+The figures above were true when this report was written and several are no
+longer. They are left as written, because an exit report records the state at
+exit; editing it would make it describe a moment that never existed. This says
+what changed instead.
+
+| | At exit | Now |
+|---|---|---|
+| CoreTests (Linux) | 1652 | 1664 |
+| Executable checks | 6 | 12 |
+| Sanitizers | ASan, UBSan, TSan clean | unchanged, over the larger suite, and over ObjectStoreTests as well |
+
+Twelve of those additional tests exist because a claim was measured for the first
+time. The other, `test_util_enum.cpp`, existed already and was in no
+`CMakeLists`.
+
+### What the report did not know
+
+Six defects were found after it was written, all in code it had already
+described as verified. Each has a finding under `docs/findings/`:
+
+| | |
+|---|---|
+| `RobustMutex::is_robust_on_this_platform` was `false` in every translation unit, including its own, while the implementation below it compiled full robust-mutex support | five tests gated on it; none had ever run |
+| Three identity strings went out over the network still saying `realm` | including a WebSocket subprotocol and the sync `User-Agent` |
+| The TLS test certificates expired in 57 days | and had lapsed silently five times before |
+| The README promised a self-hostable sync server | the package exports no server target and contains no server executable |
+| Twenty-one files with `<` and `>` in their names | made the repository uncloneable on Windows |
+| `tools/verify/clean-clone-test.sh` and `test/test_util_enum.cpp` | correct, purposeful, and referenced by nothing |
+
+### The correction that matters most
+
+This report says, under Enforced Invariants, that the value was "in running the
+checks, not writing them". That is right and did not go far enough. Two of the
+six defects above are checks and tests that were written, were correct, and were
+never wired into anything -- so they had never run at all. The distinction the
+report needed is not between writing a check and running it once, but between
+running it and *arranging that it keeps running*.
+
+`tools/README.md` now states, for every script in that directory, whether
+anything runs it.
