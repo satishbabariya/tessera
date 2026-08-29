@@ -1981,7 +1981,7 @@ TEST(Group_ToDot)
 #endif
 
     // Write array graph to file in dot format
-    std::ofstream fs("realm_graph.dot", std::ios::out | std::ios::binary);
+    std::ofstream fs("tessera_graph.dot", std::ios::out | std::ios::binary);
     if (!fs.is_open())
         std::cout << "file open error " << strerror(errno) << std::endl;
     mygroup.to_dot(fs);

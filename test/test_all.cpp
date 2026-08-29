@@ -433,7 +433,7 @@ bool run_tests(const std::shared_ptr<tessera::util::Logger>& logger = nullptr)
         junit_file.open(str, util::File::mode_Write);
         const char* test_suite_name = getenv("UNITTEST_SUITE_NAME");
         if (!test_suite_name || !strlen(test_suite_name))
-            test_suite_name = "realm-core-tests";
+            test_suite_name = "tessera-tests";
         reporters.push_back(create_junit_reporter(junit_out, test_suite_name));
     }
     else if (const char* str = getenv("UNITTEST_EVERGREEN_TEST_RESULTS"); str && strlen(str) != 0) {

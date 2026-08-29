@@ -49,7 +49,7 @@ struct SyncClient {
 #ifdef __EMSCRIPTEN__
             return std::make_shared<EmscriptenSocketProvider>();
 #else
-            auto user_agent = util::format("RealmSync/%1 (%2) %3 %4", TESSERA_VERSION_STRING, util::get_platform_info(),
+            auto user_agent = util::format("TesseraSync/%1 (%2) %3 %4", TESSERA_VERSION_STRING, util::get_platform_info(),
                                            config.user_agent_binding_info, config.user_agent_application_info);
             return std::make_shared<sync::websocket::DefaultSocketProvider>(
                 logger, std::move(user_agent), config.default_socket_provider_thread_observer);

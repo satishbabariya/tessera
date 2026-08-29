@@ -4,7 +4,7 @@
 
 const char* legend =
     "Simple tool to output the JSON representation of a database:\n"
-    "  realm2json [--output-mode N] [--filter <filterexpr>] <.tess file>\n"
+    "  tessera2json [--output-mode N] [--filter <filterexpr>] <.tess file>\n"
     "\n"
     "Options:\n"
     " --schema: Just output the schema of the realm\n"

@@ -360,14 +360,14 @@ std::string make_temp_dir()
 #else // POSIX.1-2008 version
 
 #if TESSERA_ANDROID
-    std::string buffer = "/data/local/tmp/realm_XXXXXX";
+    std::string buffer = "/data/local/tmp/tessera_XXXXXX";
 #else
     char* tmp_dir_env = getenv("TMPDIR");
     std::string buffer = tmp_dir_env ? tmp_dir_env : std::string(P_tmpdir);
     if (!buffer.empty() && buffer.back() != '/') {
         buffer += "/";
     }
-    buffer += "realm_XXXXXX";
+    buffer += "tessera_XXXXXX";
 #endif
 
     if (mkdtemp(buffer.data()) == 0) {

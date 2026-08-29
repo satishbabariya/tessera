@@ -895,7 +895,7 @@ private:
 
         std::error_code ec;
         util::Optional<HTTPResponse> response =
-            do_make_http_response(request, sec_websocket_protocol ? *sec_websocket_protocol : "realm.io", ec);
+            do_make_http_response(request, sec_websocket_protocol ? *sec_websocket_protocol : "io.tessera", ec);
 
         if (ec) {
             error_server_request_header_protocol_violation(ec, request);

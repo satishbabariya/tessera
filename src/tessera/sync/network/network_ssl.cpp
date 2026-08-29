@@ -257,7 +257,7 @@ ErrorCategory error_category;
 
 const char* ErrorCategory::name() const noexcept
 {
-    return "realm.sync.network.ssl";
+    return "tessera.sync.network.ssl";
 }
 
 
@@ -1034,7 +1034,7 @@ std::error_code Context::open_temporary_keychain_if_needed()
         return std::error_code();
     }
 
-    std::string path = temporary_directory() + "realm-sync-ssl-XXXXXXXX.keychain";
+    std::string path = temporary_directory() + "tessera-sync-ssl-XXXXXXXX.keychain";
     int fd = mkstemps(&path[0], std::strlen(".keychain"));
     if (fd < 0) {
         return make_basic_system_error_code(errno);

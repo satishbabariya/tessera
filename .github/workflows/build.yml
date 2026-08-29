@@ -49,6 +49,7 @@ jobs:
           tools/check-merge-deps.sh
           tools/check-header-tiers.sh
           tools/check-repo-hygiene.sh
+          tools/check-rename-residue.sh
 
       - name: Configure
         env:

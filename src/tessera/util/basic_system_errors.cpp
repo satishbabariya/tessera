@@ -38,7 +38,7 @@ class system_category : public std::error_category {
 
 const char* system_category::name() const noexcept
 {
-    return "realm.basic_system";
+    return "tessera.basic_system";
 }
 
 std::string system_category::message(int value) const

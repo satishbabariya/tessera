@@ -2048,11 +2048,11 @@ int main(int argc, char* argv[])
         if (help) {
             // clang-format off
             std::cerr <<
-                "Synopsis: "<<prog<<" <realm file>\n"
-                "          "<<prog<<" <realm file> <version>\n"
-                "          "<<prog<<" <realm file> <begin version> <end version>\n"
-                "          "<<prog<<" <realm file> (-c | --client-files)\n"
-                "          "<<prog<<" <realm file> (-c | --client-files) <file ident>\n"
+                "Synopsis: "<<prog<<" <database file>\n"
+                "          "<<prog<<" <database file> <version>\n"
+                "          "<<prog<<" <database file> <begin version> <end version>\n"
+                "          "<<prog<<" <database file> (-c | --client-files)\n"
+                "          "<<prog<<" <database file> (-c | --client-files) <file ident>\n"
                 "\n"
                 "The first three forms are for inspecting a specific range of the\n"
                 "synchronization history of the specified database file. In the first form, the\n"
@@ -2219,7 +2219,7 @@ int main(int argc, char* argv[])
 #else
             build_mode = "Release";
 #endif
-            std::cerr << "RealmSync/" TESSERA_VERSION_STRING " (build_mode=" << build_mode << ")\n";
+            std::cerr << "TesseraSync/" TESSERA_VERSION_STRING " (build_mode=" << build_mode << ")\n";
             return EXIT_SUCCESS;
         }
 

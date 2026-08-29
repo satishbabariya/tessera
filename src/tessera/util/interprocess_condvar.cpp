@@ -301,7 +301,7 @@ void InterprocessCondVar::set_shared_part(SharedPart& shared_part, std::string b
         // extra work, as opposed to correctness problems.
         std::ostringstream ss;
         ss << normalize_dir(tmp_path);
-        ss << "realm_" << std::hash<std::string>()(m_resource_path) << ".cv";
+        ss << "tessera_" << std::hash<std::string>()(m_resource_path) << ".cv";
         m_resource_path = ss.str();
         create_fifo(m_resource_path);
     }
@@ -686,7 +686,7 @@ InterprocessCondVar::Mutex InterprocessCondVar::open_mutex(int32_t n)
 }
 InterprocessCondVar::Mutex InterprocessCondVar::open_mutex(std::string name)
 {
-    const std::string uri = "Local\\realm_cv_mutex_" + m_name_with_path + '_' + name;
+    const std::string uri = "Local\\tessera_cv_mutex_" + m_name_with_path + '_' + name;
     const auto wuri = std::wstring(uri.begin(), uri.end());
     HandleHolder handle = CreateMutexW(nullptr, // no security
                                        false,   // initial owner
@@ -698,7 +698,7 @@ InterprocessCondVar::Event InterprocessCondVar::open_event(int32_t n)
 {
     TESSERA_ASSERT_RELEASE(n >= 0);
     TESSERA_ASSERT_RELEASE(n < 1'000'000); // Sanity check.
-    const std::string uri = "Local\\realm_cv_event_" + m_name_with_path + '_' + std::to_string(n);
+    const std::string uri = "Local\\tessera_cv_event_" + m_name_with_path + '_' + std::to_string(n);
     const auto wuri = std::wstring(uri.begin(), uri.end());
 
     HandleHolder handle = CreateEventW(nullptr, // no security

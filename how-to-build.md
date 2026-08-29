@@ -223,9 +223,9 @@ CMake [wiki page](http://www.vtk.org/Wiki/CMake_Useful_Variables#Compilers_and_T
 
 ## Other tools
 
-### RealmTrawler
+### TesseraTrawler
 
-`RealmTrawler` is a tool that can go through a Realm file and print metadata about the layout of the file.
+`TesseraTrawler` is a tool that can go through a Realm file and print metadata about the layout of the file.
 
 It is built the following way:
 
@@ -233,7 +233,7 @@ It is built the following way:
 mkdir build
 cd build
 cmake ..
-cmake --build . --target RealmTrawler
+cmake --build . --target TesseraTrawler
 ```
 
 On Mac this will create an executable located in `<path-to-repo>/build/src/realm/exec/realm-trawler-dbg`.

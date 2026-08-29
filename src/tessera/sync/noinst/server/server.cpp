@@ -1942,7 +1942,7 @@ private:
 
     void add_common_http_response_headers(HTTPResponse& response)
     {
-        response.headers["Server"] = "RealmSync/" TESSERA_VERSION_STRING; // Throws
+        response.headers["Server"] = "TesseraSync/" TESSERA_VERSION_STRING; // Throws
         if (m_negotiated_protocol_version < SyncConnection::SERVER_LOG_PROTOCOL_VERSION) {
             // This isn't a real X-Appservices-Request-Id, but it should be enough to test with
             response.headers["X-Appservices-Request-Id"] = get_appservices_request_id();

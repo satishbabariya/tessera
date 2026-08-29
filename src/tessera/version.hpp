@@ -25,7 +25,7 @@
 #include <tessera/version_numbers.hpp>
 #endif
 
-#define TESSERA_PRODUCT_NAME "realm-core"
+#define TESSERA_PRODUCT_NAME "tessera"
 #define TESSERA_VER_CHUNK "[" TESSERA_PRODUCT_NAME "-" TESSERA_VERSION_STRING "]"
 
 namespace tessera {

@@ -257,7 +257,7 @@ TEST_CASE("Shareddatabase: get_shared_realm()") {
 
         tessera::util::make_dir(config.path + ".note");
         auto realm = Realm::get_shared_realm(config);
-        auto fallback_file = util::format("%1realm_%2.note", fallback_dir,
+        auto fallback_file = util::format("%1tessera_%2.note", fallback_dir,
                                           std::hash<std::string>()(config.path)); // Mirror internal implementation
         REQUIRE(util::File::exists(fallback_file));
         tessera::util::remove_dir(config.path + ".note");
@@ -276,7 +276,7 @@ TEST_CASE("Shareddatabase: get_shared_realm()") {
 
         tessera::util::make_dir(config.path + ".note");
         auto realm = Realm::get_shared_realm(config);
-        auto fallback_file = util::format("%1/realm_%2.note", fallback_dir,
+        auto fallback_file = util::format("%1/tessera_%2.note", fallback_dir,
                                           std::hash<std::string>()(config.path)); // Mirror internal implementation
         REQUIRE(util::File::exists(fallback_file));
         tessera::util::remove_dir(config.path + ".note");
@@ -462,7 +462,7 @@ TEST_CASE("Shareddatabase: get_shared_realm()") {
         std::string expected_path = config.path + ".note";
         REQUIRE(util::try_make_dir(config.path + ".note"));
         if (auto tmp_dir = DBOptions::get_sys_tmp_dir(); !tmp_dir.empty()) {
-            expected_path = util::format("%1realm_%2.note", util::normalize_dir(tmp_dir),
+            expected_path = util::format("%1tessera_%2.note", util::normalize_dir(tmp_dir),
                                          std::hash<std::string>()(config.path)); // Mirror internal implementation
             REQUIRE(util::try_make_dir(expected_path));
         }

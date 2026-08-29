@@ -1,5 +1,5 @@
 /*
- * Useage: realm-enumerate [--key crypt_key] [--threshold 0.xx] <realm-file-name>
+ * Useage: tessera-enumerate [--key crypt_key] [--threshold 0.xx] <database file>
  * Changes string columns which pass the threshold of unique values to enumerated columns
  * and compacts the Realm in place.
  */
@@ -125,7 +125,7 @@ int main(int argc, const char* argv[])
         }
     }
     else {
-        std::cout << "Usage: realm-enumerate [--key crypt_key] [--threshold 0.xx] <realmfile>" << std::endl;
+        std::cout << "Usage: tessera-enumerate [--key crypt_key] [--threshold 0.xx] <database file>" << std::endl;
         std::cout << "The optional crypt_key arg is a filename which contains the 64 byte key." << std::endl;
         std::cout
             << "The optional threshold is a number between [0, 100] indicating the percentage of unique strings "

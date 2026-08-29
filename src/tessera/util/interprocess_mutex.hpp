@@ -187,7 +187,7 @@ inline void InterprocessMutex::set_shared_part(SharedPart& shared_part, const st
     // replace backslashes because they're significant in object namespace names
     std::string path_escaped = path;
     std::replace(path_escaped.begin(), path_escaped.end(), '\\', '/');
-    std::string name = "Local\\realm_named_intermutex_" + path_escaped + mutex_name;
+    std::string name = "Local\\tessera_named_intermutex_" + path_escaped + mutex_name;
 
     std::wstring wname(name.begin(), name.end());
     m_handle = CreateMutexW(0, false, wname.c_str());

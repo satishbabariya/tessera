@@ -163,7 +163,7 @@ struct BenchmarkLocalClientReset : public reset_utils::TestClientReset {
 TEST_CASE("client reset", "[sync][pbs][benchmark][client reset]") {
     const std::string valid_pk_name = "_id";
     const std::string partition_value = "partition_foo";
-    Property partition_prop = {"realm_id", PropertyType::String | PropertyType::Nullable};
+    Property partition_prop = {"tessera_id", PropertyType::String | PropertyType::Nullable};
     Schema schema = {
         {"source",
          {{valid_pk_name, PropertyType::Int | PropertyType::Nullable, true},
