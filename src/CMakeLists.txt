@@ -12,6 +12,6 @@ if(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   add_subdirectory(win32)
 endif()
 
-install(FILES realm.hpp
+install(FILES tessera.hpp
         DESTINATION include
         COMPONENT devel)

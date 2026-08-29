@@ -104,29 +104,34 @@ int main(int argc, char const* argv[])
 
     auto hist = tessera::make_in_realm_history();
     tessera::DBOptions options;
-    // First we try to open in read_only mode.
-    options.allow_file_format_upgrade = false;
+    // First we try to open in read-only mode.
     options.is_immutable = true;
 
     for (;;) {
         try {
             auto db = tessera::DB::create(*hist, path, options);
-            if (options.allow_file_format_upgrade) {
-                std::cerr << "File upgraded to latest version: " << path << std::endl;
+            if (!options.is_immutable) {
+                std::cerr << "History schema upgraded: " << path << std::endl;
             }
             print(db->start_read());
             return 0;
         }
         catch (const tessera::IncompatibleHistories&) {
             hist = tessera::sync::make_client_replication();
-            options.allow_file_format_upgrade = false;
             options.is_immutable = true;
         }
         catch (const tessera::FileAccessError& e) {
             if (e.code() != tessera::ErrorCodes::FileFormatUpgradeRequired) {
                 throw;
             }
-            options.allow_file_format_upgrade = true;
+            // Tessera: file formats are never upgraded -- a non-current file is
+            // rejected outright. This error now means the *history schema* needs
+            // upgrading, which requires opening the file writable. The former
+            // allow_file_format_upgrade flag is gone; writability is the whole
+            // mechanism. Guard against looping if reopening does not help.
+            if (!options.is_immutable) {
+                throw;
+            }
             options.is_immutable = false;
         }
     }

@@ -382,12 +382,12 @@ configure_file(tools/cmake/TesseraConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/Te
 install(EXPORT tessera
         NAMESPACE Tessera::
         FILE TesseraTargets.cmake
-        DESTINATION share/cmake/Realm
+        DESTINATION share/cmake/Tessera
         COMPONENT devel
         )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TesseraConfig.cmake
-        DESTINATION share/cmake/Realm
+        DESTINATION share/cmake/Tessera
         COMPONENT devel
         )
 
