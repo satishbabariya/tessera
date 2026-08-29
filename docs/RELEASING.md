@@ -110,8 +110,9 @@ git push origin v0.1.0
 
 State this plainly in the release notes rather than letting people discover it:
 
-- Verified on macOS/arm64 only. Linux and Windows are expected to work and are
-  unmeasured.
+- Verified by CI on macOS (Apple clang, arm64) and Linux x86-64 (gcc-13 and
+  clang-18), in Debug and Release. Windows, Linux on ARM, iOS, Android and WASM
+  are not verified.
 - The API is stable in shape but not yet frozen; breaking changes are allowed in
   0.x minors.
 - The file format is new. There is no migration from Realm files, and none is

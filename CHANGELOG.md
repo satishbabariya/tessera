@@ -74,5 +74,6 @@ it.
   removal.
 * The `Realm` class name is unchanged inside `namespace tessera`; renaming it is
   an API decision deferred to a later release.
-* Verified on macOS/arm64 only. Linux and Windows are expected to work but are
-  not yet covered by CI.
+* Verified by CI on macOS (Apple clang, arm64) and Linux x86-64 (gcc-13 and
+  clang-18), in Debug and Release. Windows, Linux on ARM, iOS, Android and WASM
+  are not verified.

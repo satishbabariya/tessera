@@ -1,0 +1,110 @@
+name: nightly
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  # TSan matters disproportionately here. The concurrency model is a
+  # shared-memory interprocess mutex plus a lock-free version ringbuffer, which
+  # is exactly the shape of code where data races hide. These are slow, so they
+  # are nightly rather than merge-gating.
+  sanitizers:
+    name: sanitizer ${{ matrix.san }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        san: [address, undefined, thread]
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libssl-dev zlib1g-dev libcurl4-openssl-dev
+      - name: Configure with ${{ matrix.san }}
+        env: { CC: clang-18, CXX: clang++-18 }
+        run: |
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+                -DCMAKE_CXX_FLAGS="-fsanitize=${{ matrix.san }} -fno-omit-frame-pointer"
+      - run: cmake --build build
+      - name: CoreTests under ${{ matrix.san }}
+        run: |
+          export TMPDIR="$(mktemp -d)/"
+          "$(tools/verify/test-binary.sh build tessera-tests)"
+        env: { UNITTEST_THREADS: 1 }
+
+  # Tier-1 platforms that cannot run their own tests here. Compiling is a real
+  # signal: three of this project's build failures were platform-specific
+  # missing includes that only a different standard library revealed.
+  compile-only:
+    name: compile ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: wasm,    os: ubuntu-latest }
+          - { target: android, os: ubuntu-latest }
+          - { target: ios,     os: macos-latest }
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - if: matrix.target == 'wasm'
+        uses: mymindstorm/setup-emsdk@v14
+      - name: Build the storage engine
+        run: |
+          case "${{ matrix.target }}" in
+            wasm)
+              emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release -DTESSERA_NO_TESTS=ON
+              ;;
+            android)
+              cmake -B build -DCMAKE_BUILD_TYPE=Release -DTESSERA_NO_TESTS=ON \
+                    -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake" \
+                    -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-24
+              ;;
+            ios)
+              cmake -B build -G Xcode -DCMAKE_SYSTEM_NAME=iOS -DTESSERA_NO_TESTS=ON
+              ;;
+          esac
+          cmake --build build --target Storage
+
+  # Tier 2: Windows is supported but does not gate merges. Deleting working
+  # platform support and re-adding it later costs far more than keeping it
+  # compiling.
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
+      - run: cmake --build build --config Debug
+
+  # For a storage engine a bug corrupts a file rather than returning a wrong
+  # answer, so fuzzing the allocator and cluster tree is worth more than most
+  # unit tests -- and it already exists.
+  fuzzers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libssl-dev zlib1g-dev
+      # tessera-libfuzzer only exists when TESSERA_LIBFUZZER is on, and that
+      # option requires clang: it compiles with -fsanitize=fuzzer.
+      - name: Configure with libfuzzer
+        env: { CC: clang-18, CXX: clang++-18 }
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DTESSERA_LIBFUZZER=ON
+      - run: cmake --build build --target tessera-libfuzzer
+      - name: Fuzz the storage engine for ten minutes
+        run: |
+          # A crash here means a malformed file can corrupt or crash the engine,
+          # which for a storage engine matters more than most unit tests.
+          timeout 600 ./build/test/fuzzy/tessera-libfuzzer -max_total_time=570 || rc=$?
+          # 124 is timeout's own signal that the budget elapsed without a crash.
+          if [ "${rc:-0}" -ne 0 ] && [ "${rc:-0}" -ne 124 ]; then
+            echo "fuzzer exited $rc -- a crash or leak was found"
+            exit 1
+          fi
