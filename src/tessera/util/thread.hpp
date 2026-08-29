@@ -34,11 +34,25 @@
 #ifdef _WIN32
 #include <condition_variable> // for windows non-interprocess condvars we use std::condition_variable
 
+#include <thread>
+#include <Windows.h>
+#include <process.h> // _getpid()
+#else
+#include <pthread.h>
+#endif
+
 #if !defined _WIN32
 #include <unistd.h> // _POSIX_THREADS, _POSIX_THREAD_PROCESS_SHARED
 #endif
 
 // Platform detection for process-shared and robust pthread mutexes.
+//
+// This block must stay outside the #ifdef _WIN32 / #else split above. The first
+// attempt at moving it here landed inside the Windows branch, which left
+// TESSERA_HAVE_PTHREAD_PROCESS_SHARED undefined on every other platform and made
+// InterprocessMutex throw "No support for process-shared mutexes" across the
+// whole Linux suite. macOS did not notice, because Apple uses a different
+// interprocess mutex implementation that never reaches that path.
 //
 // This lived in thread.cpp, which includes this header before defining any of
 // it. RobustMutex::is_robust_on_this_platform below was therefore false in every
@@ -78,12 +92,6 @@
 #endif
 #endif
 #endif
-#endif
-#include <thread>
-#include <Windows.h>
-#include <process.h> // _getpid()
-#else
-#include <pthread.h>
 #endif
 
 namespace tessera::util {
