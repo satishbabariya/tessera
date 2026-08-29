@@ -27,11 +27,12 @@ remote exists (prerequisite P1), which is the project owner's call to make.
 
 | | |
 |---|---|
-| Commits in Phase 0b | 8 |
+| Commits in Phase 0b | 12 |
 | Cumulative vs upstream | 997 files, 89,806 deletions, 16,494 insertions |
 | First-party source | 211,481 LOC |
 | First-party tests | 155,912 LOC |
-| Test results | CoreTests 1652, SyncTests 461, ObjectStoreTests 343 |
+| Test results (Debug) | CoreTests 1652, SyncTests 461, ObjectStoreTests 343 |
+| Test results (Release) | CoreTests 1647, SyncTests 460, ObjectStoreTests 343 |
 
 ## The recurring finding
 
@@ -52,6 +53,28 @@ the name. In a decade-old codebase, inherited names describe history rather than
 structure, and the cost of assuming otherwise ranged from a compile error to
 deleting a live upgrade path.
 
+## The rename's blind spots
+
+The rename matched code identifiers and was correct for what it matched. Six
+categories fell outside it, each found only by looking deliberately. Full detail
+in `docs/findings/0b-rename-blind-spots.md`.
+
+| Category | How it would have reached a user |
+|---|---|
+| 80 user-facing message strings | "Can't compact a read-only Realm" -- what a Tessera user reads when something fails |
+| A WebSocket subprotocol identifier | `com.mongodb.realm-sync#` silently became `com.mongodb.tess-sync#`. **Every test passed**: client and server are built from one tree, so both sides of the handshake changed together. Only an external peer would have failed, and nothing simulates one |
+| A macOS Keychain item name | Visible in Keychain Access |
+| The root log category | `Realm.Storage` is API -- users write it to filter logs. Tests proved it by calling `set_level_threshold("Realm.Storage")` |
+| Two history comments | The rename made documentation assert things that never happened |
+| Bare CMake identifiers | `CPACK_PACKAGE_NAME`, target names, `install(EXPORT realm)` -- would have shipped `realm`-named artifacts from a Tessera package |
+
+Rewriting the messages then broke **178 test assertions**, because error messages
+are a contract the tests assert. And three fixtures had to be reverted rather
+than de-branded: `HTTPParser_ChunkedEncoding` embeds hex chunk lengths, so
+rewriting ` Realm i` (8 bytes) as ` database i` (11) while leaving the `8`
+corrupted the encoding. No pattern refinement catches that; running the tests is
+what makes a mass substitution safe to attempt.
+
 ## Verification gaps found, and closed
 
 The gate was too narrow twice, and each time the fix was discovered by damage
@@ -68,10 +91,23 @@ rather than by design:
    `.github/workflows/check-pr-title.yml` used `realm/ci-actions/title-checker@main`
    -- a MongoDB-owned action, unpinned, running on every pull request. Check
    widened to cover CI actions from vendor-controlled organisations.
+4. **One configuration.** A stale log-category name passed every Debug run and
+   aborted the entire Release suite before a test executed, because the entry sat
+   behind an `#ifdef`. The release gate now requires both configurations.
+5. **A stale binary.** An ObjectStoreTests run reported 343 cases passing with
+   53,540 assertions against a baseline near 70,000 -- same test count, 30% fewer
+   assertions, because the binary predated the changes under test. Compare
+   assertion counts, not only test counts.
 
 The pattern: **a check verifies what it was written to look for, and silently
-approves everything else.** Each of these passed for weeks while the thing it
-claimed to guarantee was false.
+approves everything else.** Each of these passed while the thing it claimed to
+guarantee was false.
+
+The defence is the same every time, and it is worth stating as a rule rather than
+a habit: `cmake --build` with no target argument, then every suite, in both
+configurations, and confirm the numbers moved the way the change predicts. A
+count that did not move when it should have is as much a failure as a red
+build.
 
 ## Enforced invariants
 
