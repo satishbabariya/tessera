@@ -16,6 +16,7 @@
  *
  **************************************************************************/
 
+#include <tessera/exceptions.hpp>
 #include <tessera/util/logger.hpp>
 
 #include <iostream>
@@ -67,7 +68,23 @@ LogCategory::LogCategory(std::string_view name, LogCategory* parent)
 
 LogCategory& LogCategory::get_category(std::string_view name)
 {
-    return *log_category_map.at(name); // Throws
+    // Tessera: this used map::at, which throws std::out_of_range with the
+    // message "map::at: key not found" -- no indication of what was being
+    // looked up or what the valid choices are. Category names come from users
+    // filtering logs, so a typo aborted the process with an opaque message.
+    // During Phase 0b a single stale name crashed two entire test suites before
+    // any test ran, twice, and neither failure said which name was at fault.
+    auto it = log_category_map.find(name);
+    if (it == log_category_map.end()) {
+        std::string known;
+        for (const auto& [category_name, _] : log_category_map) {
+            if (!known.empty())
+                known += ", ";
+            known += category_name;
+        }
+        throw InvalidArgument(util::format("Unknown log category '%1'. Known categories are: %2", name, known));
+    }
+    return *it->second;
 }
 
 std::vector<std::string_view> LogCategory::get_category_names()
