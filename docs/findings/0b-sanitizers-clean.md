@@ -41,6 +41,16 @@ The Phase 0a assessment described the inherited engine as "high-quality,
 battle-tested". That was inherited framing repeated without evidence. This is the
 first hard evidence for it.
 
+## The sync suite is clean too
+
+Added immediately after the first result and verified in the following run:
+**SyncTests passes under ThreadSanitizer**, alongside CoreTests.
+
+That is the more valuable of the two. The sync suite runs real in-process
+servers, client sessions and the merge engine concurrently -- it is where races
+would actually live, and it is the code Phase 1 reworks. CoreTests exercises the
+storage engine's concurrency; SyncTests exercises the system's.
+
 ## Consequence for Phase 1
 
 Phase 1 reworks the sync client, which touches this concurrency machinery. There
