@@ -22,7 +22,7 @@ int main(int argc, const char* argv[])
 {
     FuzzEngine fuzz_engine;
     bool enable_logging = false;
-    std::string path = "realm-afl.txt";
+    std::string path = "tessera-afl.txt";
     size_t input_index = 0;
     for (size_t i = 0; i < (size_t)argc; ++i) {
         if (strcmp(argv[i], "--log") == 0) {
@@ -32,5 +32,5 @@ int main(int argc, const char* argv[])
             input_index = i;
         }
     }
-    return fuzz_engine.run_fuzzer(argv[input_index], "realm_afl", enable_logging, path);
+    return fuzz_engine.run_fuzzer(argv[input_index], "tessera_afl", enable_logging, path);
 }

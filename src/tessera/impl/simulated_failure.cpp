@@ -211,7 +211,7 @@ const ErrorCategory g_error_category{};
 
 const char* ErrorCategory::name() const noexcept
 {
-    return "realm.simulated_failure";
+    return "tessera.simulated_failure";
 }
 
 std::string ErrorCategory::message(int value) const

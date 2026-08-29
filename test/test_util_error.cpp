@@ -58,7 +58,7 @@ using namespace tessera::util;
 TEST(BasicSystemErrors_Category)
 {
     std::error_code err = make_error_code(error::operation_aborted);
-    CHECK_EQUAL(err.category().name(), "realm.basic_system");
+    CHECK_EQUAL(err.category().name(), "tessera.basic_system");
 }
 
 

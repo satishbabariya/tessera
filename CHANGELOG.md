@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+### Fixed
+
+* The library called itself `realm-core`. `TESSERA_PRODUCT_NAME` still held the
+  old name, so crash reports and the sync client and server startup logs all
+  identified the process as `[realm-core-<version>]`.
+* Three identifiers went out over the network unchanged: the `User-Agent` on
+  every sync connection and the HTTP `Server` header both read `RealmSync/`, and
+  the sync server echoed `realm.io` as the negotiated WebSocket subprotocol to a
+  client that offered none. Client and server are built from one tree, so no test
+  could observe any of them.
+* Five error categories reported themselves as `realm.*` through
+  `std::error_code::category().name()`.
+* The six command-line tools install as `tessera-*` but their `--help` told the
+  user to run `realm-trawler`, `realm2json` and so on. Their CMake targets were
+  also still named `RealmTrawler`, `Realm2JSON` and so on.
+* Cross-process coordination files and Windows named objects used a `realm_`
+  prefix.
+* The symbol planted in crash backtraces to direct users where to report pointed
+  at `github/realm/realm-core`.
+
 Nothing yet.
 
 ## 0.1.1 — 2026-08-29

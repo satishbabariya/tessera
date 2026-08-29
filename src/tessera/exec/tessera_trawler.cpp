@@ -1,7 +1,7 @@
 /*
- * Usage: realm-trawler <realm-file-name>
+ * Usage: tessera-trawler <database file>
  *
- * This tool will dump the structure of a realm file and print out any inconsistencies it finds.
+ * This tool will dump the structure of a database file and print out any inconsistencies it finds.
  *
  * First it will print out information found in the top group. If there are inconsistencies in the
  * free list, this will be reported.
@@ -1179,9 +1179,9 @@ int main(int argc, const char* argv[])
         }
     }
     else {
-        std::cout << "Usage: realm-trawler [-cfmsw] [--keyfile file-with-binary-crypt-key] [--hexkey "
+        std::cout << "Usage: tessera-trawler [-cfmsw] [--keyfile file-with-binary-crypt-key] [--hexkey "
                      "crypt-key-in-hex] [--top "
-                     "top_ref] <realmfile>\n";
+                     "top_ref] <database file>\n";
         std::cout << "   c : dump changelog\n";
         std::cout << "   f : free list analysis\n";
         std::cout << "   m : memory leak check\n";

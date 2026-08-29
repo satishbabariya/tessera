@@ -44,9 +44,9 @@
 
 // LCOV_EXCL_START
 #define TESSERA_DEFINE_TERMINATE_VERSIONED_(x)                                                                         \
-    extern "C" TESSERA_NORETURN TESSERA_NOINLINE void please_report_this_issue_in_github_realm_realm_core_v##x();        \
+    extern "C" TESSERA_NORETURN TESSERA_NOINLINE void please_report_this_issue_in_github_satishbabariya_tessera_v##x();        \
                                                                                                                      \
-    extern "C" TESSERA_NORETURN TESSERA_NOINLINE void please_report_this_issue_in_github_realm_realm_core_v##x()         \
+    extern "C" TESSERA_NORETURN TESSERA_NOINLINE void please_report_this_issue_in_github_satishbabariya_tessera_v##x()         \
     {                                                                                                                \
         std::abort();                                                                                                \
     }
@@ -62,7 +62,7 @@
 
 TESSERA_DEFINE_TERMINATE_VERSIONED(TESSERA_VERSION_SUFFIX_CONCAT)
 
-#define TESSERA_TERMINATE_VERSIONED_(x) please_report_this_issue_in_github_realm_realm_core_v##x()
+#define TESSERA_TERMINATE_VERSIONED_(x) please_report_this_issue_in_github_satishbabariya_tessera_v##x()
 #define TESSERA_TERMINATE_VERSIONED(x) TESSERA_TERMINATE_VERSIONED_(x)
 #define TESSERA_TERMINATE_AUTO_VERSIONED() TESSERA_TERMINATE_VERSIONED(TESSERA_VERSION_SUFFIX_CONCAT)
 

@@ -1640,7 +1640,7 @@ TEST(Sync_HTTP404NotFound)
     const HTTPResponse& response = client.get_response();
 
     CHECK(response.status == HTTPStatus::NotFound);
-    CHECK(response.headers.find("Server")->second == "RealmSync/" TESSERA_VERSION_STRING);
+    CHECK(response.headers.find("Server")->second == "TesseraSync/" TESSERA_VERSION_STRING);
 }
 
 
@@ -2067,7 +2067,7 @@ TEST(Sync_MultipleServers)
                 WriteTransaction wt(db);
                 TableRef table = wt.get_group().add_table_with_primary_key("class_table", type_Int, "id");
                 table->add_column(type_Int, "server_index");
-                table->add_column(type_Int, "realm_index");
+                table->add_column(type_Int, "tessera_index");
                 table->add_column(type_Int, "file_index");
                 table->add_column(type_Int, "session_index");
                 table->add_column(type_Int, "transact_index");
@@ -2082,7 +2082,7 @@ TEST(Sync_MultipleServers)
                     TableRef table = wt.get_table("class_table");
                     Obj obj = table->create_object_with_primary_key(id.fetch_add(1));
                     obj.set("server_index", server_index);
-                    obj.set("realm_index", realm_index);
+                    obj.set("tessera_index", realm_index);
                     obj.set("file_index", file_index);
                     obj.set("session_index", i);
                     obj.set("transact_index", j);
@@ -2172,7 +2172,7 @@ TEST(Sync_MultipleServers)
                     std::set<std::tuple<int, int, int>> rows;
                     for (const Obj& obj : *table) {
                         int server_index = int(obj.get<int64_t>("server_index"));
-                        int realm_index = int(obj.get<int64_t>("realm_index"));
+                        int realm_index = int(obj.get<int64_t>("tessera_index"));
                         int file_index = int(obj.get<int64_t>("file_index"));
                         int session_index = int(obj.get<int64_t>("session_index"));
                         int transact_index = int(obj.get<int64_t>("transact_index"));

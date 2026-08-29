@@ -2599,7 +2599,7 @@ class ResolveErrorCategory : public std::error_category {
 public:
     const char* name() const noexcept final
     {
-        return "realm.sync.network.resolve";
+        return "tessera.sync.network.resolve";
     }
 
     std::string message(int value) const final

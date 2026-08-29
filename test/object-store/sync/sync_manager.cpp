@@ -37,7 +37,7 @@ using namespace tessera::util;
 using File = tessera::util::File;
 
 static const auto base_path =
-    fs::path{util::make_temp_dir()}.make_preferred() / "realm_objectstore_sync_manager.test-dir";
+    fs::path{util::make_temp_dir()}.make_preferred() / "tessera_objectstore_sync_manager.test-dir";
 static const std::string dummy_device_id = "123400000000000000000000";
 
 

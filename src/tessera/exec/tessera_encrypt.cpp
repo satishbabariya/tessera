@@ -31,7 +31,7 @@ int main(int argc, const char* argv[])
         }
     }
     else {
-        std::cout << "Usage: realm-encrypt --key crypt_key [--out <outfilename>] <realmfile>" << std::endl;
+        std::cout << "Usage: tessera-encrypt --key crypt_key [--out <outfilename>] <database file>" << std::endl;
     }
 
     return 0;

@@ -67,7 +67,7 @@ TestFile::TestFile()
 {
     disable_sync_to_disk();
     m_temp_dir = util::make_temp_dir();
-    path = (fs::path(m_temp_dir) / "realm.XXXXXX").string();
+    path = (fs::path(m_temp_dir) / "tessera.XXXXXX").string();
     if (const char* crypt_key = test_util::crypt_key()) {
         encryption_key = std::vector<char>(crypt_key, crypt_key + 64);
     }

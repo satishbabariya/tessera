@@ -8,7 +8,7 @@ util::MiscExtErrorCategory util::misc_ext_error_category;
 
 const char* util::MiscExtErrorCategory::name() const noexcept
 {
-    return "realm.util.misc_ext";
+    return "tessera.util.misc_ext";
 }
 
 

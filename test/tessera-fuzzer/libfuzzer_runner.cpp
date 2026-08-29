@@ -27,6 +27,6 @@ int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size)
         return 0;
     std::string input{(const char*)Data, Size};
     FuzzEngine fuzz_engine;
-    return fuzz_engine.run_fuzzer(input, "realm_libfuzz", false,
-                                  "realm-libfuzz.txt"); // run the fuzzer with no logging
+    return fuzz_engine.run_fuzzer(input, "tessera_libfuzz", false,
+                                  "tessera-libfuzz.txt"); // run the fuzzer with no logging
 }
