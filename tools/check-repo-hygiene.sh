@@ -28,7 +28,12 @@ fi
 #    imported RealmFFI for an entire phase after that module was deleted,
 #    because nothing built it and so nothing failed.
 for dead in RealmFFI RealmFFIStatic; do
-    HIT=$(git ls-files | xargs grep -l "$dead" 2>/dev/null | grep -v '^docs/' || true)
+    # Exclude this script (it names the symbols it searches for) and docs,
+    # which record the history deliberately. Without the self-exclusion the
+    # check passes while untracked and fails the moment it is committed.
+    HIT=$(git ls-files | xargs grep -l "$dead" 2>/dev/null \
+          | grep -v '^docs/' | grep -v '^tools/check-repo-hygiene.sh$' \
+          | grep -v '^CHANGELOG' || true)
     if [ -n "$HIT" ]; then
         echo "FAIL: '$dead' was deleted but is still referenced by:"; echo "$HIT"; FAIL=1
     fi
