@@ -203,9 +203,9 @@ _Note: '.so' is replaced by '.dylib' on OS X._
 
 The following programs will be installed:
 
-    /usr/local/bin/realm-import
-    /usr/local/bin/realm-config
-    /usr/local/libexec/realmd
+    /usr/local/bin/realm-trawler
+    /usr/local/bin/realm2json
+    /usr/local/bin/realm-dump
 
 ### Configuration
 
@@ -222,19 +222,6 @@ all kinds of customizations. For a brief overview you can reference to this
 CMake [wiki page](http://www.vtk.org/Wiki/CMake_Useful_Variables#Compilers_and_Tools)
 
 ## Other tools
-
-### Realm-Import
-
-The `realm-import` tool lets you load files containing
-comma-separated values into Realm.
-
-The next two are used transparently by the Realm library when `async` transactions are
-enabled. The two `config` programs provide the necessary compiler
-flags for an application that needs to link against Realm. They work
-with GCC and other compilers, such as Clang, that are mostly command
-line compatible with GCC. Here is an example:
-
-    g++  my_app.cpp  `realm-config --cflags --libs`
 
 ### RealmTrawler
 

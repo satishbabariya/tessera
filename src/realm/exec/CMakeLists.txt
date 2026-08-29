@@ -1,19 +1,3 @@
-add_executable(RealmImporter importer_tool.cpp importer.cpp importer.hpp)
-set_target_properties(RealmImporter PROPERTIES
-    OUTPUT_NAME "realm-importer"
-    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-)
-target_link_libraries(RealmImporter Storage)
-
-if(NOT APPLE AND NOT ANDROID AND NOT CMAKE_SYSTEM_NAME MATCHES "^Windows")
-    add_executable(RealmDaemon realmd.cpp)
-    set_target_properties(RealmDaemon PROPERTIES
-        OUTPUT_NAME "realmd"
-        DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
-    target_link_libraries(RealmDaemon Storage)
-    list(APPEND ExecTargetsToInstall RealmDaemon)
-endif()
-
 add_executable(RealmTrawler realm_trawler.cpp)
 set_target_properties(RealmTrawler PROPERTIES
     OUTPUT_NAME "realm-trawler"
@@ -51,13 +35,6 @@ set_target_properties(RealmEncrypt PROPERTIES
     DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
 )
 target_link_libraries(RealmEncrypt Storage)
-
-add_executable(RealmBrowser realm_browser.cpp)
-set_target_properties(RealmBrowser PROPERTIES
-    OUTPUT_NAME "realm-browser-10"
-    DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-)
-target_link_libraries(RealmBrowser Storage)
 
 if(REALM_ENABLE_SYNC)
 add_executable(Realm2JSON realm2json.cpp )
