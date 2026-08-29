@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+Nothing yet.
+
+## 0.1.1 — 2026-08-29
+
 ### Added
 
 * Build-and-test CI on Linux (gcc-13, clang-18) and macOS, in Debug and
