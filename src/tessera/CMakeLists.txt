@@ -107,6 +107,8 @@ set(UTIL_SOURCES
 )
 
 set(TESSERA_INSTALL_HEADERS
+    api.hpp
+    engine.hpp
     aggregate_ops.hpp
     alloc.hpp
     alloc_slab.hpp

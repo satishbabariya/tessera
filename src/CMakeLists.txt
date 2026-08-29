@@ -12,6 +12,6 @@ if(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   add_subdirectory(win32)
 endif()
 
-install(FILES tessera.hpp
+install(FILES tessera.hpp tessera/engine.hpp
         DESTINATION include
         COMPONENT devel)

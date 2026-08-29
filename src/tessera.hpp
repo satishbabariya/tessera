@@ -16,18 +16,19 @@
  *
  **************************************************************************/
 
-#ifndef TESSERA_HPP
-#define TESSERA_HPP
+#ifndef TESSERA_UMBRELLA_HPP
+#define TESSERA_UMBRELLA_HPP
 
-#include <tessera/history.hpp>
-#include <tessera/transaction.hpp>
-#include <tessera/obj.hpp>
-#include <tessera/list.hpp>
-#include <tessera/set.hpp>
-#include <tessera/dictionary.hpp>
-#include <tessera/table_view.hpp>
-#include <tessera/query.hpp>
+/// \file tessera.hpp
+///
+/// Convenience umbrella for the storage engine, retained because it predates
+/// the tier split and has existing users. It forwards to <tessera/engine.hpp>.
+///
+/// New code should include one of the two tier entry points directly:
+///   <tessera/api.hpp>     tier 1, the high-level API
+///   <tessera/engine.hpp>  tier 2, the storage engine
+
+#include <tessera/engine.hpp>
 #include <tessera/query_engine.hpp>
-#include <tessera/query_expression.hpp>
 
-#endif // TESSERA_HPP
+#endif // TESSERA_UMBRELLA_HPP
