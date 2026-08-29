@@ -204,28 +204,28 @@ TEMPLATE_TEST_CASE("primitive list", "[primitives]", cf::MixedVal, cf::Int, cf::
         SECTION("invalidate") {
             r->invalidate();
             REQUIRE_EXCEPTION(list.verify_attached(), InvalidatedObject,
-                              "List is no longer valid. Either the parent object was deleted or the containing Realm "
+                              "List is no longer valid. Either the parent object was deleted or the containing database "
                               "has been invalidated or closed.");
         }
 
         SECTION("close") {
             r->close();
             REQUIRE_EXCEPTION(list.verify_attached(), InvalidatedObject,
-                              "List is no longer valid. Either the parent object was deleted or the containing Realm "
+                              "List is no longer valid. Either the parent object was deleted or the containing database "
                               "has been invalidated or closed.");
         }
 
         SECTION("delete row") {
             obj.remove();
             REQUIRE_EXCEPTION(list.verify_attached(), InvalidatedObject,
-                              "List is no longer valid. Either the parent object was deleted or the containing Realm "
+                              "List is no longer valid. Either the parent object was deleted or the containing database "
                               "has been invalidated or closed.");
         }
 
         SECTION("rollback transaction creating list") {
             r->cancel_transaction();
             REQUIRE_EXCEPTION(list.verify_attached(), InvalidatedObject,
-                              "List is no longer valid. Either the parent object was deleted or the containing Realm "
+                              "List is no longer valid. Either the parent object was deleted or the containing database "
                               "has been invalidated or closed.");
         }
     }
@@ -236,21 +236,21 @@ TEMPLATE_TEST_CASE("primitive list", "[primitives]", cf::MixedVal, cf::Int, cf::
         SECTION("invalidate") {
             r->invalidate();
             REQUIRE_EXCEPTION(list.verify_in_transaction(), InvalidatedObject,
-                              "List is no longer valid. Either the parent object was deleted or the containing Realm "
+                              "List is no longer valid. Either the parent object was deleted or the containing database "
                               "has been invalidated or closed.");
         }
 
         SECTION("close") {
             r->close();
             REQUIRE_EXCEPTION(list.verify_in_transaction(), InvalidatedObject,
-                              "List is no longer valid. Either the parent object was deleted or the containing Realm "
+                              "List is no longer valid. Either the parent object was deleted or the containing database "
                               "has been invalidated or closed.");
         }
 
         SECTION("delete row") {
             obj.remove();
             REQUIRE_EXCEPTION(list.verify_in_transaction(), InvalidatedObject,
-                              "List is no longer valid. Either the parent object was deleted or the containing Realm "
+                              "List is no longer valid. Either the parent object was deleted or the containing database "
                               "has been invalidated or closed.");
         }
 

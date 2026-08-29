@@ -248,7 +248,7 @@ void display_build_config()
     const char* cpu_avx = tessera::sseavx<1>() ? "Yes" : "No";
 
     std::cout << std::endl
-              << "Realm version: " << Version::get_version() << " with Debug " << with_debug << "\n"
+              << "database version: " << Version::get_version() << " with Debug " << with_debug << "\n"
               << "Platform: " << util::get_platform_info() << "\n"
               << "Encryption: " << encryption << "\n"
               << "\n"

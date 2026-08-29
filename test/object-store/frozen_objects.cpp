@@ -46,14 +46,14 @@
 using namespace tessera;
 using util::any_cast;
 
-TEST_CASE("Construct frozen Realm", "[frozen]") {
+TEST_CASE("Construct frozen database", "[frozen]") {
     TestFile config;
     config.schema_version = 1;
     config.schema = Schema{
         {"object", {{"value", PropertyType::Int}}},
     };
 
-    SECTION("Create frozen Realm directly") {
+    SECTION("Create frozen database directly") {
         auto realm = Realm::get_shared_realm(config);
         realm->read_group();
         auto frozen_realm = Realm::get_frozen_realm(config, realm->read_transaction_version());
@@ -88,13 +88,13 @@ TEST_CASE("Freeze Realm", "[frozen]") {
     SECTION("auto_refresh") {
         REQUIRE(!frozen_realm->auto_refresh());
         REQUIRE_EXCEPTION(frozen_realm->set_auto_refresh(true), WrongTransactionState,
-                          "Auto-refresh cannot be enabled for frozen Realms.");
+                          "Auto-refresh cannot be enabled for frozen databases.");
         REQUIRE(!frozen_realm->auto_refresh());
     }
 
     SECTION("begin_transaction() throws") {
         REQUIRE_EXCEPTION(frozen_realm->begin_transaction(), WrongTransactionState,
-                          "Can't perform transactions on a frozen Realm");
+                          "Can't perform transactions on a frozen database");
     }
 
     SECTION("can call methods on another thread") {

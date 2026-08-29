@@ -394,7 +394,7 @@ TEST_CASE("Schema") {
                  {{"_id", PropertyType::Int, Property::IsPrimary{true}}, {"street", PropertyType::String}}},
             };
             REQUIRE_EXCEPTION(schema.validate(), SchemaValidationFailed,
-                              ContainsSubstring("Asymmetric table 'location' not allowed in a local Realm"));
+                              ContainsSubstring("Asymmetric table 'location' not allowed in a local database"));
         }
 
         SECTION("rejects link properties with asymmetric target object") {

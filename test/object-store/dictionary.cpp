@@ -303,7 +303,7 @@ TEMPLATE_TEST_CASE("dictionary types", "[dictionary]", cf::MixedVal, cf::Int, cf
         r->invalidate();
         REQUIRE_EXCEPTION(dict.verify_attached(), InvalidatedObject,
                           "Dictionary is no longer valid. Either the parent object was deleted or the containing "
-                          "Realm has been invalidated or closed.");
+                          "database has been invalidated or closed.");
     }
 
     SECTION("verify_in_transaction()") {
@@ -914,7 +914,7 @@ TEMPLATE_TEST_CASE("dictionary types", "[dictionary]", cf::MixedVal, cf::Int, cf
             advance_and_notify(*r);
             REQUIRE(local_change.insertions.count() == 2);
 
-            SECTION("with links on frozen Realm") {
+            SECTION("with links on frozen database") {
                 // this could have deadlocked
                 auto frozen = r->freeze();
                 auto frozen_table = frozen->read_group().get_table("class_object");

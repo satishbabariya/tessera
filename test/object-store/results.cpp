@@ -1037,11 +1037,11 @@ TEST_CASE("notifications: skip", "[notifications]") {
             "Suppressing the notification from a write transaction must be done from inside the write transaction.");
     }
 
-    SECTION("skipping must be done from the Realm's thread") {
+    SECTION("skipping must be done from the database's thread") {
         advance_and_notify(*r);
         r->begin_transaction();
         JoiningThread([&] {
-            REQUIRE_EXCEPTION(token1.suppress_next(), WrongThread, "Realm accessed from incorrect thread.");
+            REQUIRE_EXCEPTION(token1.suppress_next(), WrongThread, "database accessed from incorrect thread.");
         });
         r->cancel_transaction();
     }
@@ -3323,7 +3323,7 @@ TEST_CASE("results: notifier with no callbacks", "[notifications][results]") {
         r->refresh();
     }
 
-    SECTION("should not pin the source version even after the Realm has been closed") {
+    SECTION("should not pin the source version even after the database has been closed") {
         auto r2 = coordinator->get_realm();
         REQUIRE(r != r2);
         r->close();

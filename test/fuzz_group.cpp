@@ -744,7 +744,7 @@ static void usage(const char* argv[])
             "Pass -- without argument to read filenames from stdin\n"
             "Pass --log to have code printed to stdout producing the same instructions.\n"
             "Pass --name NAME with distinct values when running on multiple threads,\n"
-            "                 to make sure the test don't use the same Realm file\n"
+            "                 to make sure the test don't use the same database file\n"
             "Pass --prefix PATH to supply a path that should be prepended to all filenames\n"
             "                 read from stdin.\n",
             argv[0]);

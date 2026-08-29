@@ -37,14 +37,14 @@ TEST_CASE("sync_file: percent-encoding APIs", "[sync][file]") {
         REQUIRE(actual == expected);
     }
 
-    SECTION("properly encodes a sample Realm URL") {
+    SECTION("properly encodes a sample database URL") {
         const std::string expected = "realms%3A%2F%2Fexample.com%2F%7E%2Ffoo_bar%2Fuser-realm";
         const std::string raw_string = "realms://example.com/~/foo_bar/user-realm";
         auto actual = make_percent_encoded_string(raw_string);
         REQUIRE(actual == expected);
     }
 
-    SECTION("properly decodes a sample Realm URL") {
+    SECTION("properly decodes a sample database URL") {
         const std::string expected = "realms://example.com/~/foo_bar/user-realm";
         const std::string encoded_string = "realms%3A%2F%2Fexample.com%2F%7E%2Ffoo_bar%2Fuser-realm";
         auto actual = make_raw_string(encoded_string);
@@ -147,16 +147,16 @@ TEST_CASE("sync_file: SyncFileManager APIs", "[sync][file]") {
     auto manager = SyncFileManager(manager_base_path.string(), app_id);
     REQUIRE(manager.app_path() == manager_path);
 
-    SECTION("Realm path APIs") {
+    SECTION("database path APIs") {
         auto relative_path = "s_" + partition_str;
         ExpectedRealmPaths expected_paths(manager_base_path.string(), app_id, identity, legacy_identities, partition);
 
-        SECTION("getting a Realm path") {
+        SECTION("getting a database path") {
             auto actual = manager.realm_file_path(identity, legacy_identities, relative_path, partition);
             REQUIRE(expected_paths.current_preferred_path == actual);
         }
 
-        SECTION("deleting a Realm for a valid user") {
+        SECTION("deleting a database for a valid user") {
             manager.realm_file_path(identity, legacy_identities, relative_path, partition);
             // Create the required files
             REQUIRE_NOTHROW(create_dummy_realm(expected_paths.current_preferred_path));
@@ -171,7 +171,7 @@ TEST_CASE("sync_file: SyncFileManager APIs", "[sync][file]") {
             REQUIRE_DIR_DOES_NOT_EXIST(expected_paths.current_preferred_path + ".management");
         }
 
-        SECTION("deleting a Realm for an invalid user") {
+        SECTION("deleting a database for an invalid user") {
             REQUIRE(!manager.remove_realm("invalid_user", legacy_identities, relative_path, partition));
         }
 

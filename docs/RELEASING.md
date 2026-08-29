@@ -41,6 +41,31 @@ reports 1652 — five tests are compiled out of Release builds by `#ifdef
 TESSERA_DEBUG` and `TEST_IF(..., SimulatedFailure::is_enabled())`. Compare like
 with like.
 
+## Both configurations, not one
+
+Debug and Release compile different code. `#ifdef TESSERA_DEBUG`,
+`TEST_IF(..., SimulatedFailure::is_enabled())` and `#ifdef TEST_LOGGING_LEVEL`
+all change what is built and what the tests request. Running one configuration
+is running half the gate.
+
+Phase 0b found this the hard way: a stale log-category name passed every Debug
+run and aborted the entire Release suite before a single test executed, because
+the entry sat behind an `#ifdef`.
+
+Expected counts, which differ legitimately between configurations:
+
+| Suite | Debug | Release |
+|---|---|---|
+| CoreTests | 1652 | 1647 |
+| SyncTests | 461 | 460 |
+| ObjectStoreTests | 343 | 343 |
+
+**Check the assertion counts too, not just the test counts.** A suite reporting
+the same number of tests with a wildly different number of assertions is usually
+a stale binary rather than a passing run -- during Phase 0b an ObjectStoreTests
+run reported 343 passing with 53,540 assertions against a baseline of ~70,000,
+because the binary predated the changes being verified.
+
 ## The clean-clone test
 
 The only honest test of "can someone use this" is doing what they would do, with

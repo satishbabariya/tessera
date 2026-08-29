@@ -113,3 +113,90 @@ wrong.
 After the mechanical rename, grep for the old name in string literals, in build
 files, and in comments, and classify each hit by what it *is* rather than what it
 looks like.
+
+## Addendum: error messages are a contract the tests assert
+
+Rewriting the 80 user-facing messages in `src/` broke **178 assertions** across
+the object-store suite, because the tests assert exact message text:
+
+```
+REQUIRE_EXCEPTION(dict.verify_attached(), InvalidatedObject,
+    "Dictionary is no longer valid. Either the parent object was deleted "
+    "or the containing Realm has been invalidated or closed.");
+```
+
+Production now says "containing database"; the test still expected "containing
+Realm". One side of an assertion pair had changed.
+
+87 test expectation strings needed the identical substitution list. The sweep
+should have covered `src/` and `test/` in a single pass from the start -- an
+error message is an interface, and the test is its consumer.
+
+## Addendum: a stale binary reported a passing run
+
+While chasing the above, an ObjectStoreTests run reported "343 test cases
+passed" with **53,540 assertions**, against a baseline of roughly 70,000. Same
+test count, 30% fewer assertions.
+
+The binary predated the changes being verified, because the preceding build had
+used `--target CoreTests` rather than building everything. The test count looked
+right, so the run looked green.
+
+**Compare assertion counts, not only test counts.** A suite whose test count is
+unchanged but whose assertion count has moved substantially is usually not
+running the code you think it is.
+
+This is the fourth distinct way verification proved too narrow in this project,
+and they rhyme:
+
+| Narrow gate | Missed |
+|---|---|
+| one suite | broken tests in the other two |
+| one target | the command-line tools |
+| one configuration | a Release-only crash behind an `#ifdef` |
+| a stale binary | the changes under test |
+
+The defence is the same each time: `cmake --build` with no target argument, then
+every suite, in both configurations, and confirm the numbers moved the way the
+change predicts.
+
+## Addendum: some strings are length-sensitive, and no pattern can tell
+
+The message sweep broke `HTTPParser_ChunkedEncoding`, which tests HTTP chunked
+transfer encoding. Its fixture embeds each chunk's length in hex:
+
+```
+"7\r\nMongoDB\r\n8\r\n Realm i\r\nB\r\n..."
+       └ 7 bytes    └ 8 bytes
+```
+
+The substitution rewrote ` Realm i` (8 bytes) as ` database i` (11 bytes) while
+leaving the `8` that declares its length. The string reads as prose about
+MongoDB Realm. It is protocol test data with embedded byte counts.
+
+Two more fixtures had the same shape: `test_index_string.cpp` and
+`test_query2.cpp` contain a string that self-describes as "around 90 bytes long,
+which falls in the long-string type", used to exercise behaviour at a size
+threshold. Substitution lengthened it by three bytes -- harmless here, but the
+same class of risk.
+
+All three were reverted rather than adjusted. De-branding invisible test fixture
+data gains nothing, and the strings' *content* is arbitrary while their *length*
+is not.
+
+**No refinement of the pattern would have caught this.** The only thing that
+could was running the tests, which is what makes a mass substitution safe to
+attempt at all.
+
+## The complete taxonomy
+
+Six characters, five correct treatments, distinguishable only by what the string
+*is* and never by what it looks like:
+
+| Occurrence | What it is | Treatment |
+|---|---|---|
+| `"read-only Realm"` | prose in an error message | rewrite -- and update the tests asserting it |
+| `"Local in-Realm"` | a display value | rewrite |
+| `"Realm.Storage"` | log-category **API** | rewrite, and update every caller |
+| `"Realm"` in subscription tests | row **data** | leave |
+| `"8\r\n Realm i"` | **length-prefixed protocol data** | leave -- rewriting corrupts the encoding |

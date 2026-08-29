@@ -118,7 +118,7 @@ private:
 };
 } // namespace
 
-TEST_CASE("SharedRealm: get_shared_realm()") {
+TEST_CASE("Shareddatabase: get_shared_realm()") {
     TestFile config;
     config.schema_version = 1;
     config.schema = Schema{
@@ -209,7 +209,7 @@ TEST_CASE("SharedRealm: get_shared_realm()") {
             config.schema_version = 2;
             REQUIRE_EXCEPTION(
                 Realm::get_shared_realm(config), MismatchedConfig,
-                Catch::Matchers::Matches("Realm at path '.*' already opened with different schema version."));
+                Catch::Matchers::Matches("database at path '.*' already opened with different schema version."));
 
             config.schema = util::none;
             config.schema_version = ObjectStore::NotVersioned;
@@ -221,7 +221,7 @@ TEST_CASE("SharedRealm: get_shared_realm()") {
             config.schema_mode = SchemaMode::Manual;
             REQUIRE_EXCEPTION(
                 Realm::get_shared_realm(config), MismatchedConfig,
-                Catch::Matchers::Matches("Realm at path '.*' already opened with a different schema mode."));
+                Catch::Matchers::Matches("database at path '.*' already opened with a different schema mode."));
         }
 
         SECTION("durability") {
@@ -229,7 +229,7 @@ TEST_CASE("SharedRealm: get_shared_realm()") {
             config.in_memory = true;
             REQUIRE_EXCEPTION(
                 Realm::get_shared_realm(config), MismatchedConfig,
-                Catch::Matchers::Matches("Realm at path '.*' already opened with different inMemory settings."));
+                Catch::Matchers::Matches("database at path '.*' already opened with different inMemory settings."));
         }
 
         SECTION("schema") {
@@ -421,8 +421,8 @@ TEST_CASE("SharedRealm: get_shared_realm()") {
         REQUIRE(it->persisted_properties[0].name == "value");
         REQUIRE(it->persisted_properties[0].column_key == table->get_column_key("value"));
 
-        SECTION("refreshing an immutable Realm throws") {
-            REQUIRE_THROWS_WITH(realm->refresh(), "Can't refresh an immutable Realm.");
+        SECTION("refreshing an immutable database throws") {
+            REQUIRE_THROWS_WITH(realm->refresh(), "Can't refresh an immutable database.");
         }
     }
 
@@ -486,11 +486,11 @@ TEST_CASE("SharedRealm: get_shared_realm()") {
     }
 #endif
 
-    SECTION("should detect use of Realm on incorrect thread") {
+    SECTION("should detect use of database on incorrect thread") {
         auto realm = Realm::get_shared_realm(config);
         JoiningThread([&] {
             REQUIRE_THROWS_MATCHES(realm->verify_thread(), LogicError,
-                                   Catch::Matchers::Message("Realm accessed from incorrect thread."));
+                                   Catch::Matchers::Message("database accessed from incorrect thread."));
         });
     }
 
@@ -536,7 +536,7 @@ TEST_CASE("SharedRealm: get_shared_realm()") {
         REQUIRE(realm2 != realm3);
     }
 
-    SECTION("can use Realm with explicit scheduler on different thread") {
+    SECTION("can use database with explicit scheduler on different thread") {
         config.cache = true;
         config.scheduler = std::make_shared<SimpleScheduler>(1);
         auto realm = Realm::get_shared_realm(config);
@@ -563,7 +563,7 @@ TEST_CASE("SharedRealm: get_shared_realm()") {
         REQUIRE(object_schema == &*realm->schema().find("object"));
     }
 
-    SECTION("should reuse cached frozen Realm if versions match") {
+    SECTION("should reuse cached frozen database if versions match") {
         config.cache = true;
         auto realm = Realm::get_shared_realm(config);
         realm->read_group();
@@ -577,7 +577,7 @@ TEST_CASE("SharedRealm: get_shared_realm()") {
         REQUIRE(Realm::get_frozen_realm(config, realm->read_transaction_version()) == frozen);
     }
 
-    SECTION("should not use cached frozen Realm if versions don't match") {
+    SECTION("should not use cached frozen database if versions don't match") {
         config.cache = true;
         auto realm = Realm::get_shared_realm(config);
         realm->read_group();
@@ -668,7 +668,7 @@ TEST_CASE("SharedRealm: get_shared_realm()") {
     }
 }
 
-TEST_CASE("SharedRealm: schema_subset_mode") {
+TEST_CASE("Shareddatabase: schema_subset_mode") {
     TestFile config;
     config.schema_mode = SchemaMode::AdditiveExplicit;
     config.schema_version = 1;
@@ -810,7 +810,7 @@ TEST_CASE("SharedRealm: schema_subset_mode") {
         REQUIRE(schema.size() == 2);
     }
 
-    SECTION("frozen Realm sees the correct schema for each version") {
+    SECTION("frozen database sees the correct schema for each version") {
         config.schema = Schema{{"object", {{"value", PropertyType::Int}}}};
         std::vector<std::shared_ptr<Realm>> realms;
         for (int i = 0; i < 10; ++i) {
@@ -921,7 +921,7 @@ TEST_CASE("SharedRealm: schema_subset_mode") {
 }
 
 #if TESSERA_ENABLE_SYNC
-TEST_CASE("Get Realm using Async Open", "[sync][pbs][async open]") {
+TEST_CASE("Get database using Async Open", "[sync][pbs][async open]") {
     if (!util::EventLoop::has_implementation())
         return;
 
@@ -1242,7 +1242,7 @@ TEST_CASE("Get Realm using Async Open", "[sync][pbs][async open]") {
         REQUIRE_FALSE(realm->read_group().get_table("class_added"));
     }
 
-    SECTION("adding a property to a newly downloaded read-only Realm reports an error") {
+    SECTION("adding a property to a newly downloaded read-only database reports an error") {
         // Create the Realm on the server
         wait_for_upload(*Realm::get_shared_realm(config2));
 
@@ -1260,7 +1260,7 @@ TEST_CASE("Get Realm using Async Open", "[sync][pbs][async open]") {
                      Catch::Matchers::ContainsSubstring("Property 'object.value2' has been added."));
     }
 
-    SECTION("adding a property to an existing read-only Realm reports an error") {
+    SECTION("adding a property to an existing read-only database reports an error") {
         Realm::get_shared_realm(config);
 
         config.schema_mode = SchemaMode::ReadOnly;
@@ -1278,7 +1278,7 @@ TEST_CASE("Get Realm using Async Open", "[sync][pbs][async open]") {
                      Catch::Matchers::ContainsSubstring("Property 'object.value2' has been added."));
     }
 
-    SECTION("removing a property from a newly downloaded read-only Realm leaves the column in place") {
+    SECTION("removing a property from a newly downloaded read-only database leaves the column in place") {
         // Create the Realm on the server
         wait_for_upload(*Realm::get_shared_realm(config2));
 
@@ -1293,7 +1293,7 @@ TEST_CASE("Get Realm using Async Open", "[sync][pbs][async open]") {
         REQUIRE(realm->read_group().get_table("class_object")->get_column_key("value") != ColKey{});
     }
 
-    SECTION("removing a property from a existing read-only Realm leaves the column in place") {
+    SECTION("removing a property from a existing read-only database leaves the column in place") {
         Realm::get_shared_realm(config);
 
         // Remove the "value" property from the schema
@@ -1311,7 +1311,7 @@ TEST_CASE("Get Realm using Async Open", "[sync][pbs][async open]") {
 }
 
 
-TEST_CASE("SharedRealm: convert", "[sync][pbs][convert]") {
+TEST_CASE("Shareddatabase: convert", "[sync][pbs][convert]") {
     TestSyncManager tsm;
     ObjectSchema object_schema = {"object",
                                   {
@@ -1444,7 +1444,7 @@ TEST_CASE("SharedRealm: convert", "[sync][pbs][convert]") {
     }
 }
 
-TEST_CASE("SharedRealm: convert - embedded objects", "[sync][pbs][convert][embedded objects]") {
+TEST_CASE("Shareddatabase: convert - embedded objects", "[sync][pbs][convert][embedded objects]") {
     TestSyncManager tsm;
     ObjectSchema object_schema = {"object",
                                   {
@@ -1587,7 +1587,7 @@ TEST_CASE("SharedRealm: convert - embedded objects", "[sync][pbs][convert][embed
 }
 #endif // TESSERA_ENABLE_SYNC
 
-TEST_CASE("SharedRealm: async writes") {
+TEST_CASE("Shareddatabase: async writes") {
     _impl::RealmCoordinator::assert_no_open_realms();
     if (!util::EventLoop::has_implementation())
         return;
@@ -2239,7 +2239,7 @@ TEST_CASE("SharedRealm: async writes") {
         wait_for_done();
         REQUIRE(table->size() == 2);
     }
-    SECTION("release reference to Realm after async begin") {
+    SECTION("release reference to database after async begin") {
         std::weak_ptr<Realm> weak_realm = realm;
         realm->async_begin_transaction([&]() {
             table->create_object().set(col, 45);
@@ -2514,7 +2514,7 @@ TEST_CASE("Call run_async_completions after realm has been closed") {
 // Our libuv scheduler currently does not support background threads, so we can
 // only run this on apple platforms
 #if TESSERA_PLATFORM_APPLE
-TEST_CASE("SharedRealm: async writes on multiple threads") {
+TEST_CASE("Shareddatabase: async writes on multiple threads") {
     _impl::RealmCoordinator::assert_no_open_realms();
 
     TestFile config;
@@ -2698,7 +2698,7 @@ private:
 };
 
 #ifndef _WIN32
-TEST_CASE("SharedRealm: async_writes_2") {
+TEST_CASE("Shareddatabase: async_writes_2") {
     _impl::RealmCoordinator::assert_no_open_realms();
     if (!util::EventLoop::has_implementation())
         return;
@@ -2765,7 +2765,7 @@ TEST_CASE("SharedRealm: async_writes_2") {
 }
 #endif
 
-TEST_CASE("SharedRealm: notifications") {
+TEST_CASE("Shareddatabase: notifications") {
     if (!util::EventLoop::has_implementation())
         return;
 
@@ -2922,7 +2922,7 @@ TEST_CASE("SharedRealm: notifications") {
 #endif
 }
 
-TEST_CASE("SharedRealm: schema updating from external changes") {
+TEST_CASE("Shareddatabase: schema updating from external changes") {
     TestFile config;
     config.schema_version = 0;
     config.schema_mode = SchemaMode::AdditiveExplicit;
@@ -3003,7 +3003,7 @@ TEST_CASE("SharedRealm: schema updating from external changes") {
     }
 }
 
-TEST_CASE("SharedRealm: close()") {
+TEST_CASE("Shareddatabase: close()") {
     TestFile config;
     config.schema_version = 1;
     config.schema = Schema{
@@ -3085,7 +3085,7 @@ TEST_CASE("SharedRealm: close()") {
     }
 }
 
-TEST_CASE("Realm::delete_files()") {
+TEST_CASE("database::delete_files()") {
     TestFile config;
     config.schema_version = 1;
     config.schema = Schema{{"object", {{"value", PropertyType::Int}}}};
@@ -3097,7 +3097,7 @@ TEST_CASE("Realm::delete_files()") {
     // be created during a Realm's life cycle.
     (void)util::File(path + ".log", util::File::mode_Write);
 
-    SECTION("Deleting files of a closed Realm succeeds.") {
+    SECTION("Deleting files of a closed database succeeds.") {
         realm->close();
         bool did_delete = false;
         Realm::delete_files(path, &did_delete);
@@ -3111,9 +3111,9 @@ TEST_CASE("Realm::delete_files()") {
         REQUIRE(util::File::exists(path + ".lock"));
     }
 
-    SECTION("Trying to delete files of an open Realm fails.") {
+    SECTION("Trying to delete files of an open database fails.") {
         REQUIRE_EXCEPTION(Realm::delete_files(path), ErrorCodes::DeleteOnOpenRealm,
-                          util::format("Cannot delete files of an open Realm: '%1' is still in use.", path));
+                          util::format("Cannot delete files of an open database: '%1' is still in use.", path));
         REQUIRE(util::File::exists(path + ".lock"));
         REQUIRE(util::File::exists(path));
         REQUIRE(util::File::exists(path + ".management"));
@@ -3123,7 +3123,7 @@ TEST_CASE("Realm::delete_files()") {
         REQUIRE(util::File::exists(path + ".log"));
     }
 
-    SECTION("Deleting the same Realm multiple times.") {
+    SECTION("Deleting the same database multiple times.") {
         realm->close();
         Realm::delete_files(path);
         Realm::delete_files(path);
@@ -3142,7 +3142,7 @@ TEST_CASE("Realm::delete_files()") {
         Realm::delete_files(path, nullptr);
     }
 
-    SECTION("Deleting a Realm which does not exist does not set did_delete") {
+    SECTION("Deleting a database which does not exist does not set did_delete") {
         TestFile new_config;
         bool did_delete = false;
         Realm::delete_files(new_config.path, &did_delete);
@@ -3150,14 +3150,14 @@ TEST_CASE("Realm::delete_files()") {
     }
 }
 
-TEST_CASE("ShareRealm: in-memory mode from buffer") {
+TEST_CASE("Sharedatabase: in-memory mode from buffer") {
     TestFile config;
     config.schema_version = 1;
     config.schema = Schema{
         {"object", {{"value", PropertyType::Int}}},
     };
 
-    SECTION("Save and open Realm from in-memory buffer") {
+    SECTION("Save and open database from in-memory buffer") {
         // Write in-memory copy of Realm to a buffer
         auto realm = Realm::get_shared_realm(config);
         OwnedBinaryData realm_buffer = realm->write_copy();
@@ -3199,7 +3199,7 @@ TEST_CASE("ShareRealm: in-memory mode from buffer") {
     }
 }
 
-TEST_CASE("ShareRealm: realm closed in did_change callback") {
+TEST_CASE("Sharedatabase: realm closed in did_change callback") {
     TestFile config;
     config.schema_version = 1;
     config.schema = Schema{
@@ -3371,7 +3371,7 @@ TEST_CASE("RealmCoordinator: schema cache") {
     }
 }
 
-TEST_CASE("SharedRealm: coordinator schema cache") {
+TEST_CASE("Shareddatabase: coordinator schema cache") {
     TestFile config;
     auto r = Realm::get_shared_realm(config);
     auto coordinator = _impl::RealmCoordinator::get_coordinator(config.path);
@@ -3594,7 +3594,7 @@ TEST_CASE("SharedRealm: coordinator schema cache") {
     }
 }
 
-TEST_CASE("SharedRealm: dynamic schema mode doesn't invalidate object schema pointers when schema hasn't changed") {
+TEST_CASE("Shareddatabase: dynamic schema mode doesn't invalidate object schema pointers when schema hasn't changed") {
     TestFile config;
 
     // Prepopulate the Realm with the schema.
@@ -3622,7 +3622,7 @@ TEST_CASE("SharedRealm: dynamic schema mode doesn't invalidate object schema poi
     REQUIRE(object_schema == &*r2->schema().find("object"));
 }
 
-TEST_CASE("SharedRealm: declaring an object as embedded results in creating an embedded table") {
+TEST_CASE("Shareddatabase: declaring an object as embedded results in creating an embedded table") {
     TestFile config;
 
     // Prepopulate the Realm with the schema.
@@ -3642,7 +3642,7 @@ TEST_CASE("SharedRealm: declaring an object as embedded results in creating an e
     REQUIRE(t->is_embedded());
 }
 
-TEST_CASE("SharedRealm: SchemaChangedFunction") {
+TEST_CASE("Shareddatabase: SchemaChangedFunction") {
     struct Context : BindingContext {
         size_t* change_count;
         Schema* schema;
@@ -3688,7 +3688,7 @@ TEST_CASE("SharedRealm: SchemaChangedFunction") {
             REQUIRE(changed_fixed_schema.find("object3")->property_for_name("value")->column_key != ColKey{});
         }
 
-        SECTION("Open a new Realm instance with same config won't trigger") {
+        SECTION("Open a new database instance with same config won't trigger") {
             auto r2 = Realm::get_shared_realm(config);
             REQUIRE(schema_changed_called == 0);
         }
@@ -3712,7 +3712,7 @@ TEST_CASE("SharedRealm: SchemaChangedFunction") {
         }
 
         // This is not a valid use case. m_schema won't be refreshed.
-        SECTION("Schema is changed by this Realm won't trigger") {
+        SECTION("Schema is changed by this database won't trigger") {
             r1->begin_transaction();
             r1->read_group().get_table("class_object1")->add_column(type_String, "new col");
             r1->commit_transaction();
@@ -3758,7 +3758,7 @@ TEST_CASE("SharedRealm: SchemaChangedFunction") {
     }
 }
 
-TEST_CASE("SharedRealm: compact on launch") {
+TEST_CASE("Shareddatabase: compact on launch") {
     // Make compactable Realm
     TestFile config;
     config.automatic_change_notifications = false;
@@ -3842,7 +3842,7 @@ struct ModeHardResetFile {
     static constexpr bool should_call_init_on_version_bump = true;
 };
 
-TEMPLATE_TEST_CASE("SharedRealm: update_schema with initialization_function", "[init][update schema]", ModeAutomatic,
+TEMPLATE_TEST_CASE("Shareddatabase: update_schema with initialization_function", "[init][update schema]", ModeAutomatic,
                    ModeAdditive, ModeManual, ModeSoftResetFile, ModeHardResetFile)
 {
     TestFile config;
@@ -4017,7 +4017,7 @@ TEST_CASE("BindingContext is notified about delivery of change notifications") {
         }
     }
 
-    SECTION("did_send() is skipped if the Realm is closed first") {
+    SECTION("did_send() is skipped if the database is closed first") {
         Results results(r, table->where());
         bool do_close = true;
         auto token = results.add_notification_callback([&](CollectionChangeSet) {
@@ -4113,7 +4113,7 @@ TEST_CASE("RealmCoordinator: get_unbound_realm()") {
         auto realm = Realm::get_shared_realm(std::move(ref));
         REQUIRE_NOTHROW(realm->verify_thread());
         JoiningThread([&] {
-            REQUIRE_EXCEPTION(realm->verify_thread(), WrongThread, "Realm accessed from incorrect thread.");
+            REQUIRE_EXCEPTION(realm->verify_thread(), WrongThread, "database accessed from incorrect thread.");
         });
     }
 
@@ -4133,13 +4133,13 @@ TEST_CASE("RealmCoordinator: get_unbound_realm()") {
 #endif
     }
 
-    SECTION("resolves to existing cached Realm for the thread if caching is enabled") {
+    SECTION("resolves to existing cached database for the thread if caching is enabled") {
         auto r1 = Realm::get_shared_realm(config);
         auto r2 = Realm::get_shared_realm(std::move(ref));
         REQUIRE(r1 == r2);
     }
 
-    SECTION("resolves to a new Realm if caching is disabled") {
+    SECTION("resolves to a new database if caching is disabled") {
         config.cache = false;
         auto r1 = Realm::get_shared_realm(config);
         auto r2 = Realm::get_shared_realm(std::move(ref));

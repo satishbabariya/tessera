@@ -61,7 +61,7 @@
 */
 
 static std::vector<std::pair<std::string_view, tessera::util::Logger::Level>> default_log_levels = {
-    {"Realm", tessera::util::Logger::Level::TEST_LOGGING_LEVEL},
+    {"Tessera", tessera::util::Logger::Level::TEST_LOGGING_LEVEL},
 #ifdef TEST_LOGGING_LEVEL_STORAGE
     {"Tessera.Storage", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_STORAGE},
 #endif

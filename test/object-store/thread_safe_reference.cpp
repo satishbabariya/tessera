@@ -1070,10 +1070,10 @@ TEST_CASE("thread safe reference") {
                 return create_object(r, "int object", {{"value", INT64_C(7)}});
             });
 
-            SECTION("target Realm already in a read transaction") {
+            SECTION("target database already in a read transaction") {
                 r->read_group();
             }
-            SECTION("target Realm not in a read transaction") {
+            SECTION("target database not in a read transaction") {
             }
 
             REQUIRE(ref.resolve<Object>(r).get_obj().get<Int>("value") == 7);
@@ -1087,10 +1087,10 @@ TEST_CASE("thread safe reference") {
                 return List(r, obj.get_obj(), col);
             });
 
-            SECTION("target Realm already in a read transaction") {
+            SECTION("target database already in a read transaction") {
                 r->read_group();
             }
-            SECTION("target Realm not in a read transaction") {
+            SECTION("target database not in a read transaction") {
             }
 
             REQUIRE(ref.resolve<List>(r).size() == 1);
@@ -1103,10 +1103,10 @@ TEST_CASE("thread safe reference") {
                 return List(r, obj.get_obj(), col);
             });
 
-            SECTION("target Realm already in a read transaction") {
+            SECTION("target database already in a read transaction") {
                 r->read_group();
             }
-            SECTION("target Realm not in a read transaction") {
+            SECTION("target database not in a read transaction") {
             }
 
             REQUIRE(ref.resolve<List>(r).size() == 1);

@@ -1328,7 +1328,7 @@ TEST_CASE("migration: Automatic", "[migration]") {
                 REQUIRE_EXCEPTION(obj.set_property_value(ctx, "bool", std::any(false)), WrongTransactionState,
                                   "Cannot modify managed objects outside of a write transaction.");
                 REQUIRE_EXCEPTION(old_realm->begin_transaction(), WrongTransactionState,
-                                  "Can't perform transactions on read-only Realms.");
+                                  "Can't perform transactions on read-only databases.");
             });
         }
 
@@ -1700,7 +1700,7 @@ TEST_CASE("migration: Automatic", "[migration]") {
 
         SECTION("table does not exist in new schema") {
             FAILED_RENAME(schema, {},
-                          "Cannot rename properties for type 'object' because it has been removed from the Realm.",
+                          "Cannot rename properties for type 'object' because it has been removed from the database.",
                           {"object", "value", "value 2"});
         }
 
@@ -2412,7 +2412,7 @@ TEST_CASE("migration: Additive", "[migration]") {
         REQUIRE(realm->schema().find("object")->persisted_properties[1].column_key == k1);
     }
 
-    SECTION("obtaining a frozen Realm from before an external schema change") {
+    SECTION("obtaining a frozen database from before an external schema change") {
         auto realm2 = Realm::get_shared_realm(config);
         realm->read_group();
         realm2->read_group();
@@ -2451,7 +2451,7 @@ TEST_CASE("migration: Additive", "[migration]") {
         REQUIRE(frozen->schema().find("object")->persisted_properties[1].column_key == col_keys[1]);
     }
 
-    SECTION("can have different subsets of columns in different Realm instances") {
+    SECTION("can have different subsets of columns in different database instances") {
         Realm::Config config2 = config;
         config2.schema = add_property(schema, "object", {"value 3", PropertyType::Int});
         Realm::Config config3 = config;
