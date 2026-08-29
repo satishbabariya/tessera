@@ -28,6 +28,8 @@ set(CMAKE_CXX_STANDARD 20)
 find_package(Tessera REQUIRED)
 add_executable(consumer main.cpp)
 target_link_libraries(consumer PRIVATE Tessera::Storage)
+add_executable(readme_example readme_example.cpp)
+target_link_libraries(readme_example PRIVATE Tessera::Storage)
 CM
 
 cat > "$WORK/main.cpp" <<'CPP'
@@ -53,6 +55,7 @@ int main(int, char** argv)
 }
 CPP
 
+cp "$(dirname "$0")/readme-example.cpp" "$WORK/readme_example.cpp"
 cmake -S "$WORK" -B "$WORK/build" -DCMAKE_PREFIX_PATH="$PREFIX" > /dev/null
 cmake --build "$WORK/build" -j4 > /dev/null
 
@@ -64,10 +67,11 @@ OUT=$("$WORK/build/consumer" "$DBFILE")
 MAGIC=$(dd if="$DBFILE" bs=1 skip=16 count=4 2>/dev/null)
 [ "$MAGIC" = "TESS" ] || { echo "FAIL: file magic is '$MAGIC', expected 'TESS'"; exit 1; }
 
-# The README's example is a claim about the API. Compile and run it verbatim.
-cp "$(dirname "$0")/readme-example.cpp" "$WORK/main.cpp"
-cmake --build "$WORK/build" -j4 > /dev/null
-README_OUT=$("$WORK/build/consumer" "$WORK/readme.tess" 2>&1 || true)
+# The README's example is a claim about the API. Compile and run it verbatim,
+# as its own target -- overwriting main.cpp and rebuilding is unreliable, because
+# two writes in the same second defeat CMake's timestamp check and silently rerun
+# the previous binary.
+README_OUT=$("$WORK/build/readme_example" "$WORK/readme.tess" 2>&1 || true)
 case "$README_OUT" in
   *"found 1"*) ;;
   *) echo "FAIL: the README example no longer works: $README_OUT"; exit 1 ;;
