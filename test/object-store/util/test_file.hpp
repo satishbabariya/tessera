@@ -25,9 +25,7 @@
 
 #if REALM_ENABLE_SYNC
 #include "test_utils.hpp"
-#include "unit_test_transport.hpp"
 
-#include <realm/object-store/sync/app.hpp>
 #include <realm/object-store/sync/sync_manager.hpp>
 #include <realm/sync/client.hpp>
 #include <realm/sync/config.hpp>
@@ -41,7 +39,6 @@
 #endif
 
 namespace realm {
-struct AppSession;
 class Schema;
 enum class SyncSessionStopPolicy;
 struct DBOptions;
@@ -218,7 +215,6 @@ struct TestUser : realm::SyncUser {
     }
 };
 
-class OfflineAppSession;
 struct SyncTestFile : TestFile {
     template <typename ErrorHandler>
     SyncTestFile(const realm::SyncConfig& sync_config, realm::SyncSessionStopPolicy stop_policy,
@@ -231,9 +227,6 @@ struct SyncTestFile : TestFile {
     }
 
     SyncTestFile(TestSyncManager&, std::string name = "", std::string user_name = "test");
-#if REALM_APP_SERVICES
-    SyncTestFile(OfflineAppSession&, std::string name = "");
-#endif
     SyncTestFile(std::shared_ptr<realm::SyncUser> user, realm::bson::Bson partition,
                  realm::util::Optional<realm::Schema> schema = realm::util::none);
     SyncTestFile(std::shared_ptr<realm::SyncUser> user, realm::bson::Bson partition,
@@ -277,117 +270,6 @@ private:
     const bool m_should_teardown_test_directory = true;
 };
 
-#if REALM_APP_SERVICES
-class OfflineAppSession {
-public:
-    struct Config {
-        Config(std::shared_ptr<realm::app::GenericNetworkTransport> = std::make_shared<UnitTestTransport>());
-        std::shared_ptr<realm::app::GenericNetworkTransport> transport;
-        bool delete_storage = true;
-        std::optional<std::string> storage_path;
-        realm::app::AppConfig::MetadataMode metadata_mode = realm::app::AppConfig::MetadataMode::InMemory;
-        std::optional<std::string> base_url;
-        std::shared_ptr<realm::sync::SyncSocketProvider> socket_provider;
-        std::optional<std::string> app_id;
-    };
-    OfflineAppSession(Config = {});
-    ~OfflineAppSession();
-
-    std::shared_ptr<realm::app::App> app() const noexcept
-    {
-        return m_app;
-    }
-    std::shared_ptr<realm::app::User> make_user() const;
-    realm::app::GenericNetworkTransport* transport()
-    {
-        return m_transport.get();
-    }
-    std::string base_file_path() const
-    {
-        return m_base_file_path;
-    }
-    const std::shared_ptr<realm::SyncManager>& sync_manager()
-    {
-        return m_app->sync_manager();
-    }
-
-private:
-    realm::app::AppConfig m_app_config;
-    std::shared_ptr<realm::app::App> m_app;
-    std::string m_base_file_path;
-    std::shared_ptr<realm::app::GenericNetworkTransport> m_transport;
-    bool m_delete_storage = true;
-};
-
-#if REALM_ENABLE_AUTH_TESTS
-using DeleteApp = realm::util::TaggedBool<struct DeleteAppTag>;
-class TestAppSession {
-public:
-    struct Config {
-        std::shared_ptr<realm::app::GenericNetworkTransport> transport;
-        realm::ReconnectMode reconnect_mode = realm::ReconnectMode::normal;
-        std::shared_ptr<realm::sync::SyncSocketProvider> socket_provider;
-        realm::app::AppConfig::MetadataMode metadata_mode = realm::app::AppConfig::MetadataMode::NoEncryption;
-        std::optional<std::string> base_url;
-        std::optional<std::string> storage_path;
-        // If user_creds are supplied, caller must explicitly call log_in_user() after TestAppSession creation
-        std::optional<realm::app::AppCredentials> user_creds;
-        std::shared_ptr<realm::util::Logger> logger = nullptr;
-    };
-
-    TestAppSession();
-    TestAppSession(realm::AppSession);
-    TestAppSession(realm::AppSession, Config, DeleteApp = true, bool delete_storage = true);
-
-    ~TestAppSession();
-
-    const Config& config() const noexcept
-    {
-        return m_config;
-    }
-    std::shared_ptr<realm::app::App> app() const noexcept
-    {
-        return m_app;
-    }
-    const realm::AppSession& app_session() const noexcept
-    {
-        return *m_app_session;
-    }
-    realm::app::GenericNetworkTransport* transport()
-    {
-        return m_config.transport.get();
-    }
-    const std::shared_ptr<realm::SyncManager>& sync_manager() const
-    {
-        REALM_ASSERT(m_app);
-        return m_app->sync_manager();
-    }
-
-    std::shared_ptr<realm::app::User> current_user() const
-    {
-        REALM_ASSERT(m_app);
-        return m_app->current_user();
-    }
-    realm::StatusWith<realm::app::AppCredentials> create_user_and_log_in();
-    // The user_creds from the Config structure will be used if not provided
-    realm::StatusWith<std::shared_ptr<realm::SyncUser>>
-    log_in_user(std::optional<realm::app::AppCredentials> user_creds = std::nullopt);
-
-    std::vector<realm::bson::BsonDocument> get_documents(realm::app::User& user, const std::string& object_type,
-                                                         size_t expected_count) const;
-
-private:
-    std::unique_ptr<realm::AppSession> m_app_session;
-    Config m_config;
-    bool m_delete_app;
-    bool m_delete_storage;
-    std::shared_ptr<realm::app::App> m_app;
-};
-#endif // REALM_ENABLE_AUTH_TESTS
-
-void set_app_config_defaults(realm::app::AppConfig& app_config,
-                             const std::shared_ptr<realm::app::GenericNetworkTransport>& transport);
-#endif // REALM_APP_SERVICES
 
 bool wait_for_upload(realm::Realm& realm, std::chrono::seconds timeout = std::chrono::seconds(60));
 bool wait_for_download(realm::Realm& realm, std::chrono::seconds timeout = std::chrono::seconds(60));

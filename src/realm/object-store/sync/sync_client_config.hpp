@@ -16,8 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_OS_SYNC_APP_CONFIG_HPP
-#define REALM_OS_SYNC_APP_CONFIG_HPP
+// Tessera: extracted from the former app_config.hpp. That header was named and
+// build-guarded as App Services, but two of its three types -- SyncClientTimeouts
+// and SyncClientConfig -- are core sync configuration used by SyncManager and
+// SyncSession. Only AppConfig was genuinely App Services, and it was deleted with
+// the rest of that layer. See docs/findings/0a-app-services.md.
+#ifndef REALM_OS_SYNC_CLIENT_CONFIG_HPP
+#define REALM_OS_SYNC_CLIENT_CONFIG_HPP
 
 #include <realm/object-store/sync/generic_network_transport.hpp>
 #include <realm/sync/binding_callback_thread_observer.hpp>
@@ -70,44 +75,6 @@ struct SyncClientConfig {
     SyncClientTimeouts timeouts;
 };
 
-namespace app {
-struct AppConfig {
-    // Information about the device where the app is running
-    struct DeviceInfo {
-        std::string platform_version;  // json: platformVersion
-        std::string sdk_version;       // json: sdkVersion
-        std::string sdk;               // json: sdk
-        std::string device_name;       // json: deviceName
-        std::string device_version;    // json: deviceVersion
-        std::string framework_name;    // json: frameworkName
-        std::string framework_version; // json: frameworkVersion
-        std::string bundle_id;         // json: bundleId
-    };
-
-    std::string app_id;
-    std::shared_ptr<GenericNetworkTransport> transport;
-    std::optional<std::string> base_url;
-    std::optional<uint64_t> default_request_timeout_ms;
-    DeviceInfo device_info;
-
-    std::string base_file_path;
-    SyncClientConfig sync_client_config;
-
-    enum class MetadataMode {
-        NoEncryption, // Enable metadata, but disable encryption.
-        Encryption,   // Enable metadata, and use encryption (automatic if possible).
-        InMemory,     // Do not persist metadata
-    };
-    MetadataMode metadata_mode = MetadataMode::Encryption;
-    std::optional<std::vector<char>> custom_encryption_key;
-    // If non-empty, mode is Encryption, and no key is explicitly set, the
-    // automatically generated key is stored in the keychain using this access
-    // group. Must be set when the metadata Realm is stored in an access group
-    // and shared between apps. Not applicable on non-Apple platforms.
-    std::string security_access_group;
-};
-
-} // namespace app
 } // namespace realm
 
-#endif // REALM_OS_SYNC_APP_CONFIG_HPP
+#endif // REALM_OS_SYNC_CLIENT_CONFIG_HPP

@@ -428,57 +428,6 @@ TEST_CASE("sync: error handling", "[sync][session]") {
         REQUIRE_FALSE(error);
     }
 
-#if REALM_APP_SERVICES
-    using ProtocolError = realm::sync::ProtocolError;
-    SECTION("Properly handles a client reset error") {
-        OfflineAppSession oas;
-        auto user = oas.make_user();
-
-        auto session = sync_session(user, "/test", store_sync_error);
-        std::string on_disk_path = session->path();
-        EventLoop::main().run_until([&] {
-            return sessions_are_active(*session);
-        });
-
-        auto code = GENERATE(ProtocolError::bad_client_file_ident, ProtocolError::bad_server_version,
-                             ProtocolError::diverging_histories);
-
-        sync::SessionErrorInfo initial_error{sync::protocol_error_to_status(code, "Something bad happened"), true};
-        initial_error.server_requests_action = ProtocolErrorInfo::Action::ClientReset;
-        std::time_t just_before_raw = std::time(nullptr);
-        SyncSession::OnlyForTesting::handle_error(*session, std::move(initial_error));
-        REQUIRE(session->state() == SyncSession::State::Inactive);
-        std::time_t just_after_raw = std::time(nullptr);
-        auto just_before = util::localtime(just_before_raw);
-        auto just_after = util::localtime(just_after_raw);
-        // At this point error should be populated.
-        REQUIRE(error);
-        CHECK(error->is_client_reset_requested());
-        CHECK(error->server_requests_action == ProtocolErrorInfo::Action::ClientReset);
-        // The original file path should be present.
-        CHECK(error->user_info[SyncError::c_original_file_path_key] == on_disk_path);
-        // The path to the recovery file should be present, and should contain all necessary components.
-        std::string recovery_path = error->user_info[SyncError::c_recovery_file_path_key];
-        auto idx = recovery_path.find("recovered_realm");
-        CHECK(idx != std::string::npos);
-        idx = recovery_path.find(oas.app()->config().base_file_path);
-        CHECK(idx != std::string::npos);
-        idx = recovery_path.find(oas.app()->app_id());
-        CHECK(idx != std::string::npos);
-        if (just_before.tm_year == just_after.tm_year) {
-            idx = recovery_path.find(util::format_local_time(just_after_raw, "%Y"));
-            CHECK(idx != std::string::npos);
-        }
-        if (just_before.tm_mon == just_after.tm_mon) {
-            idx = recovery_path.find(util::format_local_time(just_after_raw, "%m"));
-            CHECK(idx != std::string::npos);
-        }
-        if (just_before.tm_yday == just_after.tm_yday) {
-            idx = recovery_path.find(util::format_local_time(just_after_raw, "%d"));
-            CHECK(idx != std::string::npos);
-        }
-    }
-#endif // REALM_APP_SERVICES
 }
 
 TEST_CASE("sync: stop policy behavior", "[sync][session]") {

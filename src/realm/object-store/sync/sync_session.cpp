@@ -20,10 +20,9 @@
 
 #include <realm/object-store/thread_safe_reference.hpp>
 #include <realm/object-store/impl/realm_coordinator.hpp>
-#include <realm/object-store/sync/app.hpp>
+#include <realm/object-store/sync/generic_network_transport.hpp>
 #include <realm/object-store/sync/impl/sync_client.hpp>
 #include <realm/object-store/sync/impl/sync_file.hpp>
-#include <realm/object-store/sync/impl/app_metadata.hpp>
 #include <realm/object-store/sync/sync_manager.hpp>
 #include <realm/object-store/sync/sync_user.hpp>
 #include <realm/object-store/util/scheduler.hpp>

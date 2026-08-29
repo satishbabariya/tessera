@@ -35,9 +35,6 @@
 
 #include <realm/util/any.hpp>
 
-#if REALM_ENABLE_AUTH_TESTS
-#include <util/sync/flx_sync_harness.hpp>
-#endif // REALM_ENABLE_AUTH_TESTS
 
 #include <catch2/catch_all.hpp>
 

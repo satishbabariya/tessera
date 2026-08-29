@@ -92,6 +92,7 @@ if(REALM_ENABLE_SYNC)
         sync/async_open_task.hpp
         sync/generic_network_transport.hpp
         sync/jwt.hpp
+        sync/sync_client_config.hpp
         sync/sync_manager.hpp
         sync/sync_session.hpp
         sync/sync_user.hpp
@@ -108,34 +109,6 @@ if(REALM_ENABLE_SYNC)
         sync/sync_manager.cpp
         sync/sync_session.cpp)
 
-    if (REALM_APP_SERVICES)
-        list(APPEND HEADERS
-            sync/app.hpp
-            sync/app_config.hpp
-            sync/app_credentials.hpp
-            sync/app_service_client.hpp
-            sync/app_user.hpp
-            sync/app_utils.hpp
-            sync/auth_request_client.hpp
-            sync/impl/app_metadata.hpp
-            sync/mongo_client.hpp
-            sync/mongo_collection.hpp
-            sync/mongo_database.hpp
-            sync/push_client.hpp
-            sync/subscribable.hpp
-        )
-        list(APPEND SOURCES
-            sync/app.cpp
-            sync/app_credentials.cpp
-            sync/app_user.cpp
-            sync/app_utils.cpp
-            sync/impl/app_metadata.cpp
-            sync/mongo_client.cpp
-            sync/mongo_collection.cpp
-            sync/mongo_database.cpp
-            sync/push_client.cpp
-        )
-    endif()
 
     if(APPLE)
         list(APPEND HEADERS
@@ -143,7 +116,6 @@ if(REALM_ENABLE_SYNC)
             sync/impl/apple/system_configuration.hpp)
 
         list(APPEND SOURCES
-            audit.mm
             sync/impl/apple/network_reachability_observer.cpp
             sync/impl/apple/system_configuration.cpp)
     elseif(EMSCRIPTEN)
@@ -202,9 +174,6 @@ if(REALM_ENABLE_SYNC)
     endif()
 endif()
 
-if (REALM_APP_SERVICES)
-    target_compile_definitions(ObjectStore PUBLIC REALM_APP_SERVICES=1)
-endif()
 
 set_target_properties(ObjectStore PROPERTIES OUTPUT_NAME "realm-object-store")
 

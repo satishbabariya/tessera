@@ -22,10 +22,8 @@
 #include "util/test_file.hpp"
 #include "util/test_utils.hpp"
 
-#include <realm/object-store/sync/app.hpp>
 #include <realm/object-store/sync/generic_network_transport.hpp>
 #include <realm/object-store/sync/impl/sync_file.hpp>
-#include <realm/object-store/sync/impl/app_metadata.hpp>
 #include <realm/object-store/sync/sync_session.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
 #include <realm/sync/network/http.hpp>
@@ -40,12 +38,6 @@
 
 #include <chrono>
 #include <vector>
-
-// disable the tests that rely on having baas available on the network
-// but allow opt-in by building with REALM_ENABLE_AUTH_TESTS=1
-#ifndef REALM_ENABLE_AUTH_TESTS
-#define REALM_ENABLE_AUTH_TESTS 0
-#endif
 
 #if REALM_ENABLE_SYNC
 #define REALM_REGISTER_SYNC_CLIENT_HOOK_EVENT(X) realm::SyncClientHookEvent::X
@@ -149,26 +141,7 @@ std::ostream& operator<<(std::ostream& os, util::Optional<app::AppError> error);
 sync::SubscriptionSet subscribe_to_all(Realm& realm);
 void subscribe_to_all_and_bootstrap(Realm& realm);
 
-#if REALM_APP_SERVICES
-struct AutoVerifiedEmailCredentials : app::AppCredentials {
-    AutoVerifiedEmailCredentials();
-    std::string email;
-    std::string password;
-};
 
-AutoVerifiedEmailCredentials create_user_and_log_in(app::SharedApp app);
-// Log in the user again using the AutoVerifiedEmailCredentials returned
-// when calling create_user_and_log_in()
-void log_in_user(app::SharedApp app, app::AppCredentials creds);
-
-#endif // REALM_APP_SERVICES
-
-#if REALM_ENABLE_AUTH_TESTS
-void wait_for_sessions_to_close(const TestAppSession& test_app_session);
-
-std::string get_compile_time_base_url();
-std::string get_compile_time_admin_url();
-#endif // REALM_ENABLE_AUTH_TESTS
 
 void wait_for_advance(Realm& realm);
 
@@ -350,28 +323,6 @@ protected:
 
 #if REALM_ENABLE_SYNC
 
-#if REALM_ENABLE_AUTH_TESTS
-std::unique_ptr<TestClientReset> make_baas_client_reset(const Realm::Config& local_config,
-                                                        const Realm::Config& remote_config,
-                                                        TestAppSession& test_app_session);
-
-std::unique_ptr<TestClientReset> make_baas_flx_client_reset(const Realm::Config& local_config,
-                                                            const Realm::Config& remote_config,
-                                                            const TestAppSession& test_app_session);
-
-void wait_for_object_to_persist_to_atlas(std::shared_ptr<app::User> user, const AppSession& app_session,
-                                         const std::string& schema_name, const bson::BsonDocument& filter_bson);
-
-void wait_for_num_objects_in_atlas(std::shared_ptr<app::User> user, const AppSession& app_session,
-                                   const std::string& schema_name, size_t expected_size);
-
-std::pair<util::Future<ClientResyncMode>, std::function<void(SharedRealm, ThreadSafeReference, bool)>>
-make_client_reset_handler();
-
-void trigger_client_reset(const AppSession& app_session, const SyncSession& sync_session);
-void trigger_client_reset(const AppSession& app_session, const SharedRealm& realm);
-
-#endif // REALM_ENABLE_AUTH_TESTS
 
 #endif // REALM_ENABLE_SYNC
 

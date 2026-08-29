@@ -144,10 +144,7 @@ TEST_CASE("sync_file: SyncFileManager APIs", "[sync][file]") {
     const auto manager_base_path = fs::path{test_dir.c_str()}.make_preferred() / "file-manager";
     util::try_make_dir(manager_base_path.string());
     const auto manager_path = manager_base_path / "mongodb-realm" / expected_clean_app_id / "";
-    app::AppConfig config;
-    config.app_id = app_id;
-    config.base_file_path = manager_base_path.string();
-    auto manager = SyncFileManager(config);
+    auto manager = SyncFileManager(manager_base_path.string(), app_id);
     REQUIRE(manager.app_path() == manager_path);
 
     SECTION("Realm path APIs") {

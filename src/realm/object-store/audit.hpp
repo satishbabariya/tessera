@@ -121,12 +121,18 @@ void set_maximum_shard_size(int64_t max_size);
 void set_clock(util::UniqueFunction<Timestamp()>&&);
 } // namespace audit_test_hooks
 
-#if !REALM_PLATFORM_APPLE
+// Tessera: the only implementation of make_audit_context was audit.mm, an
+// Apple-only path that reported events through Atlas App Services and MongoDB
+// collections. That implementation was deleted with the rest of App Services,
+// so the stub below -- which already covered every non-Apple platform -- now
+// applies everywhere. AuditInterface is retained as an extension point: the
+// hooks in Realm, Results, Object, and Collection are inert while
+// RealmConfig::audit_config is unset, which is the default.
+// See docs/findings/0a-app-services.md.
 inline std::shared_ptr<AuditInterface> make_audit_context(std::shared_ptr<DB>, RealmConfig const&)
 {
-    REALM_TERMINATE("Audit not supported on this platform");
+    REALM_TERMINATE("Audit is not implemented in this build");
 }
-#endif
 
 } // namespace realm
 

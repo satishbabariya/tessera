@@ -21,7 +21,6 @@
 #include <realm/object-store/sync/sync_user.hpp>
 
 #include <realm/db.hpp>
-#include <realm/object-store/sync/app_config.hpp>
 #include <realm/sync/config.hpp>
 #include <realm/util/file.hpp>
 #include <realm/util/hex_dump.hpp>
@@ -241,10 +240,10 @@ static std::string validate_and_clean_path(const std::string& path)
 
 } // namespace util
 
-SyncFileManager::SyncFileManager(const app::AppConfig& config)
-    : m_base_path(util::file_path_by_appending_component(config.base_file_path, c_sync_directory,
+SyncFileManager::SyncFileManager(const std::string& base_file_path, const std::string& app_id)
+    : m_base_path(util::file_path_by_appending_component(base_file_path, c_sync_directory,
                                                          util::FilePathType::Directory))
-    , m_app_path(util::file_path_by_appending_component(m_base_path, util::validate_and_clean_path(config.app_id),
+    , m_app_path(util::file_path_by_appending_component(m_base_path, util::validate_and_clean_path(app_id),
                                                         util::FilePathType::Directory))
 {
     util::try_make_dir(m_base_path);

@@ -62,7 +62,9 @@ std::string reserve_unique_file_name(const std::string& path, const std::string&
 // This class manages how Synced Realms are stored on the filesystem.
 class SyncFileManager {
 public:
-    SyncFileManager(const app::AppConfig&);
+    // Tessera: was SyncFileManager(const app::AppConfig&). Only base_file_path
+    // and app_id were ever read, so the App Services config type is not needed.
+    SyncFileManager(const std::string& base_file_path, const std::string& app_id);
 
     /// Remove the Realms at the specified absolute paths along with any associated helper files.
     void remove_user_realms(const std::string& user_id) const; // throws

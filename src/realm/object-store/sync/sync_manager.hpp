@@ -19,7 +19,7 @@
 #ifndef REALM_OS_SYNC_MANAGER_HPP
 #define REALM_OS_SYNC_MANAGER_HPP
 
-#include <realm/object-store/sync/app_config.hpp>
+#include <realm/object-store/sync/sync_client_config.hpp>
 #include <realm/object-store/sync/sync_user.hpp>
 #include <realm/util/checked_mutex.hpp>
 
