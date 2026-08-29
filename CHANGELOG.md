@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Added
+
+* `test/test_file_format.cpp`. README.md and ARCHITECTURE.md both state that
+  Tessera rejects any file whose format is not its own, which is the fork's
+  central promise, and nothing tested it. Five tests write a real database, patch
+  its 24-byte header on disk and reopen: a `T-DB` mnemonic is refused, so is any
+  other, format versions 2, 10, 24 and 255 are refused, and the error names the
+  version it rejected. Each was confirmed to fail against a deliberately broken
+  engine.
+
 ### Fixed
 
 * The library called itself `realm-core`. `TESSERA_PRODUCT_NAME` still held the

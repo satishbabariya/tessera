@@ -57,6 +57,7 @@ set(CORE_TEST_SOURCES
     test_destroy_guard.cpp
     test_dictionary.cpp
     test_file.cpp
+    test_file_format.cpp
     test_file_locks.cpp
     test_global_key.cpp
     test_group.cpp
