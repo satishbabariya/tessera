@@ -35,8 +35,13 @@ Requires CMake 3.25+, a C++20 compiler (GCC 13+ or Clang 18+), OpenSSL and zlib
 from your system package manager.
 
 Continuous integration builds and tests on **macOS (Apple clang, arm64)** and
-**Linux x86-64 (gcc-13 and clang-18)**, in Debug and Release. Windows, Linux on
-ARM, iOS, Android and WASM are expected to work but are not verified.
+**Linux x86-64 (gcc-13 and clang-18)**, in Debug and Release. A nightly job
+compiles for iOS, Android and WASM, and builds on Windows.
+
+Two caveats worth stating rather than implying: the nightly jobs compile but do
+not run tests, and the **Android build has sync and encryption disabled**,
+because both need OpenSSL and the NDK ships none. Sync and encryption on Android
+are unverified.
 
 ```sh
 git clone --recursive https://github.com/satishbabariya/tessera

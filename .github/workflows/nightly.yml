@@ -60,14 +60,18 @@ jobs:
               emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release -DTESSERA_NO_TESTS=ON
               ;;
             android)
-              # Sync is off here. TESSERA_NEEDS_OPENSSL includes Android and the
-              # NDK ships no OpenSSL, so a sync-enabled Android build requires
-              # cross-compiling OpenSSL for four ABIs -- a project in itself.
-              # This job verifies the storage engine compiles for Android, which
-              # is the tier-1 claim being made. Sync on Android is unverified and
-              # docs/findings/0a-supply-chain.md predicted exactly this decision.
+              # Sync and encryption are both off. Android needs OpenSSL for
+              # either -- CMakeLists.txt:290 for sync, :296 for encryption --
+              # and the NDK ships none, so enabling either means
+              # cross-compiling OpenSSL for four ABIs, a project in itself.
+              #
+              # What this job therefore verifies is narrower than it looks: the
+              # storage engine compiles for Android. Sync and encryption on
+              # Android are unverified, and are documented as such rather than
+              # implied by a green tick. docs/findings/0a-supply-chain.md
+              # predicted this decision and named the options.
               cmake -B build -DCMAKE_BUILD_TYPE=Release -DTESSERA_NO_TESTS=ON \
-                    -DTESSERA_ENABLE_SYNC=OFF \
+                    -DTESSERA_ENABLE_SYNC=OFF -DTESSERA_ENABLE_ENCRYPTION=OFF \
                     -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake" \
                     -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-24
               ;;
