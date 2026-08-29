@@ -76,22 +76,47 @@ README: "Crash safety by construction. Commits write new nodes and swap a single
 root pointer. There is no write-ahead log to replay, because there is nothing to
 replay."
 
-This *is* tested. `Shared_RobustAgainstDeathDuringWrite` in `test_shared.cpp`
+A test for it exists. `Shared_RobustAgainstDeathDuringWrite` in `test_shared.cpp`
 forks a hundred processes, each of which calls `_Exit(42)` while holding an open
-write transaction, and after every one of them checks that the database still
-verifies and can still be written.
+write transaction, and after every one checks that the database still verifies
+and can still be written. It is exactly the right test.
 
-It is guarded `#if TESSERA_PLATFORM_APPLE`. Its comment says the test "has issues
-that has not been fully understood, but could be related to interaction between
-posix robust mutexes and the fork() system call. it has so far only been seen
-failing on Linux".
+It has never run. Not on Linux, not on macOS, not anywhere.
 
-So the strongest claim the project makes about durability is verified on macOS
-and iOS, and not on Linux -- which is the platform a self-hosted server would run
-on. Whether the exclusion reflects a flaw in the test or a real difference in how
-robust mutexes recover after `fork()` on Linux is not known here, and inherited
-comments have been wrong often enough in this project that the question deserves
-its own investigation rather than an assumption.
+The inner guard is `#if TESSERA_PLATFORM_APPLE`, with a comment saying the test
+"has so far only been seen failing on Linux, so we enable it on ios". Reading
+that alone -- which is what the first version of this section did -- gives
+"verified on Apple, not on Linux". The outer guard is the one that matters:
+
+    #if !TESSERA_ENABLE_ENCRYPTION && defined(ENABLE_ROBUST_AGAINST_DEATH_DURING_WRITE)
+
+The macro is defined thirty lines earlier in the same file, so it reads as
+satisfied. `TESSERA_ENABLE_ENCRYPTION` defaults to `ON` and is on in every
+configuration this project builds and tests. The one configuration that turns it
+off is the Android nightly, which passes `-DTESSERA_NO_TESTS=ON` and builds only
+the `Storage` target.
+
+Measured rather than reasoned:
+
+    $ nm tessera-tests | grep -ci RobustAgainstDeath
+    0
+    $ UNITTEST_FILTER='Shared_RobustAgainstDeathDuringWrite' ./tessera-tests
+    Success: All 0 tests passed. Note: 1662 tests were excluded!
+
+So the strongest claim the project makes about durability -- crash safety by
+construction, no log to replay -- is verified nowhere, and has not been for the
+life of the fork or, on this evidence, for some time before it.
+
+## How this one hid
+
+Two guards, one inside the other, each individually plausible. The inner one
+names a platform and reads like a platform exclusion, which is a familiar and
+unalarming thing for a test to have. The outer one names a macro that is defined
+in the same file, which reads like a feature toggle that is on.
+
+Nothing in a test report distinguishes a test that passes from a test that was
+never compiled. `1662 tests passed` is the same sentence either way. The suite
+had 1652 before today's additions and no one had reason to ask which 1652.
 
 ## Canary-tested, in both directions
 
