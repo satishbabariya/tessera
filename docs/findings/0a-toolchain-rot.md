@@ -82,7 +82,44 @@ Phase 0b must therefore either:
 3. Treat the small number of `realm` identifiers in the generated files as an
    exception to the never-hand-edit rule, documented as such.
 
-Option 2 is the most likely right answer — pinning a parser generator to one
-exact patch release is unusually strict — but it must be *verified*, not assumed,
-because a subtly different parser is among the worst kinds of regression to
-diagnose.
+### Resolved 2026-08-29: option 3, and the risk that worried me is absent
+
+Investigated rather than assumed. The first two options are dead ends and the
+third turns out to be safe.
+
+**Option 1** is unavailable while Homebrew is broken on this host.
+
+**Option 2 cannot work at any version constraint.** `query_bison.yy` uses
+`%define api.token.constructor` (line 6), `%define api.value.type variant`
+(line 7) and `%define api.symbol.prefix` (line 65) — all **Bison 3.x-only
+features**. Bison 2.3 cannot process this grammar however the requirement is
+phrased, so relaxing `EXACT` to a minimum merely moves the failure.
+
+**Option 3 is safe, because the generated files barely mention `realm`.** The
+rename surface in generated output is six references, every one a mechanical
+include or namespace qualifier:
+
+| File | References |
+|---|---|
+| `generated/query_bison.cpp` | 2 `#include`, 2 `using namespace` |
+| `generated/query_flex.cpp` | 1 `#include`, 1 qualified function definition |
+
+The grammar sources carry the matching set: `query_bison.yy` has 9,
+`query_flex.ll` has 2.
+
+**The rule's rationale is preserved, not waived.** "Never hand-edit generated
+files" exists to prevent generated output drifting from its grammar source.
+Renaming *both* consistently maintains exactly that property: regenerating later
+with Bison 3.8.2 against the renamed `.yy`/`.ll` produces equivalent output. This
+is a uniform rename, not an edit that diverges from its source.
+
+**And the specific fear was misplaced.** The original concern was that "a subtly
+different parser is among the worst kinds of regression to diagnose." That risk
+comes from *regenerating with a different Bison version*, which produces
+genuinely different output. Not regenerating avoids it entirely. Verification is
+strong regardless: `test/test_parser.cpp` provides **73 tests across 6,597 LOC**,
+so a bad substitution fails loudly and immediately.
+
+**Phase 0b action:** include `parser/generated/**` in the rename script rather
+than excluding it, and gate on the parser tests. Bison 3.8.2 becomes a
+nice-to-have for future grammar work, not a prerequisite for the rename.
