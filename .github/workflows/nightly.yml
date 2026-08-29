@@ -126,6 +126,28 @@ jobs:
   # For a storage engine a bug corrupts a file rather than returning a wrong
   # answer, so fuzzing the allocator and cluster tree is worth more than most
   # unit tests -- and it already exists.
+  # tools/verify/clean-clone-test.sh was written after the first genuine clean
+  # clone failed to configure -- a submodule the README did not mention. It was
+  # then never wired into anything, so it has never run in CI, which is the same
+  # state test_util_enum.cpp was in: a verification that exists and does not
+  # execute. See docs/findings/0b-uncompiled-test-file.md.
+  #
+  # It clones from the published URL rather than using the checkout, because the
+  # thing under test is arriving at the project from outside. That makes it slow
+  # and makes it test main rather than the pull request, which is why it is
+  # nightly.
+  clean-clone:
+    name: clean clone
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libssl-dev zlib1g-dev libcurl4-openssl-dev
+      - name: A stranger can clone this and build it
+        run: tools/verify/clean-clone-test.sh
+
   fuzzers:
     runs-on: ubuntu-latest
     steps:
