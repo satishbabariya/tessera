@@ -11,7 +11,9 @@
 #       derivative works. Stripping the attribution would breach the licence.
 #       perl's `next` in -p mode skips the substitutions but still prints the
 #       line, which is exactly the required behaviour. Verified before and
-#       after: the notice count must be unchanged (563).
+#       after: the notice count must be unchanged. It was 563 when the
+#       rename ran; later deletions have reduced it. What matters is that
+#       the count is identical either side of a rename, not its value.
 #
 # RENAMED despite living under src/external:
 #   src/external/s2 is NOT pristine upstream S2. It is a downstream fork that

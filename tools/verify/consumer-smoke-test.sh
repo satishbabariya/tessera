@@ -64,4 +64,13 @@ OUT=$("$WORK/build/consumer" "$DBFILE")
 MAGIC=$(dd if="$DBFILE" bs=1 skip=16 count=4 2>/dev/null)
 [ "$MAGIC" = "TESS" ] || { echo "FAIL: file magic is '$MAGIC', expected 'TESS'"; exit 1; }
 
-echo "PASS: installed package is consumable; file magic is TESS"
+# The README's example is a claim about the API. Compile and run it verbatim.
+cp "$(dirname "$0")/readme-example.cpp" "$WORK/main.cpp"
+cmake --build "$WORK/build" -j4 > /dev/null
+README_OUT=$("$WORK/build/consumer" 2>&1 || true)
+case "$README_OUT" in
+  *"found 1"*) ;;
+  *) echo "FAIL: the README example no longer works: $README_OUT"; exit 1 ;;
+esac
+
+echo "PASS: installed package is consumable, file magic is TESS, README example works"
