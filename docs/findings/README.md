@@ -29,6 +29,7 @@ Read these before changing the area they describe.
 | | |
 |---|---|
 | [0a-supply-chain.md](0a-supply-chain.md) | The vendor dependency ran four levels deep and reached downstream consumers. Also records the Android OpenSSL decision and how it resolved |
+| [0b-test-resource-race.md](0b-test-resource-race.md) | Three test targets share one resources directory and copied into it concurrently. Invisible until a resource actually changed, because `copy_if_different` writes nothing when nothing differs |
 | [0a-toolchain-rot.md](0a-toolchain-rot.md) | The upstream tree did not compile on a 2026 toolchain. Also why Bison 3.8.2 is not a prerequisite |
 | [0b-file-format.md](0b-file-format.md) | A format version is a position in a lineage, not a number. Four constants encoded it, each failing differently |
 | [0b-header-tiers.md](0b-header-tiers.md) | The public API is 147 headers; 236 were installed. Why `impl/` is not private, and why the install set was not culled |
@@ -38,6 +39,7 @@ Read these before changing the area they describe.
 | | |
 |---|---|
 | [0a-flaky-and-slow-tests.md](0a-flaky-and-slow-tests.md) | `reports DNS error` is network-flaky (0.011s to 680s across four runs). The suites leak temp directories, and a large `TMPDIR` degrades some tests 40,000x |
+| [0b-certificate-expiry.md](0b-certificate-expiry.md) | The SSL tests' certificates were 57 days from expiry, and had lapsed five times before. The failure would have shown as a cluster of socket tests failing on every platform with no commit to blame |
 | [0a-include-hygiene.md](0a-include-hygiene.md) | An include can be unused by its host file and load-bearing for its consumers. Seven such dependencies have had to be made explicit |
 | [0b-identity-strings.md](0b-identity-strings.md) | The rename renamed the code, not what the code says. The product name, the sync User-Agent, the HTTP Server header, a WebSocket subprotocol, five error categories and six tools' help text still said realm |
 | [0b-rename-blind-spots.md](0b-rename-blind-spots.md) | What a code-identifier rename cannot see: message strings, a wire identifier, a Keychain item, a log-category API, and comments it turned into false claims |

@@ -160,7 +160,7 @@ target_link_libraries(CoreTestLib QueryParser Bson)
 
 add_executable(CoreTests main.cpp test_all.cpp ${REQUIRED_TEST_FILES})
 target_link_libraries(CoreTests CoreTestLib TestUtil)
-set_target_resources(CoreTests "${REQUIRED_TEST_FILES}")
+set_target_resources(CoreTests "${REQUIRED_TEST_FILES}" NO_COPY)
 set_target_properties(CoreTests PROPERTIES
     OUTPUT_NAME "tessera-tests"
     VS_WINDOWS_TARGET_PLATFORM_MIN_VERSION 10.0.17134.0
@@ -254,7 +254,7 @@ if(TESSERA_ENABLE_SYNC)
 
     add_executable(SyncTests main.cpp test_all.cpp ${SYNC_TEST_RESOURCES})
     set_target_properties(SyncTests PROPERTIES OUTPUT_NAME "tessera-sync-tests")
-    set_target_resources(SyncTests "${SYNC_TEST_RESOURCES}")
+    set_target_resources(SyncTests "${SYNC_TEST_RESOURCES}" NO_COPY)
     enable_stdfilesystem(SyncTests)
     target_link_libraries(SyncTests SyncTestLib TestUtil)
     add_bundled_test(SyncTests)
@@ -270,7 +270,25 @@ get_directory_property(OS_TEST_RESOURCES DIRECTORY object-store TEST_RESOURCES)
 set(COMBINED_RESOURCES "${REQUIRED_TEST_FILES};${SYNC_TEST_RESOURCES};${OS_TEST_RESOURCES}")
 
 add_executable(CombinedTests combined_tests.cpp test_all.cpp ${COMBINED_RESOURCES})
-set_target_resources(CombinedTests "${COMBINED_RESOURCES}")
+set_target_resources(CombinedTests "${COMBINED_RESOURCES}" NO_COPY)
+
+# CoreTests, SyncTests and CombinedTests are all built into this directory and
+# therefore share one resources/ directory. One target copies the union of their
+# resources; the three depend on it rather than each copying for itself, because
+# concurrent copy_if_different into the same file fails under --parallel.
+if(NOT WINDOWS_STORE AND NOT APPLE)
+    add_custom_target(TestResources
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/resources
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${COMBINED_RESOURCES} ${CMAKE_CURRENT_BINARY_DIR}/resources
+        COMMENT "Staging test resources"
+        VERBATIM
+    )
+    add_dependencies(CoreTests TestResources)
+    add_dependencies(CombinedTests TestResources)
+    if(TESSERA_ENABLE_SYNC)
+        add_dependencies(SyncTests TestResources)
+    endif()
+endif()
 set_target_properties(CombinedTests PROPERTIES
     OUTPUT_NAME "tessera-combined-tests"
     VS_WINDOWS_TARGET_PLATFORM_MIN_VERSION 10.0.17134.0
