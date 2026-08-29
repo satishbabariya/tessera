@@ -49,6 +49,15 @@ jobs:
           "$(tools/verify/test-binary.sh build tessera-sync-tests)"
         env: { UNITTEST_THREADS: 1 }
 
+      # The object-store layer delivers change notifications from a background
+      # worker thread, so it is concurrent code that CoreTests does not cover.
+      # It runs in about 23 seconds uninstrumented, which is cheap enough to
+      # include under every sanitizer rather than only under TSan.
+      - name: ObjectStoreTests under ${{ matrix.san }}
+        run: |
+          export TMPDIR="$(mktemp -d)/"
+          "$(tools/verify/test-binary.sh build tessera-object-store-tests)"
+
   # Tier-1 platforms that cannot run their own tests here. Compiling is a real
   # signal: three of this project's build failures were platform-specific
   # missing includes that only a different standard library revealed.

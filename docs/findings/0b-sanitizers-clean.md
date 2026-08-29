@@ -53,7 +53,10 @@ of running these now.
 
 ## What is not covered
 
-- ObjectStoreTests does not run under the sanitizers.
+- **ObjectStoreTests now runs under all three sanitizers.** It delivers change
+  notifications from a background worker thread, so it is concurrent code that
+  CoreTests does not exercise, and at roughly 23 seconds uninstrumented it is
+  cheap enough to include everywhere rather than only under TSan.
 - **SyncTests now runs under ThreadSanitizer** (added immediately after this
   finding was written). That is where the concurrency lives -- real in-process
   servers, client sessions, and the merge engine running against them -- and it
