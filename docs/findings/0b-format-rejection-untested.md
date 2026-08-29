@@ -67,6 +67,32 @@ reason.
 The last test earns its place separately. A file refused with a message that does
 not say what was wrong is a support request rather than an error.
 
+## What is still asserted rather than measured
+
+Auditing the headline claims against the tests turned up one more gap, recorded
+here rather than closed.
+
+README: "Crash safety by construction. Commits write new nodes and swap a single
+root pointer. There is no write-ahead log to replay, because there is nothing to
+replay."
+
+This *is* tested. `Shared_RobustAgainstDeathDuringWrite` in `test_shared.cpp`
+forks a hundred processes, each of which calls `_Exit(42)` while holding an open
+write transaction, and after every one of them checks that the database still
+verifies and can still be written.
+
+It is guarded `#if TESSERA_PLATFORM_APPLE`. Its comment says the test "has issues
+that has not been fully understood, but could be related to interaction between
+posix robust mutexes and the fork() system call. it has so far only been seen
+failing on Linux".
+
+So the strongest claim the project makes about durability is verified on macOS
+and iOS, and not on Linux -- which is the platform a self-hosted server would run
+on. Whether the exclusion reflects a flaw in the test or a real difference in how
+robust mutexes recover after `fork()` on Linux is not known here, and inherited
+comments have been wrong often enough in this project that the question deserves
+its own investigation rather than an assumption.
+
 ## Canary-tested, in both directions
 
 Five passing tests prove nothing on their own. Each was confirmed to fail against
