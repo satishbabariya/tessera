@@ -25,7 +25,7 @@ add_subdirectory(benchmark-common-tasks)
 add_subdirectory(benchmark-crud)
 add_subdirectory(benchmark-larger)
 add_subdirectory(benchmark-sync)
-# FIXME: Add other benchmarks
+add_subdirectory(benchmark-util-network)
 
 set(CORE_TEST_SOURCES
     # slowest to compile first

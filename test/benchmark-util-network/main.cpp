@@ -5,6 +5,7 @@
 
 #include <tessera/status.hpp>
 #include <tessera/sync/network/network.hpp>
+#include <tessera/util/misc_ext_errors.hpp>
 
 #include "../util/timer.hpp"
 #include "../util/random.hpp"
@@ -121,9 +122,9 @@ private:
     void initiate_read()
     {
         auto handler = [=](std::error_code ec, size_t) {
-            if (ec && ec != network::end_of_input)
+            if (ec && ec != util::MiscExtErrors::end_of_input)
                 throw std::system_error(ec);
-            if (ec != network::end_of_input)
+            if (ec != util::MiscExtErrors::end_of_input)
                 initiate_read();
         };
         m_read_socket.async_read(m_read_buffer, m_read_size, m_read_ahead_buffer, handler);
@@ -178,9 +179,9 @@ private:
     void initiate_read()
     {
         auto handler = [=](std::error_code ec, size_t) {
-            if (ec && ec != network::end_of_input)
+            if (ec && ec != util::MiscExtErrors::end_of_input)
                 throw std::system_error(ec);
-            if (ec != network::end_of_input)
+            if (ec != util::MiscExtErrors::end_of_input)
                 initiate_read();
         };
         m_read_socket.async_read(m_read_buffer, sizeof m_read_buffer, m_read_ahead_buffer, handler);
@@ -208,7 +209,7 @@ private:
 int main()
 {
     int max_lead_text_size = 12;
-    BenchmarkResults results(max_lead_text_size);
+    BenchmarkResults results(max_lead_text_size, "benchmark-util-network");
 
     Timer timer(Timer::type_UserTime);
     {
@@ -218,7 +219,7 @@ int main()
             task.run();
             results.submit("post", timer);
         }
-        results.finish("post", "Post");
+        results.finish("post", "Post", "runtime_secs");
 
         for (int i = 0; i != 100; ++i) {
             Read task(1, 11500000); // (size, num)
@@ -226,7 +227,7 @@ int main()
             task.run();
             results.submit("read_1", timer);
         }
-        results.finish("read_1", "Read 1");
+        results.finish("read_1", "Read 1", "runtime_secs");
 
         for (int i = 0; i != 100; ++i) {
             Read task(10, 9000000); // (size, num)
@@ -234,7 +235,7 @@ int main()
             task.run();
             results.submit("read_10", timer);
         }
-        results.finish("read_10", "Read 10");
+        results.finish("read_10", "Read 10", "runtime_secs");
 
         for (int i = 0; i != 100; ++i) {
             Read task(100, 2700000); // (size, num)
@@ -242,7 +243,7 @@ int main()
             task.run();
             results.submit("read_100", timer);
         }
-        results.finish("read_100", "Read 100");
+        results.finish("read_100", "Read 100", "runtime_secs");
 
         for (int i = 0; i != 100; ++i) {
             Read task(1000, 350000); // (size, num)
@@ -250,7 +251,7 @@ int main()
             task.run();
             results.submit("read_1000", timer);
         }
-        results.finish("read_1000", "Read 1000");
+        results.finish("read_1000", "Read 1000", "runtime_secs");
 
 
         for (int i = 0; i != 100; ++i) {
@@ -259,7 +260,7 @@ int main()
             task.run();
             results.submit("write_1", timer);
         }
-        results.finish("write_1", "Write 1");
+        results.finish("write_1", "Write 1", "runtime_secs");
 
         for (int i = 0; i != 100; ++i) {
             Write task(10, 100000); // (size, num)
@@ -267,7 +268,7 @@ int main()
             task.run();
             results.submit("write_10", timer);
         }
-        results.finish("write_10", "Write 10");
+        results.finish("write_10", "Write 10", "runtime_secs");
 
         for (int i = 0; i != 100; ++i) {
             Write task(100, 100000); // (size, num)
@@ -275,7 +276,7 @@ int main()
             task.run();
             results.submit("write_100", timer);
         }
-        results.finish("write_100", "Write 100");
+        results.finish("write_100", "Write 100", "runtime_secs");
 
         for (int i = 0; i != 100; ++i) {
             Write task(1000, 100000); // (size, num)
@@ -283,6 +284,6 @@ int main()
             task.run();
             results.submit("write_1000", timer);
         }
-        results.finish("write_1000", "Write 1000");
+        results.finish("write_1000", "Write 1000", "runtime_secs");
     }
 }

@@ -59,6 +59,36 @@ Canary-tested twice: an unreferenced file fails it, and an empty tree fails it
 rather than passing over nothing -- the same guard every check in this project
 carries, for the same reason.
 
+## The same thing, one directory up
+
+`test/benchmark-util-network/` held a 7,700-line-byte `main.cpp` with its own
+`.gitignore` and no `CMakeLists.txt`, and `test/CMakeLists.txt` did not
+`add_subdirectory` it. Immediately below the four benchmarks it does add is the
+comment `# FIXME: Add other benchmarks`, so the omission was known and left.
+
+It did not compile. `network::end_of_input` had moved to
+`util::MiscExtErrors::end_of_input` in an upstream namespace refactor
+(`a396142c3 Updated namespaces for sync/network files`), which touched every file
+the build knew about and not this one. `BenchmarkResults` had since gained a
+required `suite_name` and a third argument to `finish()`, and this file had
+followed neither.
+
+Three API changes, none of which broke anything, because nothing compiled the
+file that used them. It is now wired up and builds and runs:
+
+    Post:  min 217.53ms  max 247.52ms  median 220.35ms  avg 220.71ms  stddev 3.16ms
+
+Restored rather than deleted, on the grounds that the next such refactor should
+break the build instead of the file. A file that cannot rot loudly will rot
+quietly.
+
+`tools/check-test-sources-listed.sh` does not cover this case: it walks `test/`
+and `test/object-store/`, and would not have noticed a whole directory missing
+from the build graph. That gap is stated here rather than papered over -- an
+`add_subdirectory` audit is a different check from a source-listing one, and
+writing one check and claiming it covers both is the mistake this directory
+exists to record.
+
 ## The shape of it
 
 Every other finding here is about a check that inspected the wrong thing, or a
