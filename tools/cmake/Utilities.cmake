@@ -16,7 +16,10 @@ macro(set_target_xcode_attributes _target)
     )
 endmacro()
 
-macro(set_target_resources _target _resources)
+# A function rather than a macro: it takes an optional third argument, and a
+# macro's ARGV2 is a textual substitution that resolves to an enclosing scope's
+# ARGV2 when the argument is absent.
+function(set_target_resources _target _resources)
     source_group("Resources" FILES ${_resources})
     set_target_properties("${_target}" PROPERTIES
         MACOSX_BUNDLE TRUE
@@ -28,13 +31,31 @@ macro(set_target_resources _target _resources)
     )
     set_property(SOURCE "${_resources}" PROPERTY VS_DEPLOYMENT_LOCATION "TestAssets")
 
-    if(NOT WINDOWS_STORE AND NOT APPLE)
+    # Outside Apple bundles the resources are copied next to the executable. When
+    # several test executables land in the same directory they share one
+    # resources/ directory, and a POST_BUILD copy from each of them races: two
+    # cmake -E copy_if_different processes writing the same destination file at
+    # once, one of which fails with "Error copying file (if different)".
+    #
+    # The race is invisible until a resource actually changes. Until then every
+    # copy finds the destination identical, writes nothing, and has nothing to
+    # race on -- so the bug surfaces only when someone edits a test resource, and
+    # then as an intermittent failure of one Linux job out of five, which reads
+    # like infrastructure noise rather than a build defect.
+    #
+    # Targets sharing an output directory pass NO_COPY here and depend on a
+    # single custom target that copies the union once. See test/CMakeLists.txt.
+    set(_no_copy OFF)
+    if(ARGC GREATER 2 AND "${ARGV2}" STREQUAL "NO_COPY")
+        set(_no_copy ON)
+    endif()
+    if(NOT WINDOWS_STORE AND NOT APPLE AND NOT _no_copy)
         add_custom_command(TARGET "${_target}" POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:${_target}>/resources
             COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_resources} $<TARGET_FILE_DIR:${_target}>/resources
         )
     endif()
-endmacro()
+endfunction()
 
 macro(enable_stdfilesystem _target)
     if(APPLE)

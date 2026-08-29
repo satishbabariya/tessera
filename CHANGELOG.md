@@ -47,6 +47,12 @@
   never said which certificate had arrived. They now compare against the
   certificate the server was configured with.
 
+* Three test executables share one `resources/` directory and each ran its own
+  POST_BUILD `copy_if_different` into it, which raced under `--parallel` and
+  failed the build. It was unreachable until a test resource actually changed,
+  because the copy writes nothing when nothing differs. One target now copies the
+  union and the executables depend on it.
+
 ### Added
 
 * `tools/check-cert-expiry.sh`, run in CI, fails when any test certificate is
