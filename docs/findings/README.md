@@ -21,6 +21,7 @@ Read these before changing the area they describe.
 | [0a-flx-deferred.md](0a-flx-deferred.md) | Why FLX was not removed. ~394 references woven through the session lifecycle, and `test_client_reset.cpp` alone holds 76 |
 | [0a-i1-i2-flx-boundary.md](0a-i1-i2-flx-boundary.md) | Core replication is entirely FLX-free; `client_reset` is protocol, not FLX. Bounds the blast radius of removing it |
 | [0b-self-hostable.md](0b-self-hostable.md) | The README promised a self-hostable sync server. The package exports no server target, installs no server header, and there is no server executable. The server exists only inside the build tree |
+| [0b-server-installability-cost.md](0b-server-installability-cost.md) | What it would actually take to ship the server: 36 include sites, one header not yet installed, and 761 lines of App Services authentication behind four call sites |
 | [0a-app-services.md](0a-app-services.md) | The identity and configuration model Phase 0a removed. Phase 1 must supply a replacement, not repoint a URL |
 | [0b-merge-carve.md](0b-merge-carve.md) | How `tessera-merge` was separated, and how its central claim was false for a while |
 
