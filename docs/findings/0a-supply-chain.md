@@ -56,7 +56,31 @@ cross-compiling for Android or Windows point CMake at their own build via
 `OPENSSL_ROOT_DIR`. This fully satisfies the Phase 0a invariant — no dependency
 on hosts we do not control — and is what most C++ projects do.
 
-**Known consequence, carried into Task 5:** Android CI cannot build sync or
+### Resolved 2026-08-29, and it took three attempts
+
+The deferred decision arrived when the first nightly ran. Each fix was correct
+and each exposed the next layer, which is what a compile-only job on an untried
+configuration is for:
+
+| Attempt | Failure | What it revealed |
+|---|---|---|
+| 1 | `Could NOT find OpenSSL` | sync needs it (`CMakeLists.txt:290`) |
+| 2 | `Could NOT find OpenSSL` again | **encryption needs it too** (`:296`) |
+| 3 | `export given target "Merge" which is not built` | `add_subdirectory(merge)` was inside `if(TESSERA_ENABLE_SYNC)`, so the standalone merge library was not standalone |
+
+The third is the interesting one: disabling sync was the first configuration that
+could expose a design error in the merge carve, and it did.
+
+The Android job now builds with **sync and encryption disabled**. That makes its
+claim narrower than a green tick suggests -- it verifies the storage engine
+compiles for Android, and nothing more -- so the README says so. Encryption is a
+headline Tessera feature and it is not verified on Android.
+
+Providing OpenSSL means cross-compiling it for four ABIs, which the supply-chain
+invariant makes deliberate work rather than a download. That remains the honest
+option whenever someone needs Android sync or encryption.
+
+**Original note, retained:** Android CI cannot build sync or
 encryption until an OpenSSL is provided for it, because `REALM_NEEDS_OPENSSL`
 includes Android and the NDK ships none. Options at that point: build OpenSSL in
 the CI job, or restrict the Android compile-only job to a configuration that
