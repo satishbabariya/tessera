@@ -2,6 +2,40 @@
 
 ## Unreleased
 
+### Added
+
+* `test/test_util_enum.cpp` is now in the build. It was in no `CMakeLists.txt`,
+  compiled into no target and had never run, though it covers
+  `tessera/util/enum.hpp`, which is installed as public API. It compiled and
+  passed unchanged.
+* `tools/check-test-sources-listed.sh`, run in CI, fails if any test source is
+  not named by the `CMakeLists.txt` that should compile it. It establishes that a
+  file is visible to the build, not that any particular configuration compiles it
+  -- 26 test files here are correctly conditional on `TESSERA_ENABLE_SYNC`. A test file left out
+  of the build does not fail, does not appear as skipped and does not break
+  anything, and the suite total is no help because nobody knows what it should
+  be.
+* `tools/analyse-zero-check-tests.sh` reports tests that run and execute no
+  checks. Analysis rather than a gate: of 106 such tests, 105 are regression
+  tests that assert by not crashing.
+
+* `test/test_file_format.cpp`. README.md and ARCHITECTURE.md both state that
+  Tessera rejects any file whose format is not its own, which is the fork's
+  central promise, and nothing tested it. Five tests write a real database, patch
+  its 24-byte header on disk and reopen: a `T-DB` mnemonic is refused, so is any
+  other, format versions 2, 10, 24 and 255 are refused, and the error names the
+  version it rejected. Each was confirmed to fail against a deliberately broken
+  engine.
+* Four more in the same file for README's other claim about the bytes on disk,
+  "Encryption at rest. Optional AES-256, applied per page below the engine".
+  `test_encrypted_file_mapping.cpp` covers the cryptor, page IVs and concurrent
+  mappings in thirteen tests, none of which answers whether the data is on the
+  disk in the clear. These write a distinctive string, confirm it is findable in
+  an unencrypted file and absent from an encrypted one -- along with the table
+  name, since "below the engine" means the engine's own structures too -- and
+  check that an encrypted file is refused without the key and with a key that is
+  one byte wrong.
+
 ### Fixed
 
 * The library called itself `realm-core`. `TESSERA_PRODUCT_NAME` still held the

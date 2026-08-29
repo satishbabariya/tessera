@@ -25,7 +25,7 @@ add_subdirectory(benchmark-common-tasks)
 add_subdirectory(benchmark-crud)
 add_subdirectory(benchmark-larger)
 add_subdirectory(benchmark-sync)
-# FIXME: Add other benchmarks
+add_subdirectory(benchmark-util-network)
 
 set(CORE_TEST_SOURCES
     # slowest to compile first
@@ -57,6 +57,7 @@ set(CORE_TEST_SOURCES
     test_destroy_guard.cpp
     test_dictionary.cpp
     test_file.cpp
+    test_file_format.cpp
     test_file_locks.cpp
     test_global_key.cpp
     test_group.cpp
@@ -90,6 +91,7 @@ set(CORE_TEST_SOURCES
     test_util_cli_args.cpp
     test_util_compression.cpp
     test_util_error.cpp
+    test_util_enum.cpp
     test_util_file.cpp
     test_util_fixed_size_buffer.cpp
     test_util_flat_map.cpp
