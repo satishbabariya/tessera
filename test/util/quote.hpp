@@ -16,17 +16,17 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_QUOTE_HPP
-#define REALM_TEST_UTIL_QUOTE_HPP
+#ifndef TESSERA_TEST_UTIL_QUOTE_HPP
+#define TESSERA_TEST_UTIL_QUOTE_HPP
 
 #include <string>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 std::string quote(const std::string&);
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_QUOTE_HPP
+#endif // TESSERA_TEST_UTIL_QUOTE_HPP

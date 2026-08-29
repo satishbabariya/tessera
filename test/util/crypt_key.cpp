@@ -16,7 +16,7 @@
  *
  **************************************************************************/
 
-#include <realm/util/features.h>
+#include <tessera/util/features.h>
 
 #include "crypt_key.hpp"
 
@@ -28,12 +28,12 @@ bool g_always_encrypt = false;
 } // unnamed namespace
 
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 const char* crypt_key(bool always)
 {
-#if REALM_ENABLE_ENCRYPTION
+#if TESSERA_ENABLE_ENCRYPTION
     if (always || g_always_encrypt)
         return "\0"
                "123456789012345678901234567890123456789012345678901234567890123";
@@ -56,4 +56,4 @@ void enable_always_encrypt()
 }
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera

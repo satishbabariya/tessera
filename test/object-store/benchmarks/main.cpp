@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #if TEST_SCHEDULER_UV
-#include <realm/object-store/util/uv/scheduler.hpp>
+#include <tessera/object-store/util/uv/scheduler.hpp>
 #endif
 
 #define CATCH_CONFIG_ENABLE_BENCHMARKING
@@ -57,8 +57,8 @@ int main(int argc, char** argv)
 #endif
 
 #if TEST_SCHEDULER_UV
-    realm::util::Scheduler::set_default_factory([]() -> std::shared_ptr<realm::util::Scheduler> {
-        return std::make_shared<realm::util::UvMainLoopScheduler>();
+    tessera::util::Scheduler::set_default_factory([]() -> std::shared_ptr<tessera::util::Scheduler> {
+        return std::make_shared<tessera::util::UvMainLoopScheduler>();
     });
 #endif
 

@@ -23,20 +23,20 @@
 #include "util/test_file.hpp"
 #include "util/test_utils.hpp"
 
-#include <realm/object-store/impl/deep_change_checker.hpp>
-#include <realm/object-store/impl/realm_coordinator.hpp>
-#include <realm/object-store/impl/transact_log_handler.hpp>
-#include <realm/object-store/binding_context.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/schema.hpp>
+#include <tessera/object-store/impl/deep_change_checker.hpp>
+#include <tessera/object-store/impl/realm_coordinator.hpp>
+#include <tessera/object-store/impl/transact_log_handler.hpp>
+#include <tessera/object-store/binding_context.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/schema.hpp>
 
-#include <realm.hpp>
+#include <tessera.hpp>
 
 #include <iostream>
 #include <random>
 
-using namespace realm;
+using namespace tessera;
 
 class CaptureHelper {
 public:
@@ -1580,7 +1580,7 @@ TEST_CASE("Transaction log parsing: changeset calcuation") {
     }
 }
 
-namespace cf = realm::collection_fixtures;
+namespace cf = tessera::collection_fixtures;
 TEMPLATE_TEST_CASE("DeepChangeChecker collections", "[notifications]", cf::ListOfObjects, cf::ListOfMixedLinks,
                    cf::SetOfObjects, cf::SetOfMixedLinks, cf::DictionaryOfObjects, cf::DictionaryOfMixedLinks)
 {
@@ -1892,7 +1892,7 @@ TEST_CASE("DeepChangeChecker singular links", "[notifications]") {
             }
             return {};
         }
-        REALM_ASSERT(col.get_type() == col_type_Link);
+        TESSERA_ASSERT(col.get_type() == col_type_Link);
         return ObjLink{dst_table_key, obj.get<ObjKey>(col)};
     };
 

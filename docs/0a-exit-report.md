@@ -19,7 +19,7 @@ Phase 0b is clear to proceed.
 |---|---|---|---|
 | 1 | No dependency on uncontrolled hosts | **PASS** | `tools/check-no-vendor-hosts.sh` passes and is canary-tested. `static.realm.io` severed at four levels; `evergreen/` deleted; sha-1/sha-2 vendored |
 | 2 | CI green on tier-1 platforms | **BLOCKED** | Prerequisite P1 unmet — no Tessera remote exists, so GitHub Actions cannot run. Workflows written but unexecuted |
-| 3 | CoreTests + ObjectStoreTests pass | **PASS** | Debug 1652, Release 1647, ObjectStoreTests 344 cases / 70,159 assertions |
+| 3 | CoreTests + ObjectStoreTests pass | **PASS, with a correction** | Debug 1652, Release 1647, ObjectStoreTests 344 cases / 70,159 assertions. **See the Task 14 correction below.** |
 | 4 | **147+ bundled-server sync tests pass** | **PASS — GREEN** | **All 463 sync tests pass, 121,505 checks.** `docs/findings/0a-thesis-validation.md` |
 | 5 | Deletion manifest executed | **PASS, re-scoped** | 76,381 deletions. FLX deferred with evidence; see below |
 | 9 | No benchmark regression >5% | **NOT MEASURABLE** | See "Criterion 9" below — the criterion is defective, not the code |
@@ -81,6 +81,39 @@ repetitions, pinned CPU, quiet machine) once CI exists.
 **Recommended rewrite for the spec:** compare medians over >=5 repetitions on a
 dedicated runner, and set the regression threshold at 15% for this suite, or
 adopt a benchmark harness that reports confidence intervals.
+
+## Correction: Task 14's verification was incomplete
+
+Recorded 2026-08-29, during Phase 0b.
+
+Task 14 narrowed `accepted_versions_` to `{24}`, so files in formats v10-v23 are
+rejected rather than upgraded. It was verified with **CoreTests only** (1652
+passed, correct) and committed.
+
+Three further tests read old-format fixtures, and all three live in the suites
+that were *not* run:
+
+| Test | Fixture | Suite |
+|---|---|---|
+| `test/object-store/backup.cpp` (2 sections) | v20 | ObjectStoreTests |
+| `Sync_HistoryMigration` | v22 | SyncTests |
+| `Sync_SubscriptionStoreInternalSchemaMigration` | v22 | SyncTests |
+
+They failed with `UnsupportedFileFormatVersion` -- which is the *correct*
+behaviour for the change; the tests simply exercised machinery the change had
+deliberately removed. They were deleted during Phase 0b, as Task 14 should have
+done.
+
+**The lesson is about scope of verification, not about the change.** Task 14
+altered how every database file is opened, and CoreTests was treated as
+sufficient. Choosing which suites to run is a judgement about blast radius, and
+for anything reached through `DB::open` the answer is all of them. The Phase 0b
+plan's constraints have been amended accordingly.
+
+The failure surfaced only because the Phase 0b rename forced a full three-suite
+run. Without it, a broken tree would have sat in history under a commit message
+claiming verification -- which is the more serious problem, and the reason this
+correction is recorded here rather than quietly fixed.
 
 ## What was re-scoped, and why
 

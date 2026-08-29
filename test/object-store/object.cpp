@@ -23,24 +23,24 @@
 #include "util/test_file.hpp"
 #include "util/test_utils.hpp"
 
-#include <realm/object-store/feature_checks.hpp>
-#include <realm/object-store/collection_notifications.hpp>
-#include <realm/object-store/object_accessor.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/schema.hpp>
-#include <realm/object-store/object.hpp>
-#include <realm/object-store/util/scheduler.hpp>
+#include <tessera/object-store/feature_checks.hpp>
+#include <tessera/object-store/collection_notifications.hpp>
+#include <tessera/object-store/object_accessor.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/schema.hpp>
+#include <tessera/object-store/object.hpp>
+#include <tessera/object-store/util/scheduler.hpp>
 
-#include <realm/object-store/impl/realm_coordinator.hpp>
-#include <realm/object-store/impl/object_accessor_impl.hpp>
+#include <tessera/object-store/impl/realm_coordinator.hpp>
+#include <tessera/object-store/impl/object_accessor_impl.hpp>
 
-#include <realm/group.hpp>
-#include <realm/sync/subscriptions.hpp>
-#include <realm/util/any.hpp>
+#include <tessera/group.hpp>
+#include <tessera/sync/subscriptions.hpp>
+#include <tessera/util/any.hpp>
 
 #include <cstdint>
 
-using namespace realm;
+using namespace tessera;
 using util::any_cast;
 
 namespace {
@@ -57,7 +57,7 @@ struct TestContext : CppContext {
     std::map<std::string, AnyDict> defaults;
 
     using CppContext::CppContext;
-    TestContext(TestContext& parent, realm::Obj& obj, realm::Property const& prop)
+    TestContext(TestContext& parent, tessera::Obj& obj, tessera::Property const& prop)
         : CppContext(parent, obj, prop)
         , defaults(parent.defaults)
     {
@@ -1215,7 +1215,7 @@ TEST_CASE("object") {
 
     SECTION("create does not complain about missing values for nullable fields") {
         r->begin_transaction();
-        realm::Object obj;
+        tessera::Object obj;
         REQUIRE_NOTHROW(obj = Object::create(d, r, *r->schema().find("all optional types"), std::any(AnyDict{})));
         r->commit_transaction();
 
@@ -1610,7 +1610,7 @@ TEST_CASE("object") {
                 {"data array", AnyVec{std::any()}},
                 {"date array", AnyVec{Timestamp()}},
                 {"object id array", AnyVec{std::any()}},
-                {"decimal array", AnyVec{Decimal128(realm::null())}},
+                {"decimal array", AnyVec{Decimal128(tessera::null())}},
                 {"uuid array", AnyVec{std::any()}},
             };
             Object::create(d, r, *r->schema().find("all optional types"), std::any(null_values), policy);
@@ -1634,7 +1634,7 @@ TEST_CASE("object") {
             REQUIRE(d.get<List>(obj, "data array").get<BinaryData>(0) == BinaryData());
             REQUIRE(d.get<List>(obj, "date array").get<Timestamp>(0) == Timestamp());
             REQUIRE(d.get<List>(obj, "object id array").get<util::Optional<ObjectId>>(0) == util::none);
-            REQUIRE(d.get<List>(obj, "decimal array").get<Decimal>(0) == Decimal128(realm::null()));
+            REQUIRE(d.get<List>(obj, "decimal array").get<Decimal>(0) == Decimal128(tessera::null()));
             REQUIRE(d.get<List>(obj, "uuid array").get<util::Optional<UUID>>(0) == util::none);
 
             // Set all lists to null
@@ -1997,7 +1997,7 @@ TEST_CASE("object") {
         r->cancel_transaction();
     }
 
-#if REALM_ENABLE_SYNC
+#if TESSERA_ENABLE_SYNC
     if (!util::EventLoop::has_implementation())
         return;
     SECTION("defaults do not override values explicitly passed to create()") {
@@ -2400,7 +2400,7 @@ TEST_CASE("Typed Object") {
     }
 }
 
-#if REALM_ENABLE_SYNC
+#if TESSERA_ENABLE_SYNC
 
 TEST_CASE("Asymmetric Object") {
     Schema schema{
@@ -2538,4 +2538,4 @@ TEST_CASE("KeyPath generation - star notation") {
     CHECK_THROWS_AS(realm->create_key_path_array("Person", {"*.myPet.breed"}), InvalidArgument);
 }
 
-#endif // REALM_ENABLE_SYNC
+#endif // TESSERA_ENABLE_SYNC

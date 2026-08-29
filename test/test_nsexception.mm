@@ -18,11 +18,11 @@
 
 #include "test.hpp"
 
-#include "realm/status.hpp"
+#include "tessera/status.hpp"
 
 #include <Foundation/Foundation.h>
 
-namespace realm {
+namespace tessera {
 namespace {
 TEST(Status_NSException)
 {
@@ -36,4 +36,4 @@ TEST(Status_NSException)
     }
 }
 } // namespace
-} // namespace realm
+} // namespace tessera

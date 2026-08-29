@@ -16,12 +16,12 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_FUZZ_TESTER_HPP
-#define REALM_TEST_FUZZ_TESTER_HPP
+#ifndef TESSERA_TEST_FUZZ_TESTER_HPP
+#define TESSERA_TEST_FUZZ_TESTER_HPP
 
-#include <realm/util/features.h>
-#include <realm/list.hpp>
-#include <realm/sync/transform.hpp>
+#include <tessera/util/features.h>
+#include <tessera/list.hpp>
+#include <tessera/merge/transform.hpp>
 
 #include "util/unit_test.hpp"
 #include "util/quote.hpp"
@@ -31,7 +31,7 @@
 
 #include <iostream>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 template <class L>
@@ -147,7 +147,7 @@ private:
     void rename_table(Peer& client)
     {
         static_cast<void>(client);
-        REALM_ASSERT(false);
+        TESSERA_ASSERT(false);
     }
 
     auto trace_client(Peer& client)
@@ -266,7 +266,7 @@ private:
                 type_name = "type_String";
             }
             else {
-                REALM_TERMINATE("Missing trace support for column type.");
+                TESSERA_TERMINATE("Missing trace support for column type.");
             }
 
             std::cerr << trace_selected_table(client) << "->add_column(" << type_name << ", \"" << name << "\", "
@@ -279,7 +279,7 @@ private:
 
     void insert_link_column(Peer& client)
     {
-        REALM_ASSERT(count_classes(client) > 1);
+        TESSERA_ASSERT(count_classes(client) > 1);
 
         const char* column_names[] = {"e", "f"};
 
@@ -322,7 +322,7 @@ private:
 
     void insert_array_column(Peer& client)
     {
-        REALM_ASSERT(count_classes(client) >= 1);
+        TESSERA_ASSERT(count_classes(client) >= 1);
 
         const char* column_names[] = {"g", "h"};
         const DataType column_types[] = {type_Int, type_String};
@@ -345,7 +345,7 @@ private:
                 type_name = "type_String";
             }
             else {
-                REALM_TERMINATE("Missing trace support for column type.");
+                TESSERA_TERMINATE("Missing trace support for column type.");
             }
             std::cerr << trace_selected_table(client) << "->add_column_list(" << type_name << ", \"" << name << "\", "
                       << nullable << ");\n";
@@ -357,7 +357,7 @@ private:
 
     void update_row(Peer& client)
     {
-        REALM_ASSERT(!m_unstructured_columns.empty());
+        TESSERA_ASSERT(!m_unstructured_columns.empty());
         size_t i = draw_int_mod(m_unstructured_columns.size());
         ColKey col_key = m_unstructured_columns[i];
         size_t num_rows = client.selected_table->size();
@@ -446,7 +446,7 @@ private:
             }
             return;
         }
-        REALM_ASSERT(false);
+        TESSERA_ASSERT(false);
     }
 
     void insert_row(Peer& client)
@@ -495,7 +495,7 @@ private:
         size_t link_ndx = draw_int_max(num_links - 1);
         auto target_table = client.selected_link_list->get_target_table();
         size_t num_target_rows = target_table->size();
-        REALM_ASSERT(num_target_rows > 0);
+        TESSERA_ASSERT(num_target_rows > 0);
         size_t target_row_ndx = draw_int_mod(num_target_rows);
         ObjKey target_row_key = (target_table->begin() + target_row_ndx)->get_key();
         if (m_trace) {
@@ -510,7 +510,7 @@ private:
         size_t link_ndx = draw_int_max(num_links);
         auto target_table = client.selected_link_list->get_target_table();
         size_t num_target_rows = target_table->size();
-        REALM_ASSERT(num_target_rows > 0);
+        TESSERA_ASSERT(num_target_rows > 0);
         size_t target_row_ndx = draw_int_mod(num_target_rows);
         ObjKey target_row_key = (target_table->begin() + target_row_ndx)->get_key();
         if (m_trace) {
@@ -798,7 +798,7 @@ void FuzzTester<S>::round(unit_test::TestContext& test_context, std::string path
             accum_weights += upload_weight;
         if (can_download)
             accum_weights += download_weight;
-        REALM_ASSERT(accum_weights > 0);
+        TESSERA_ASSERT(accum_weights > 0);
         long long rest_weight = draw_int_mod(accum_weights);
         if (can_modify) {
             if (rest_weight < modify_weight) {
@@ -856,7 +856,7 @@ void FuzzTester<S>::round(unit_test::TestContext& test_context, std::string path
                         get_table_level_modify_actions(num_classes, num_cols, num_rows, actions);
                     }
                     else {
-                        REALM_ASSERT(n > 0); // No columns implies no rows
+                        TESSERA_ASSERT(n > 0); // No columns implies no rows
                         size_t i = draw_int_mod<size_t>(m_link_list_columns.size() + m_array_columns.size());
                         ColKey col_key;
                         bool is_array;
@@ -894,7 +894,7 @@ void FuzzTester<S>::round(unit_test::TestContext& test_context, std::string path
                                 client.selected_array = std::move(array);
                             }
                             else {
-                                REALM_TERMINATE("Unsupported list type.");
+                                TESSERA_TERMINATE("Unsupported list type.");
                             }
                             size_t num_elements = client.selected_array->size();
                             get_array_level_modify_actions(num_elements, actions);
@@ -924,7 +924,7 @@ void FuzzTester<S>::round(unit_test::TestContext& test_context, std::string path
                     }
                     rest_weight_2 -= action_weight;
                 }
-                REALM_ASSERT(action_func);
+                TESSERA_ASSERT(action_func);
                 (this->*action_func)(client);
                 if (m_trace) {
                     std::cerr << "client_" << client.local_file_ident
@@ -975,7 +975,7 @@ void FuzzTester<S>::round(unit_test::TestContext& test_context, std::string path
             }
             rest_weight -= download_weight;
         }
-        REALM_ASSERT(false);
+        TESSERA_ASSERT(false);
     }
 
     ReadTransaction rt_0(server->shared_group);
@@ -994,6 +994,6 @@ void FuzzTester<S>::round(unit_test::TestContext& test_context, std::string path
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_FUZZ_TESTER_HPP
+#endif // TESSERA_TEST_FUZZ_TESTER_HPP

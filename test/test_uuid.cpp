@@ -16,14 +16,14 @@
  *
  **************************************************************************/
 
-#include <realm.hpp>
-#include <realm/uuid.hpp>
+#include <tessera.hpp>
+#include <tessera/uuid.hpp>
 #include <chrono>
-#include <realm/array_fixed_bytes.hpp>
+#include <tessera/array_fixed_bytes.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 namespace {
 
@@ -385,7 +385,7 @@ TEST(UUID_Commit)
 }
 
 // This test has a higher chance of finding node merge issues
-// when using REALM_MAX_BPNODE_SIZE = 4
+// when using TESSERA_MAX_BPNODE_SIZE = 4
 TEST_TYPES(UUID_GrowAndShrink, UUID, util::Optional<UUID>)
 {
     SHARED_GROUP_TEST_PATH(path);
@@ -587,15 +587,15 @@ TEST_TYPES(UUID_Query, WithIndex, WithoutIndex)
 
         Query q2 = table->column<UUID>(col_id) == uuid3;
         CHECK_EQUAL(q2.count(), 34);
-        q2 = table->column<UUID>(col_id) == realm::null();
+        q2 = table->column<UUID>(col_id) == tessera::null();
         CHECK_EQUAL(q2.count(), num_expected_nulls);
-        q2 = table->where().equal(col_id, realm::null());
+        q2 = table->where().equal(col_id, tessera::null());
         CHECK_EQUAL(q2.count(), num_expected_nulls);
 
         // Test query over links
         Query q3 = origin->link(col_owns).column<UUID>(col_id) == uuid3;
         CHECK_EQUAL(q3.count(), 34);
-        q3 = origin->link(col_owns).column<UUID>(col_id) == realm::null();
+        q3 = origin->link(col_owns).column<UUID>(col_id) == tessera::null();
         CHECK_EQUAL(q3.count(), num_expected_nulls);
 
         // Test query over backlink (link list)

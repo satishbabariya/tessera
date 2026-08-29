@@ -46,12 +46,12 @@ static inline int link(const char* oldpath, const char* newpath)
 }
 #endif
 
-#include <realm/util/file.hpp>
+#include <tessera/util/file.hpp>
 
 #include "timer.hpp"
 #include "benchmark_results.hpp"
 
-using namespace realm;
+using namespace tessera;
 using namespace test_util;
 
 
@@ -163,7 +163,7 @@ BenchmarkResults::Result BenchmarkResults::Measurement::finish() const
 
         double variance = sum_variance / n;
         r.stddev = std::sqrt(variance);
-        REALM_ASSERT_RELEASE(r.stddev != 0);
+        TESSERA_ASSERT_RELEASE(r.stddev != 0);
     }
     else {
         r.stddev = 0;

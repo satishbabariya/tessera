@@ -18,11 +18,11 @@
 
 #include "testsettings.hpp"
 
-#include <realm/util/overload.hpp>
+#include <tessera/util/overload.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 // Test independence and thread-safety
 // -----------------------------------

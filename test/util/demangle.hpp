@@ -16,13 +16,13 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_DEMANGLE_HPP
-#define REALM_TEST_UTIL_DEMANGLE_HPP
+#ifndef TESSERA_TEST_UTIL_DEMANGLE_HPP
+#define TESSERA_TEST_UTIL_DEMANGLE_HPP
 
 #include <typeinfo>
 #include <string>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 
@@ -50,6 +50,6 @@ inline std::string get_type_name(const T& v)
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_DEMANGLE_HPP
+#endif // TESSERA_TEST_UTIL_DEMANGLE_HPP

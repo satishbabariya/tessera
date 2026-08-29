@@ -22,16 +22,16 @@
 #include <util/test_utils.hpp>
 #include <util/sync/sync_test_utils.hpp>
 
-#include <realm/list.hpp>
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/object_store.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/schema.hpp>
-#include <realm/sync/noinst/client_history_impl.hpp>
-#include <realm/sync/noinst/client_reset.hpp>
-#include <realm/sync/noinst/client_reset_recovery.hpp>
+#include <tessera/list.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/object_store.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/schema.hpp>
+#include <tessera/sync/noinst/client_history_impl.hpp>
+#include <tessera/sync/noinst/client_reset.hpp>
+#include <tessera/sync/noinst/client_reset_recovery.hpp>
 
-namespace realm {
+namespace tessera {
 
 static TableRef get_table(Realm& realm, StringData object_type)
 {
@@ -48,12 +48,12 @@ static Obj create_object(Realm& realm, StringData object_type, util::Optional<in
 }
 
 struct BenchmarkLocalClientReset : public reset_utils::TestClientReset {
-    BenchmarkLocalClientReset(realm::Realm::Config local_config, realm::Realm::Config remote_config)
+    BenchmarkLocalClientReset(tessera::Realm::Config local_config, tessera::Realm::Config remote_config)
         : reset_utils::TestClientReset(local_config, remote_config)
     {
-        REALM_ASSERT(m_local_config.sync_config);
+        TESSERA_ASSERT(m_local_config.sync_config);
         m_mode = m_local_config.sync_config->client_resync_mode;
-        REALM_ASSERT(m_mode == ClientResyncMode::DiscardLocal || m_mode == ClientResyncMode::Recover);
+        TESSERA_ASSERT(m_mode == ClientResyncMode::DiscardLocal || m_mode == ClientResyncMode::Recover);
         // turn off sync, we only fake it
         m_local_config.sync_config = {};
         m_remote_config.sync_config = {};
@@ -72,7 +72,7 @@ struct BenchmarkLocalClientReset : public reset_utils::TestClientReset {
         // has been uploaded so that it doesn't replay during recovery.
         auto history_local =
             dynamic_cast<sync::ClientHistory*>(m_local->read_group().get_replication()->_get_history_write());
-        REALM_ASSERT(history_local);
+        TESSERA_ASSERT(history_local);
         sync::version_type current_version;
         sync::SaltedFileIdent file_ident;
         sync::SyncProgress progress;
@@ -130,7 +130,7 @@ struct BenchmarkLocalClientReset : public reset_utils::TestClientReset {
     void run() override
     {
         m_did_run = true;
-        REALM_ASSERT(m_did_setup);
+        TESSERA_ASSERT(m_did_setup);
         auto frozen_local_realm = m_local->freeze();
         Transaction& frozen_local = (Transaction&)frozen_local_realm->read_group();
         m_local->begin_transaction();
@@ -348,4 +348,4 @@ TEST_CASE("client reset", "[sync][pbs][benchmark][client reset]") {
     }
 }
 
-} // namespace realm
+} // namespace tessera

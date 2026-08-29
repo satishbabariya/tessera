@@ -18,11 +18,11 @@
 
 #include "testsettings.hpp"
 
-#include <realm/util/scope_exit.hpp>
+#include <tessera/util/scope_exit.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 // Test independence and thread-safety
 // -----------------------------------

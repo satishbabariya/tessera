@@ -19,12 +19,12 @@
 #include <util/crypt_key.hpp>
 #include <util/test_path.hpp>
 
-#include <realm/util/features.h>
-#include <realm/util/logger.hpp>
-#include <realm/util/to_string.hpp>
+#include <tessera/util/features.h>
+#include <tessera/util/logger.hpp>
+#include <tessera/util/to_string.hpp>
 
 #if TEST_SCHEDULER_UV
-#include <realm/object-store/util/uv/scheduler.hpp>
+#include <tessera/object-store/util/uv/scheduler.hpp>
 #endif
 
 #include <catch2/catch_all.hpp>
@@ -60,53 +60,53 @@
 #define TEST_LOGGING_LEVEL_APP off
 */
 
-static std::vector<std::pair<std::string_view, realm::util::Logger::Level>> default_log_levels = {
-    {"Realm", realm::util::Logger::Level::TEST_LOGGING_LEVEL},
+static std::vector<std::pair<std::string_view, tessera::util::Logger::Level>> default_log_levels = {
+    {"Tessera", tessera::util::Logger::Level::TEST_LOGGING_LEVEL},
 #ifdef TEST_LOGGING_LEVEL_STORAGE
-    {"Realm.Storage", realm::util::Logger::Level::TEST_LOGGING_LEVEL_STORAGE},
+    {"Tessera.Storage", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_STORAGE},
 #endif
 #ifdef TEST_LOGGING_LEVEL_TRANSACTION
-    {"Realm.Storage.Transaction", realm::util::Logger::Level::TEST_LOGGING_LEVEL_TRANSACTION},
+    {"Tessera.Storage.Transaction", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_TRANSACTION},
 #endif
 #ifdef TEST_LOGGING_LEVEL_QUERY
-    {"Realm.Storage.Query", realm::util::Logger::Level::TEST_LOGGING_LEVEL_QUERY},
+    {"Tessera.Storage.Query", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_QUERY},
 #endif
 #ifdef TEST_LOGGING_LEVEL_OBJECT
-    {"Realm.Storage.Object", realm::util::Logger::Level::TEST_LOGGING_LEVEL_OBJECT},
+    {"Tessera.Storage.Object", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_OBJECT},
 #endif
 #ifdef TEST_LOGGING_LEVEL_NOTIFICATION
-    {"Realm.Storage.Notification", realm::util::Logger::Level::TEST_LOGGING_LEVEL_NOTIFICATION},
+    {"Tessera.Storage.Notification", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_NOTIFICATION},
 #endif
 #ifdef TEST_LOGGING_LEVEL_SYNC
-    {"Realm.Sync", realm::util::Logger::Level::TEST_LOGGING_LEVEL_SYNC},
+    {"Tessera.Sync", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_SYNC},
 #endif
 #ifdef TEST_LOGGING_LEVEL_CLIENT
-    {"Realm.Sync.Client", realm::util::Logger::Level::TEST_LOGGING_LEVEL_CLIENT},
+    {"Tessera.Sync.Client", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_CLIENT},
 #endif
 #ifdef TEST_LOGGING_LEVEL_SESSION
-    {"Realm.Sync.Client.Session", realm::util::Logger::Level::TEST_LOGGING_LEVEL_SESSION},
+    {"Tessera.Sync.Client.Session", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_SESSION},
 #endif
 #ifdef TEST_LOGGING_LEVEL_CHANGESET
-    {"Realm.Sync.Client.Changeset", realm::util::Logger::Level::TEST_LOGGING_LEVEL_CHANGESET},
+    {"Tessera.Sync.Client.Changeset", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_CHANGESET},
 #endif
 #ifdef TEST_LOGGING_LEVEL_NETWORK
-    {"Realm.Sync.Client.Network", realm::util::Logger::Level::TEST_LOGGING_LEVEL_NETWORK},
+    {"Tessera.Sync.Client.Network", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_NETWORK},
 #endif
 #ifdef TEST_LOGGING_LEVEL_RESET
-    {"Realm.Sync.Client.Reset", realm::util::Logger::Level::TEST_LOGGING_LEVEL_RESET},
+    {"Tessera.Sync.Client.Reset", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_RESET},
 #endif
 #ifdef TEST_LOGGING_LEVEL_SERVER
-    {"Realm.Sync.Server", realm::util::Logger::Level::TEST_LOGGING_LEVEL_SERVER},
+    {"Tessera.Sync.Server", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_SERVER},
 #endif
 #ifdef TEST_LOGGING_LEVEL_APP
-    {"Realm.App", realm::util::Logger::Level::TEST_LOGGING_LEVEL_APP},
+    {"Tessera.App", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_APP},
 #endif
 };
 
 static void set_default_level_thresholds()
 {
     for (auto [cat, level] : default_log_levels) {
-        realm::util::LogCategory::get_category(cat).set_default_level_threshold(level);
+        tessera::util::LogCategory::get_category(cat).set_default_level_threshold(level);
     }
 }
 
@@ -117,7 +117,7 @@ int run_object_store_tests(int argc, const char** argv)
 {
     auto t1 = std::chrono::steady_clock::now();
 
-    realm::test_util::initialize_test_path(1, argv);
+    tessera::test_util::initialize_test_path(1, argv);
 
     Catch::ConfigData config;
 
@@ -126,7 +126,7 @@ int run_object_store_tests(int argc, const char** argv)
         // If the output file already exists, make a copy so these results can be appended to it
         std::map<std::string, std::string> custom_options;
         if (std::filesystem::exists(str)) {
-            std::string results_copy = realm::util::format("%1.bak", str);
+            std::string results_copy = tessera::util::format("%1.bak", str);
             std::filesystem::copy(str, results_copy, std::filesystem::copy_options::overwrite_existing);
             custom_options["json_file"] = results_copy;
             std::cout << "Existing results file copied to " << results_copy << std::endl;
@@ -149,7 +149,7 @@ int run_object_store_tests(int argc, const char** argv)
             c = tolower(c);
         }
         if (str == "1" || str == "on" || str == "yes") {
-            realm::test_util::enable_always_encrypt();
+            tessera::test_util::enable_always_encrypt();
         }
     }
 
@@ -159,10 +159,10 @@ int run_object_store_tests(int argc, const char** argv)
 
 #if TEST_SCHEDULER_UV
     static std::thread::id s_main_thread_id = std::this_thread::get_id();
-    realm::util::Scheduler::set_default_factory([]() -> std::shared_ptr<realm::util::Scheduler> {
+    tessera::util::Scheduler::set_default_factory([]() -> std::shared_ptr<tessera::util::Scheduler> {
         // The libuv scheduler can only be constructed from the main thread
-        REALM_ASSERT_RELEASE(std::this_thread::get_id() == s_main_thread_id);
-        return std::make_shared<realm::util::UvMainLoopScheduler>();
+        TESSERA_ASSERT_RELEASE(std::this_thread::get_id() == s_main_thread_id);
+        return std::make_shared<tessera::util::UvMainLoopScheduler>();
     });
 #endif
 

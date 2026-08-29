@@ -18,15 +18,15 @@
 
 #include "testsettings.hpp"
 
-#include <realm.hpp>
-#include <realm/array_mixed.hpp>
+#include <tessera.hpp>
+#include <tessera/array_mixed.hpp>
 
 #include "test.hpp"
 #include "test_types_helper.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 /*************************************************************************
  *
@@ -118,7 +118,7 @@ TEST(Mixed_List_unresolved_as_null)
             }
             return true;
         };
-        list.find_all(realm::null(), [&](size_t pos) {
+        list.find_all(tessera::null(), [&](size_t pos) {
             found.push_back(pos);
         });
         CHECK_EQUAL(check_results({0, 2}), true);
@@ -126,7 +126,7 @@ TEST(Mixed_List_unresolved_as_null)
 
     {
         // find null or find unresolved link diverge, different objects should be returned
-        auto index = list.find_any(realm::null());
+        auto index = list.find_any(tessera::null());
         CHECK_EQUAL(index, 0);
         index = list.find_first(obj1);
         CHECK_EQUAL(index, 2);
@@ -155,14 +155,14 @@ TEST(Mixed_List_unresolved_as_null)
         CHECK_EQUAL(indices.at(1), 1);
         CHECK_EQUAL(list.is_null(indices[0]), true);
         CHECK_EQUAL(list.is_null(indices[1]), false);
-        CHECK_EQUAL(list.find_any(realm::null()), 0);
+        CHECK_EQUAL(list.find_any(tessera::null()), 0);
     }
 
     {
         list.remove(0);
         CHECK_EQUAL(list.find_any(obj1), 1);
         list.remove(1);
-        CHECK_EQUAL(list.find_any(realm::null()), npos);
+        CHECK_EQUAL(list.find_any(tessera::null()), npos);
         CHECK_EQUAL(list.size(), 1);
     }
 
@@ -178,8 +178,8 @@ TEST(Mixed_List_unresolved_as_null)
         list.insert_null(1);
         obj1.invalidate();
 
-        auto index_any = list.find_any(realm::null());
-        auto index_first = list.find_first(realm::null());
+        auto index_any = list.find_any(tessera::null());
+        auto index_first = list.find_first(tessera::null());
         CHECK_EQUAL(index_any, 0);
         CHECK_EQUAL(index_first, 0);
     }
@@ -194,8 +194,8 @@ TEST(Mixed_List_unresolved_as_null)
 
         list.insert(0, obj1);
         obj1.invalidate();
-        auto index_any = list.find_any(realm::null());
-        auto index_first = list.find_first(realm::null());
+        auto index_any = list.find_any(tessera::null());
+        auto index_first = list.find_first(tessera::null());
         CHECK_EQUAL(index_any, 0);
         CHECK_EQUAL(index_first, 0);
     }
@@ -230,7 +230,7 @@ TEST(Mixed_Set_unresolved_links)
 
     {
         int cnt = 0;
-        set.find_all(realm::null(), [this, &set, &cnt](size_t pos) {
+        set.find_all(tessera::null(), [this, &set, &cnt](size_t pos) {
             CHECK(pos != not_found);
             CHECK_EQUAL(set.is_null(pos), true);
             cnt += 1;
@@ -239,7 +239,7 @@ TEST(Mixed_Set_unresolved_links)
     }
 
     {
-        auto index = set.find_any(realm::null());
+        auto index = set.find_any(tessera::null());
         CHECK(index != not_found);
         CHECK_EQUAL(set.is_null(index), true);
     }
@@ -757,14 +757,14 @@ struct SingleLink {
     void init_table(TableRef) {}
     void set_links(Obj from, std::vector<ObjLink> to)
     {
-        REALM_ASSERT(to.size() == 1);
+        TESSERA_ASSERT(to.size() == 1);
         TableRef src_table = from.get_table();
         if (!m_col_key) {
             TableRef dest_table = src_table->get_parent_group()->get_table(to[0].get_table_key());
             m_col_key = src_table->add_column(*dest_table, "link");
         }
         TableKey dest_table_key = src_table->get_opposite_table_key(m_col_key);
-        REALM_ASSERT(to[0].get_table_key() == dest_table_key);
+        TESSERA_ASSERT(to[0].get_table_key() == dest_table_key);
         from.set<ObjKey>(m_col_key, to[0].get_obj_key());
     }
     void get_links(Obj from, std::vector<ObjLink>& links)

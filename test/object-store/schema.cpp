@@ -20,15 +20,15 @@
 #include "util/test_file.hpp"
 #include "util/test_utils.hpp"
 
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/object_store.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/schema.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/object_store.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/schema.hpp>
 
-#include <realm/group.hpp>
-#include <realm/table.hpp>
+#include <tessera/group.hpp>
+#include <tessera/table.hpp>
 
-using namespace realm;
+using namespace tessera;
 
 struct SchemaChangePrinter {
     std::ostream& out;
@@ -46,7 +46,7 @@ struct SchemaChangePrinter {
         print(rest...);
     }
 
-#define REALM_SC_PRINT(type, ...)                                                                                    \
+#define TESSERA_SC_PRINT(type, ...)                                                                                    \
     void operator()(schema_change::type v) const                                                                     \
     {                                                                                                                \
         out << #type << "{";                                                                                         \
@@ -54,20 +54,20 @@ struct SchemaChangePrinter {
         out << "}";                                                                                                  \
     }
 
-    REALM_SC_PRINT(AddIndex, v.object, v.property, v.type)
-    REALM_SC_PRINT(AddProperty, v.object, v.property)
-    REALM_SC_PRINT(AddTable, v.object)
-    REALM_SC_PRINT(RemoveTable, v.object)
-    REALM_SC_PRINT(ChangeTableType, v.object, v.old_table_type, v.new_table_type)
-    REALM_SC_PRINT(AddInitialProperties, v.object)
-    REALM_SC_PRINT(ChangePrimaryKey, v.object, v.property)
-    REALM_SC_PRINT(ChangePropertyType, v.object, v.old_property, v.new_property)
-    REALM_SC_PRINT(MakePropertyNullable, v.object, v.property)
-    REALM_SC_PRINT(MakePropertyRequired, v.object, v.property)
-    REALM_SC_PRINT(RemoveIndex, v.object, v.property)
-    REALM_SC_PRINT(RemoveProperty, v.object, v.property)
+    TESSERA_SC_PRINT(AddIndex, v.object, v.property, v.type)
+    TESSERA_SC_PRINT(AddProperty, v.object, v.property)
+    TESSERA_SC_PRINT(AddTable, v.object)
+    TESSERA_SC_PRINT(RemoveTable, v.object)
+    TESSERA_SC_PRINT(ChangeTableType, v.object, v.old_table_type, v.new_table_type)
+    TESSERA_SC_PRINT(AddInitialProperties, v.object)
+    TESSERA_SC_PRINT(ChangePrimaryKey, v.object, v.property)
+    TESSERA_SC_PRINT(ChangePropertyType, v.object, v.old_property, v.new_property)
+    TESSERA_SC_PRINT(MakePropertyNullable, v.object, v.property)
+    TESSERA_SC_PRINT(MakePropertyRequired, v.object, v.property)
+    TESSERA_SC_PRINT(RemoveIndex, v.object, v.property)
+    TESSERA_SC_PRINT(RemoveProperty, v.object, v.property)
 
-#undef REALM_SC_PRINT
+#undef TESSERA_SC_PRINT
 };
 
 namespace Catch {
@@ -394,7 +394,7 @@ TEST_CASE("Schema") {
                  {{"_id", PropertyType::Int, Property::IsPrimary{true}}, {"street", PropertyType::String}}},
             };
             REQUIRE_EXCEPTION(schema.validate(), SchemaValidationFailed,
-                              ContainsSubstring("Asymmetric table 'location' not allowed in a local Realm"));
+                              ContainsSubstring("Asymmetric table 'location' not allowed in a local database"));
         }
 
         SECTION("rejects link properties with asymmetric target object") {

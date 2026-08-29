@@ -16,7 +16,7 @@
  *
  **************************************************************************/
 
-#include <realm/db.hpp>
+#include <tessera/db.hpp>
 #include "../fuzz_group.hpp"
 
 int main(int argc, const char* argv[])

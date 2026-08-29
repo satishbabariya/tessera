@@ -37,11 +37,11 @@
 #include <iomanip>
 #include <thread>
 
-#include <realm/util/features.h>
-#include <realm/util/platform_info.hpp>
-#include <realm.hpp>
-#include <realm/utilities.hpp>
-#include <realm/disable_sync_to_disk.hpp>
+#include <tessera/util/features.h>
+#include <tessera/util/platform_info.hpp>
+#include <tessera.hpp>
+#include <tessera/utilities.hpp>
+#include <tessera/disable_sync_to_disk.hpp>
 
 #include "util/timer.hpp"
 #include "util/resource_limits.hpp"
@@ -51,7 +51,7 @@
 
 #ifdef _WIN32
 #include <Windows.h>
-#if REALM_UWP
+#if TESSERA_UWP
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Storage.h>
 #else
@@ -64,7 +64,7 @@
 // Need to disable file descriptor leak checks on Apple platforms, as it seems
 // like an unknown number of file descriptors can be left behind, presumably due
 // the way asynchronous DNS lookup is implemented.
-#if !defined _WIN32 && !REALM_PLATFORM_APPLE
+#if !defined _WIN32 && !TESSERA_PLATFORM_APPLE
 #define ENABLE_FILE_DESCRIPTOR_LEAK_CHECK
 #endif
 
@@ -73,9 +73,9 @@
 #include <fcntl.h>
 #endif
 
-using namespace realm;
-using namespace realm::test_util;
-using namespace realm::test_util::unit_test;
+using namespace tessera;
+using namespace tessera::test_util;
+using namespace tessera::test_util::unit_test;
 
 // Random seed for various random number generators used by fuzzying unit tests.
 unsigned int unit_test_random_seed;
@@ -217,13 +217,13 @@ void display_build_config()
 {
     const char* with_debug = Version::has_feature(feature_Debug) ? "Enabled" : "Disabled";
 
-#if REALM_ENABLE_MEMDEBUG
+#if TESSERA_ENABLE_MEMDEBUG
     const char* memdebug = "Enabled";
 #else
     const char* memdebug = "Disabled";
 #endif
 
-#if REALM_ENABLE_ENCRYPTION
+#if TESSERA_ENABLE_ENCRYPTION
     bool always_encrypt = is_always_encrypt_enabled();
     const char* encryption = always_encrypt ? "Enabled at compile-time (always encrypt = yes)"
                                             : "Enabled at compile-time (always encrypt = no)";
@@ -231,29 +231,29 @@ void display_build_config()
     const char* encryption = "Disabled at compile-time";
 #endif
 
-#ifdef REALM_COMPILER_SSE
+#ifdef TESSERA_COMPILER_SSE
     const char* compiler_sse = "Yes";
 #else
     const char* compiler_sse = "No";
 #endif
 
-#ifdef REALM_COMPILER_AVX
+#ifdef TESSERA_COMPILER_AVX
     const char* compiler_avx = "Yes";
 #else
     const char* compiler_avx = "No";
 #endif
 
-    const char* cpu_sse = realm::sseavx<42>() ? "4.2" : (realm::sseavx<30>() ? "3.0" : "None");
+    const char* cpu_sse = tessera::sseavx<42>() ? "4.2" : (tessera::sseavx<30>() ? "3.0" : "None");
 
-    const char* cpu_avx = realm::sseavx<1>() ? "Yes" : "No";
+    const char* cpu_avx = tessera::sseavx<1>() ? "Yes" : "No";
 
     std::cout << std::endl
-              << "Realm version: " << Version::get_version() << " with Debug " << with_debug << "\n"
+              << "database version: " << Version::get_version() << " with Debug " << with_debug << "\n"
               << "Platform: " << util::get_platform_info() << "\n"
               << "Encryption: " << encryption << "\n"
               << "\n"
-              << "REALM_MAX_BPNODE_SIZE = " << REALM_MAX_BPNODE_SIZE << "\n"
-              << "REALM_MEMDEBUG = " << memdebug << "\n"
+              << "TESSERA_MAX_BPNODE_SIZE = " << TESSERA_MAX_BPNODE_SIZE << "\n"
+              << "TESSERA_MEMDEBUG = " << memdebug << "\n"
               << "\n"
               // Be aware that ps3/xbox have sizeof (void*) = 4 && sizeof (size_t) == 8
               // We decide to print size_t here
@@ -355,14 +355,14 @@ void put_time(std::ostream& out, const std::tm& tm, const char* format)
 }
 
 
-bool run_tests(const std::shared_ptr<realm::util::Logger>& logger = nullptr)
+bool run_tests(const std::shared_ptr<tessera::util::Logger>& logger = nullptr)
 {
     {
         const char* str = getenv("UNITTEST_KEEP_FILES");
         if (str && strlen(str) != 0)
             keep_test_files();
     }
-    const bool running_spawned_process = getenv("REALM_SPAWNED");
+    const bool running_spawned_process = getenv("TESSERA_SPAWNED");
 
     TestList::Config config;
     config.logger = logger;
@@ -516,9 +516,9 @@ bool run_tests(const std::shared_ptr<realm::util::Logger>& logger = nullptr)
 } // anonymous namespace
 
 
-int test_all(const std::shared_ptr<realm::util::Logger>& logger)
+int test_all(const std::shared_ptr<tessera::util::Logger>& logger)
 {
-    // General note: Some Github clients on Windows will interfere with the .realm files created by unit tests (the
+    // General note: Some Github clients on Windows will interfere with the .tess files created by unit tests (the
     // git client will attempt to access the files when it sees that new files have been created). This may cause
     // very rare/sporadic segfaults and asserts. If the temporary directory path is outside revision control, there
     // is no problem. Otherwise we need two things fulfilled: 1) The directory must be in .gitignore, and also 2)
@@ -528,7 +528,7 @@ int test_all(const std::shared_ptr<realm::util::Logger>& logger)
     // error messages.
     std::cout.setf(std::ios::unitbuf);
 
-#ifndef REALM_COVER
+#ifndef TESSERA_COVER
     // No need to synchronize file changes to physical medium in the test suite,
     // as that would only make a difference if the entire system crashes,
     // e.g. due to power off.
@@ -543,7 +543,7 @@ int test_all(const std::shared_ptr<realm::util::Logger>& logger)
     bool no_error_exit_status = no_error_exitcode_str && strlen(no_error_exitcode_str) != 0;
 
 #ifdef WIN32
-#if REALM_UWP
+#if TESSERA_UWP
     std::string path =
         winrt::to_string(winrt::Windows::ApplicationModel::Package::Current().InstalledLocation().Path());
     path += "\\TestAssets\\";
@@ -557,7 +557,7 @@ int test_all(const std::shared_ptr<realm::util::Logger>& logger)
 
     fix_max_open_files();
 
-    if (!getenv("REALM_SPAWNED"))
+    if (!getenv("TESSERA_SPAWNED"))
         display_build_config();
 
     long num_open_files = get_num_open_files();
@@ -566,7 +566,7 @@ int test_all(const std::shared_ptr<realm::util::Logger>& logger)
 
     if (num_open_files >= 0) {
         long num_open_files_2 = get_num_open_files();
-        REALM_ASSERT(num_open_files_2 >= 0);
+        TESSERA_ASSERT(num_open_files_2 >= 0);
         if (num_open_files_2 > num_open_files) {
             long n = num_open_files_2 - num_open_files;
             // FIXME: This should be an error, but OpenSSL seems to open
@@ -579,7 +579,7 @@ int test_all(const std::shared_ptr<realm::util::Logger>& logger)
 
 #ifdef _MSC_VER
     // We don't want spawned processes (see spawned_process.hpp to require user interaction).
-    if (!getenv("REALM_SPAWNED"))
+    if (!getenv("TESSERA_SPAWNED"))
         getchar(); // wait for key
 #endif
 

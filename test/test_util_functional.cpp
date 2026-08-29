@@ -4,11 +4,11 @@
 
 #include <type_traits>
 
-#include "realm/util/functional.hpp"
+#include "tessera/util/functional.hpp"
 
 #include "test.hpp"
 
-namespace realm::util {
+namespace tessera::util {
 namespace {
 
 struct MoveOnlyType {
@@ -84,6 +84,6 @@ TEST(Util_UniqueFunction_Target)
 }
 
 } // namespace
-} // namespace realm::util
+} // namespace tessera::util
 
 #endif

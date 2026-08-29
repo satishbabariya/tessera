@@ -1,12 +1,12 @@
-#include "realm/sync/noinst/client_impl_base.hpp"
-#include "realm/util/time.hpp"
+#include "tessera/sync/noinst/client_impl_base.hpp"
+#include "tessera/util/time.hpp"
 
 #include "test.hpp"
 #include "util/test_path.hpp"
 
-using namespace realm;
-using namespace realm::sync;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::sync;
+using namespace tessera::util;
 
 TEST(Sync_ErrorBackoffCalculation)
 {

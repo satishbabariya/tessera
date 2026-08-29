@@ -16,14 +16,14 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_BENCHMARK_RESULTS_HPP
-#define REALM_TEST_UTIL_BENCHMARK_RESULTS_HPP
+#ifndef TESSERA_TEST_UTIL_BENCHMARK_RESULTS_HPP
+#define TESSERA_TEST_UTIL_BENCHMARK_RESULTS_HPP
 
 #include <vector>
 #include <map>
 #include <string>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 
@@ -92,6 +92,6 @@ inline BenchmarkResults::~BenchmarkResults()
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_BENCHMARK_RESULTS_HPP
+#endif // TESSERA_TEST_UTIL_BENCHMARK_RESULTS_HPP

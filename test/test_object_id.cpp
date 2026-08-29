@@ -16,15 +16,15 @@
  *
  **************************************************************************/
 
-#include <realm.hpp>
-#include <realm/array_fixed_bytes.hpp>
+#include <tessera.hpp>
+#include <tessera/array_fixed_bytes.hpp>
 #include <chrono>
 
-#include "realm/object_id.hpp"
+#include "tessera/object_id.hpp"
 #include "test.hpp"
 
 
-using namespace realm;
+using namespace tessera;
 
 struct WithIndex {
     constexpr static bool do_add_index = true;
@@ -381,10 +381,10 @@ TEST_TYPES(ObjectId_Query, WithIndex, WithoutIndex)
         Query q2 = table->column<ObjectId>(col_id) == alternative_id;
         // std::cout << q2.get_description() << std::endl;
         CHECK_EQUAL(q2.count(), 34);
-        q2 = table->column<ObjectId>(col_id) == realm::null();
+        q2 = table->column<ObjectId>(col_id) == tessera::null();
         // std::cout << q2.get_description() << std::endl;
         CHECK_EQUAL(q2.count(), 1000 - 34);
-        q2 = table->where().equal(col_id, realm::null());
+        q2 = table->where().equal(col_id, tessera::null());
         CHECK_EQUAL(q2.count(), 1000 - 34);
 
         // Test query over links

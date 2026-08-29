@@ -20,16 +20,16 @@
 #ifdef TEST_COLUMN_STRING
 
 #include <vector>
-#include <realm/index_string.hpp>
-#include <realm/bplustree.hpp>
-#include <realm/array_string.hpp>
-#include <realm/array_key.hpp>
+#include <tessera/index_string.hpp>
+#include <tessera/bplustree.hpp>
+#include <tessera/array_string.hpp>
+#include <tessera/array_key.hpp>
 
 #include "test.hpp"
 #include "test_string_types.hpp"
 
-using namespace realm;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::test_util;
 
 // Test independence and thread-safety
 // -----------------------------------
@@ -407,7 +407,7 @@ TEST(ColumnString_AdaptiveStringLeak)
     auto& col = test_resources.get_column();
 
     std::string large_str(100, 'a'); // use constant larger than 'medium_string_max_size'
-    for (size_t i = 0; i != 2 * REALM_MAX_BPNODE_SIZE; ++i) {
+    for (size_t i = 0; i != 2 * TESSERA_MAX_BPNODE_SIZE; ++i) {
         col.insert(0, large_str);
     }
 }
@@ -482,7 +482,7 @@ TEST(ColumnString_Null)
 
         a.add("foo");
         a.add("");
-        a.add(realm::null());
+        a.add(tessera::null());
 
         CHECK_EQUAL(a.is_null(0), false);
         CHECK_EQUAL(a.is_null(1), false);
@@ -502,7 +502,7 @@ TEST(ColumnString_Null)
         TEST_TYPE test_resources;
         typename TEST_TYPE::ColumnTestType& a = test_resources.get_column();
 
-        a.add(realm::null());
+        a.add(tessera::null());
         a.add("");
         a.add("foo");
 
@@ -512,9 +512,9 @@ TEST(ColumnString_Null)
         CHECK(a.get(2) == "foo");
 
         // Test insert
-        a.insert(0, realm::null());
-        a.insert(2, realm::null());
-        a.insert(4, realm::null());
+        a.insert(0, tessera::null());
+        a.insert(2, tessera::null());
+        a.insert(4, tessera::null());
 
         CHECK_EQUAL(a.is_null(0), true);
         CHECK_EQUAL(a.is_null(1), true);
@@ -529,7 +529,7 @@ TEST(ColumnString_Null)
         typename TEST_TYPE::ColumnTestType& a = test_resources.get_column();
 
         a.add("");
-        a.add(realm::null());
+        a.add(tessera::null());
         a.add("foo");
 
         CHECK_EQUAL(a.is_null(0), false);
@@ -567,7 +567,7 @@ TEST(ColumnString_Null)
                 v.erase(v.begin() + del);
             }
             else {
-                // Generate string with good probability of being empty or realm::null()
+                // Generate string with good probability of being empty or tessera::null()
                 static const char str[] =
                     "This string must be longer than 64 bytes in order to test the BinaryBlob type of strings";
                 size_t len;
@@ -581,7 +581,7 @@ TEST(ColumnString_Null)
                 std::string stdstr;
 
                 if (random.draw_int<int>() > 100) {
-                    sd = realm::null();
+                    sd = tessera::null();
                     stdstr = "null";
                 }
                 else {
@@ -706,7 +706,7 @@ TEST(ColumnString_Index)
     string_column test_resources;
     auto& asc = test_resources.get_column();
 
-    // 17 elements, to test node splits with REALM_MAX_BPNODE_SIZE = 3 or other small number
+    // 17 elements, to test node splits with TESSERA_MAX_BPNODE_SIZE = 3 or other small number
     asc.add("HEJSA"); // 0
     asc.add("1");
     asc.add("HEJSA");
@@ -791,7 +791,7 @@ TEST(ColumnString_NonLeafRoot)
         BPlusTree<StringData> c(Allocator::get_default());
         c.create();
 
-        for (int i = 0; i < (REALM_MAX_BPNODE_SIZE + 2); i++) {
+        for (int i = 0; i < (TESSERA_MAX_BPNODE_SIZE + 2); i++) {
             std::string s = util::to_string(i);
             c.add(StringData(s));
         }
@@ -799,12 +799,12 @@ TEST(ColumnString_NonLeafRoot)
         CHECK_EQUAL(c.find_first("3"), 3);
         CHECK_EQUAL(c.find_first("5000"), not_found);
 
-        CHECK_EQUAL(c.get(REALM_MAX_BPNODE_SIZE), util::to_string(REALM_MAX_BPNODE_SIZE));
-        CHECK_EQUAL(c.get(REALM_MAX_BPNODE_SIZE + 1), util::to_string(REALM_MAX_BPNODE_SIZE + 1));
-        c.erase(REALM_MAX_BPNODE_SIZE);
-        CHECK_EQUAL(c.get(REALM_MAX_BPNODE_SIZE), util::to_string(REALM_MAX_BPNODE_SIZE + 1));
-        c.erase(REALM_MAX_BPNODE_SIZE);
-        CHECK_EQUAL(c.size(), REALM_MAX_BPNODE_SIZE);
+        CHECK_EQUAL(c.get(TESSERA_MAX_BPNODE_SIZE), util::to_string(TESSERA_MAX_BPNODE_SIZE));
+        CHECK_EQUAL(c.get(TESSERA_MAX_BPNODE_SIZE + 1), util::to_string(TESSERA_MAX_BPNODE_SIZE + 1));
+        c.erase(TESSERA_MAX_BPNODE_SIZE);
+        CHECK_EQUAL(c.get(TESSERA_MAX_BPNODE_SIZE), util::to_string(TESSERA_MAX_BPNODE_SIZE + 1));
+        c.erase(TESSERA_MAX_BPNODE_SIZE);
+        CHECK_EQUAL(c.size(), TESSERA_MAX_BPNODE_SIZE);
 
         c.destroy();
     }
@@ -814,19 +814,19 @@ TEST(ColumnString_NonLeafRoot)
         c.create();
 
         c.add("This is a medium long string");
-        for (int i = 1; i < (REALM_MAX_BPNODE_SIZE + 2); i++) {
+        for (int i = 1; i < (TESSERA_MAX_BPNODE_SIZE + 2); i++) {
             std::string s = util::to_string(i);
             c.add(s);
         }
 
         CHECK_EQUAL(c.find_first("3"), 3);
 
-        CHECK_EQUAL(c.get(REALM_MAX_BPNODE_SIZE), util::to_string(REALM_MAX_BPNODE_SIZE));
-        CHECK_EQUAL(c.get(REALM_MAX_BPNODE_SIZE + 1), util::to_string(REALM_MAX_BPNODE_SIZE + 1));
-        c.erase(REALM_MAX_BPNODE_SIZE);
-        CHECK_EQUAL(c.get(REALM_MAX_BPNODE_SIZE), util::to_string(REALM_MAX_BPNODE_SIZE + 1));
-        c.erase(REALM_MAX_BPNODE_SIZE);
-        CHECK_EQUAL(c.size(), REALM_MAX_BPNODE_SIZE);
+        CHECK_EQUAL(c.get(TESSERA_MAX_BPNODE_SIZE), util::to_string(TESSERA_MAX_BPNODE_SIZE));
+        CHECK_EQUAL(c.get(TESSERA_MAX_BPNODE_SIZE + 1), util::to_string(TESSERA_MAX_BPNODE_SIZE + 1));
+        c.erase(TESSERA_MAX_BPNODE_SIZE);
+        CHECK_EQUAL(c.get(TESSERA_MAX_BPNODE_SIZE), util::to_string(TESSERA_MAX_BPNODE_SIZE + 1));
+        c.erase(TESSERA_MAX_BPNODE_SIZE);
+        CHECK_EQUAL(c.size(), TESSERA_MAX_BPNODE_SIZE);
 
         c.destroy();
     }
@@ -836,19 +836,19 @@ TEST(ColumnString_NonLeafRoot)
         c.create();
 
         c.add("This is a rather long string, that should not be very much shorter");
-        for (int i = 1; i < (REALM_MAX_BPNODE_SIZE + 2); i++) {
+        for (int i = 1; i < (TESSERA_MAX_BPNODE_SIZE + 2); i++) {
             std::string s = util::to_string(i);
             c.add(s);
         }
 
         CHECK_EQUAL(c.find_first("3"), 3);
 
-        CHECK_EQUAL(c.get(REALM_MAX_BPNODE_SIZE), util::to_string(REALM_MAX_BPNODE_SIZE));
-        CHECK_EQUAL(c.get(REALM_MAX_BPNODE_SIZE + 1), util::to_string(REALM_MAX_BPNODE_SIZE + 1));
-        c.erase(REALM_MAX_BPNODE_SIZE);
-        CHECK_EQUAL(c.get(REALM_MAX_BPNODE_SIZE), util::to_string(REALM_MAX_BPNODE_SIZE + 1));
-        c.erase(REALM_MAX_BPNODE_SIZE);
-        CHECK_EQUAL(c.size(), REALM_MAX_BPNODE_SIZE);
+        CHECK_EQUAL(c.get(TESSERA_MAX_BPNODE_SIZE), util::to_string(TESSERA_MAX_BPNODE_SIZE));
+        CHECK_EQUAL(c.get(TESSERA_MAX_BPNODE_SIZE + 1), util::to_string(TESSERA_MAX_BPNODE_SIZE + 1));
+        c.erase(TESSERA_MAX_BPNODE_SIZE);
+        CHECK_EQUAL(c.get(TESSERA_MAX_BPNODE_SIZE), util::to_string(TESSERA_MAX_BPNODE_SIZE + 1));
+        c.erase(TESSERA_MAX_BPNODE_SIZE);
+        CHECK_EQUAL(c.size(), TESSERA_MAX_BPNODE_SIZE);
 
         c.destroy();
     }
@@ -857,15 +857,15 @@ TEST(ColumnString_NonLeafRoot)
         BPlusTree<StringData> c(Allocator::get_default());
         c.create();
 
-        for (int i = 0; i < (REALM_MAX_BPNODE_SIZE + 2); i++) {
+        for (int i = 0; i < (TESSERA_MAX_BPNODE_SIZE + 2); i++) {
             std::string s = util::to_string(i);
             c.add(s);
         }
-        c.set(REALM_MAX_BPNODE_SIZE, "This is a medium long string");
-        c.set(REALM_MAX_BPNODE_SIZE + 1, "This is a rather long string, that should not be very much shorter");
+        c.set(TESSERA_MAX_BPNODE_SIZE, "This is a medium long string");
+        c.set(TESSERA_MAX_BPNODE_SIZE + 1, "This is a rather long string, that should not be very much shorter");
         CHECK_EQUAL(c.get(0), "0");
-        CHECK_EQUAL(c.get(REALM_MAX_BPNODE_SIZE), "This is a medium long string");
-        CHECK_EQUAL(c.get(REALM_MAX_BPNODE_SIZE + 1),
+        CHECK_EQUAL(c.get(TESSERA_MAX_BPNODE_SIZE), "This is a medium long string");
+        CHECK_EQUAL(c.get(TESSERA_MAX_BPNODE_SIZE + 1),
                     "This is a rather long string, that should not be very much shorter");
 
         c.destroy();
@@ -875,13 +875,13 @@ TEST(ColumnString_NonLeafRoot)
         BPlusTree<StringData> c(Allocator::get_default());
         c.create();
 
-        for (int i = 0; i < REALM_MAX_BPNODE_SIZE + 1; i++) {
+        for (int i = 0; i < TESSERA_MAX_BPNODE_SIZE + 1; i++) {
             std::string s = util::to_string(i);
             c.add(s);
         }
         c.add("This is a rather long string, that should not be very much shorter");
 
-        CHECK_EQUAL(c.get(REALM_MAX_BPNODE_SIZE + 1),
+        CHECK_EQUAL(c.get(TESSERA_MAX_BPNODE_SIZE + 1),
                     "This is a rather long string, that should not be very much shorter");
 
         c.destroy();
@@ -892,13 +892,13 @@ TEST(ColumnString_NonLeafRoot)
         c.create();
 
         c.add("This is a medium long string");
-        for (int i = 1; i < REALM_MAX_BPNODE_SIZE + 1; i++) {
+        for (int i = 1; i < TESSERA_MAX_BPNODE_SIZE + 1; i++) {
             std::string s = util::to_string(i);
             c.add(s);
         }
         c.add("This is a rather long string, that should not be very much shorter");
 
-        CHECK_EQUAL(c.get(REALM_MAX_BPNODE_SIZE + 1),
+        CHECK_EQUAL(c.get(TESSERA_MAX_BPNODE_SIZE + 1),
                     "This is a rather long string, that should not be very much shorter");
 
         c.destroy();

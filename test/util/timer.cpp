@@ -21,12 +21,12 @@
 #include <cmath>
 #include <sstream>
 
-#include <realm/util/features.h>
-#include <realm/util/assert.hpp>
+#include <tessera/util/features.h>
+#include <tessera/util/assert.hpp>
 
 #if defined _WIN32
 #include <windows.h>
-#elif REALM_PLATFORM_APPLE
+#elif TESSERA_PLATFORM_APPLE
 #include <sys/resource.h>
 #include <mach/mach_time.h>
 #include <sys/time.h>
@@ -36,7 +36,7 @@
 
 #include "timer.hpp"
 
-using namespace realm::test_util;
+using namespace tessera::test_util;
 
 
 #ifdef _WIN32
@@ -50,7 +50,7 @@ uint_fast64_t Timer::get_timer_ticks() const
         case type_UserTime:
             FILETIME creation, exit, kernel, user;
             BOOL b = GetProcessTimes(GetCurrentProcess(), &creation, &exit, &kernel, &user);
-            REALM_ASSERT_RELEASE(b);
+            TESSERA_ASSERT_RELEASE(b);
             return (static_cast<uint_fast64_t>(user.dwHighDateTime) << 32) + user.dwLowDateTime;
     }
 
@@ -63,7 +63,7 @@ double Timer::calc_elapsed_seconds(uint_fast64_t ticks) const
 }
 
 
-#elif REALM_PLATFORM_APPLE
+#elif TESSERA_PLATFORM_APPLE
 
 
 uint_fast64_t Timer::get_timer_ticks() const

@@ -23,21 +23,21 @@
 #include <ostream>
 #include <sstream>
 
-#include <realm/util/encrypted_file_mapping.hpp>
-#include <realm/util/file.hpp>
-#include <realm/util/file_mapper.hpp>
+#include <tessera/util/encrypted_file_mapping.hpp>
+#include <tessera/util/file.hpp>
+#include <tessera/util/file_mapper.hpp>
 
 #include "test.hpp"
 
-#if REALM_PLATFORM_APPLE
+#if TESSERA_PLATFORM_APPLE
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 
 // Test independence and thread-safety
@@ -137,7 +137,7 @@ TEST_TYPES(File_Map, std::true_type, std::false_type)
         File::Map<char> map(f, File::access_ReadWrite, len);
         util::encryption_read_barrier(map, 0, len);
         memcpy(map.get_addr(), data, len);
-        realm::util::encryption_write_barrier(map, 0, len);
+        tessera::util::encryption_write_barrier(map, 0, len);
     }
     {
         File f(path, File::mode_Read);
@@ -164,7 +164,7 @@ TEST_TYPES(File_MapMultiplePages, std::true_type, std::false_type)
         util::encryption_read_barrier(map, 0, count);
         for (size_t i = 0; i < count; ++i)
             map.get_addr()[i] = i;
-        realm::util::encryption_write_barrier(map, 0, count);
+        tessera::util::encryption_write_barrier(map, 0, count);
     }
     {
         File f(path, File::mode_Read);
@@ -195,7 +195,7 @@ TEST_TYPES(File_ReaderAndWriter_SingleFile, std::true_type, std::false_type)
     for (size_t i = 0; i < count; i += 100) {
         util::encryption_read_barrier(write, i, 1);
         write.get_addr()[i] = i;
-        realm::util::encryption_write_barrier(write, i);
+        tessera::util::encryption_write_barrier(write, i);
         util::encryption_read_barrier(read, i);
         if (!CHECK_EQUAL(read.get_addr()[i], i))
             return;
@@ -222,7 +222,7 @@ TEST_TYPES(File_ReaderAndWriter_MulitpleFiles, std::true_type, std::false_type)
     for (size_t i = 0; i < count; i += 100) {
         util::encryption_read_barrier(write, i, 1);
         write.get_addr()[i] = i;
-        realm::util::encryption_write_barrier(write, i);
+        tessera::util::encryption_write_barrier(write, i);
         write.flush(true);
         if (auto encryption = reader.get_encryption())
             encryption->mark_data_as_possibly_stale();
@@ -250,7 +250,7 @@ TEST_TYPES(File_Offset, std::true_type, std::false_type)
             for (size_t j = 0; j < count_per_page; ++j) {
                 util::encryption_read_barrier(map, j, 1);
                 map.get_addr()[j] = i * size + j;
-                realm::util::encryption_write_barrier(map, j);
+                tessera::util::encryption_write_barrier(map, j);
             }
         }
     }
@@ -286,16 +286,16 @@ TEST_TYPES(File_MultipleWriters_SingleFile, std::true_type, std::false_type)
         for (size_t i = 0; i < count; i += increments) {
             util::encryption_read_barrier(map1, i);
             map1.get_addr()[i] = 0;
-            realm::util::encryption_write_barrier(map1, i);
+            tessera::util::encryption_write_barrier(map1, i);
         }
 
         for (size_t i = 0; i < count; i += increments) {
             util::encryption_read_barrier(map1, i, 1);
             ++map1.get_addr()[i];
-            realm::util::encryption_write_barrier(map1, i);
+            tessera::util::encryption_write_barrier(map1, i);
             util::encryption_read_barrier(map2, i, 1);
             ++map2.get_addr()[i];
-            realm::util::encryption_write_barrier(map2, i);
+            tessera::util::encryption_write_barrier(map2, i);
         }
     }
 
@@ -370,7 +370,7 @@ TEST(File_SetEncryptionKey)
     File f(path, File::mode_Write);
     const char key[64] = {0};
 
-#if REALM_ENABLE_ENCRYPTION
+#if TESSERA_ENABLE_ENCRYPTION
     f.set_encryption_key(key); // should not throw
 #else
     CHECK_THROW_EX(f.set_encryption_key(key), Exception, (e.code() == ErrorCodes::NotSupported));
@@ -408,7 +408,7 @@ TEST_TYPES(File_Resize, std::true_type, std::false_type)
         for (unsigned int i = 0; i < page_size() * 2; ++i) {
             util::encryption_read_barrier(m, i, 1);
             m.get_addr()[i] = static_cast<unsigned char>(i);
-            realm::util::encryption_write_barrier(m, i);
+            tessera::util::encryption_write_barrier(m, i);
         }
 
         // Resizing away the first write is indistinguishable in encrypted files
@@ -419,7 +419,7 @@ TEST_TYPES(File_Resize, std::true_type, std::false_type)
         for (unsigned int i = 0; i < page_size() * 2; ++i) {
             util::encryption_read_barrier(m, i, 1);
             m.get_addr()[i] = static_cast<unsigned char>(i);
-            realm::util::encryption_write_barrier(m, i);
+            tessera::util::encryption_write_barrier(m, i);
         }
     }
 
@@ -442,7 +442,7 @@ TEST_TYPES(File_Resize, std::true_type, std::false_type)
         for (unsigned int i = 0; i < page_size() * 2; ++i) {
             util::encryption_read_barrier(m, i, 1);
             m.get_addr()[i] = static_cast<unsigned char>(i);
-            realm::util::encryption_write_barrier(m, i);
+            tessera::util::encryption_write_barrier(m, i);
         }
     }
     {
@@ -540,7 +540,7 @@ TEST(File_parent_dir)
         std::string actual = File::parent_dir(input);
         CHECK_EQUAL(actual, expected);
         if (actual != expected) {
-            realm::util::format(std::cout, "unexpected result '%1' for input '%2'", actual, input);
+            tessera::util::format(std::cout, "unexpected result '%1' for input '%2'", actual, input);
         }
     }
 }

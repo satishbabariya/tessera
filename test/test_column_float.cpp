@@ -22,11 +22,11 @@
 #include <iostream>
 
 #include "test.hpp"
-#include <realm/column_integer.hpp>
-#include <realm/table.hpp>
-#include <realm/array_basic.hpp>
+#include <tessera/column_integer.hpp>
+#include <tessera/table.hpp>
+#include <tessera/array_basic.hpp>
 
-using namespace realm;
+using namespace tessera;
 using test_util::unit_test::TestContext;
 
 

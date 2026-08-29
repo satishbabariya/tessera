@@ -19,13 +19,13 @@
 #include "testsettings.hpp"
 #ifdef TEST_UTIL_FLAT_MAP
 
-#include <realm/util/flat_map.hpp>
+#include <tessera/util/flat_map.hpp>
 
 #include <string>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 TEST(Util_FlatMap_Basic)
 {

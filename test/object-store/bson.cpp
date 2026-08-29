@@ -23,10 +23,10 @@
 #include <catch2/catch_all.hpp>
 #include "util/test_utils.hpp"
 #include "util/test_file.hpp"
-#include <realm/util/bson/bson.hpp>
+#include <tessera/util/bson/bson.hpp>
 
 using namespace nlohmann;
-using namespace realm;
+using namespace tessera;
 using namespace bson;
 
 using namespace std::string_view_literals;
@@ -189,27 +189,27 @@ TEST_CASE("canonical_extjson_corpus", "[bson]") {
 
     SECTION("DateTime") {
         SECTION("epoch") {
-            run_corpus<realm::Timestamp>("a", {"{\"a\" : {\"$date\" : {\"$numberLong\" : \"0\"}}}", [](auto val) {
+            run_corpus<tessera::Timestamp>("a", {"{\"a\" : {\"$date\" : {\"$numberLong\" : \"0\"}}}", [](auto val) {
                                                    CHECK(val.get_seconds() == 0);
                                                    CHECK(val.get_nanoseconds() == 0);
                                                }});
         }
         SECTION("positive ms") {
-            run_corpus<realm::Timestamp>(
+            run_corpus<tessera::Timestamp>(
                 "a", {"{\"a\" : {\"$date\" : {\"$numberLong\" : \"1356351330501\"}}}", [](auto val) {
                           CHECK(val.get_seconds() == 1356351330501 / 1000);
                           CHECK(val.get_nanoseconds() == 501000000);
                       }});
         }
         SECTION("negative") {
-            run_corpus<realm::Timestamp>(
+            run_corpus<tessera::Timestamp>(
                 "a", {"{\"a\" : {\"$date\" : {\"$numberLong\" : \"-284643869501\"}}}", [](auto val) {
                           CHECK(val.get_seconds() == -284643869501 / 1000);
                           CHECK(val.get_nanoseconds() == -501000000);
                       }});
         }
         SECTION("Y10K") {
-            run_corpus<realm::Timestamp>("a",
+            run_corpus<tessera::Timestamp>("a",
                                          {"{\"a\":{\"$date\":{\"$numberLong\":\"253402300800000\"}}}", [](auto val) {
                                               CHECK(val.get_seconds() == 253402300800000 / 1000);
                                               CHECK(val.get_nanoseconds() == 0);
@@ -532,9 +532,9 @@ TEST_CASE("canonical_extjson_corpus", "[bson]") {
             {"Array", BsonArray{1, 2, 3, 4, 5}},
             {"Timestamp", MongoTimestamp(42, 1)},
             {"Regex", RegularExpression("pattern", "")},
-            {"DatetimeEpoch", realm::Timestamp(0, 0)},
-            {"DatetimePositive", realm::Timestamp(INT_MAX / 1000, 647000000)},
-            {"DatetimeNegative", realm::Timestamp(INT_MIN / 1000, -648000000)},
+            {"DatetimeEpoch", tessera::Timestamp(0, 0)},
+            {"DatetimePositive", tessera::Timestamp(INT_MAX / 1000, 647000000)},
+            {"DatetimeNegative", tessera::Timestamp(INT_MIN / 1000, -648000000)},
             {"True", true},
             {"False", false},
             {"Minkey", min_key},
@@ -549,7 +549,7 @@ TEST_CASE("canonical_extjson_corpus", "[bson]") {
     }
 
     SECTION("Null type") {
-        run_corpus<realm::util::None>("a", {"{\"a\" : null}", [](auto) {
+        run_corpus<tessera::util::None>("a", {"{\"a\" : null}", [](auto) {
                                                 CHECK(true);
                                             }});
     }

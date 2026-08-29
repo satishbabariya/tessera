@@ -20,7 +20,10 @@ using std::vector;
 #include "s2/base/basictypes.h"
 #include "s2/base/logging.h"
 
-#include <realm/util/features.h>
+// Tessera: these includes point at this project's headers, not upstream s2's.
+// They are part of a pre-existing downstream patch and follow the realm ->
+// tessera rename. Upstream s2 has no such dependency.
+#include <tessera/util/features.h>
 
 // Returns the sign of x:
 //   -1 if x < 0,
@@ -353,7 +356,7 @@ class MathUtil {
     // is no advantage to passing an argument type of "float" on Intel
     // architectures anyway.
 
-#if defined __GNUC__ && (defined __i386__ || defined __SSE2__) && !(REALM_WATCHOS && !REALM_APPLE_DEVICE)
+#if defined __GNUC__ && (defined __i386__ || defined __SSE2__) && !(TESSERA_WATCHOS && !TESSERA_APPLE_DEVICE)
 #if defined __SSE2__
     // SSE2.
     int32 result;
@@ -378,7 +381,7 @@ class MathUtil {
   }
 
   static int64 FastInt64Round(double x) {
-#if defined __GNUC__ && (defined __i386__ || defined __x86_64__) && !(REALM_WATCHOS && !REALM_APPLE_DEVICE)
+#if defined __GNUC__ && (defined __i386__ || defined __x86_64__) && !(TESSERA_WATCHOS && !TESSERA_APPLE_DEVICE)
 #if defined __x86_64__
     // SSE2.
     int64 result;

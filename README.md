@@ -1,50 +1,107 @@
-<p align="right">
-<a href='https://github.com/realm/realm-core/releases'><img src='https://img.shields.io/github/v/release/realm/realm-core' alt='Latest Release' /></a>
-<a href='https://coveralls.io/github/realm/realm-core'><img src='https://coveralls.io/repos/github/realm/realm-core/badge.svg' alt='Coverage Status' /></a>
-<a href='https://github.com/realm/realm-core'><img src='https://img.shields.io/github/license/realm/realm-core' alt='Source License' /></a>
-</p>
+# Tessera
 
-![Realm](doc/logo.png)
+An embedded, local-first database with built-in sync.
 
-Realm is a mobile database that runs directly inside phones, tablets or wearables - check out [realm.io](https://realm.io).
+Tessera runs inside your process and stores data in a single file. No server, no
+daemon, no connection string. It is a fork of
+[realm-core](https://github.com/realm/realm-core), the storage engine behind the
+Realm mobile databases, continued as an independent project after MongoDB wound
+the originals down. See [FORK.md](FORK.md).
 
-This repository holds the source code for the core database component used by all the Realm Mobile Database products:
+**Status: pre-release.** The API is settling and the file format is new. It is not
+yet recommended for production data you cannot regenerate.
 
-* [Realm C++](https://github.com/realm/realm-cpp)
-* [Realm Dart/Flutter](https://github.com/realm/realm-dart)
-* [Realm Java](https://github.com/realm/realm-java)
-* [Realm Kotlin](https://github.com/realm/realm-kotlin)
-* [Realm Swift/Objective-C](https://github.com/realm/realm-swift)
-* [Realm .NET](https://github.com/realm/realm-dotnet)
-* [Realm Node.js/React Native/Web](https://github.com/realm/realm-js)
+## Why you might want it
 
-Realm Core is not in itself an "end-user" product with a publicly stable and supported API.
+- **Zero-copy reads.** The file is memory-mapped and queries return lazy views
+  over it. There is no deserialisation step and no buffer pool.
+- **Crash safety by construction.** Commits write new nodes and swap a single
+  root pointer. There is no write-ahead log to replay, because there is nothing
+  to replay.
+- **Reactive queries.** Results stay live and tell you which rows and fields
+  changed, not merely that something did.
+- **Convergent sync.** A production-tested operational-transform engine and a
+  self-hostable sync server, both included. No cloud account, no vendor.
+- **Encryption at rest.** Optional AES-256, applied per page below the engine.
 
-Refer to the [Atlas Device SDK documentation](https://www.mongodb.com/docs/atlas/device-sdks/) for information about Realm and using the SDKs.
+The trade-off worth knowing up front: **one write transaction at a time**, across
+all threads and processes. Reads are unaffected and never block. This suits an
+application writing its own data; it is not a high-write-concurrency server
+database. [ARCHITECTURE.md](ARCHITECTURE.md) explains why.
 
-## Building Realm
+## Building
 
-How to build Realm Core is described [here](how-to-build.md).
+Requires CMake 3.25+, a C++20 compiler (GCC 13+ or Clang 18+), OpenSSL and zlib
+from your system package manager.
 
-## Contributing
+```sh
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more details!
+Nothing is downloaded at configure time. See [how-to-build.md](how-to-build.md)
+for platform specifics and cross-compilation.
 
-## Code of Conduct
+## Using it
 
-This project adheres to the [MongoDB Code of Conduct](https://www.mongodb.com/community-code-of-conduct).
-By participating, you are expected to uphold this code. Please report
-unacceptable behavior to [community-conduct@mongodb.com](mailto:community-conduct@mongodb.com).
+```cmake
+find_package(Tessera REQUIRED)
+target_link_libraries(myapp PRIVATE Tessera::Storage)
+```
 
-## License
+```cpp
+#include <tessera/engine.hpp>
+#include <tessera/history.hpp>
 
-Realm Core is published under the Apache 2.0 license.
+auto db = tessera::DB::create(tessera::make_in_realm_history(), "app.tess");
 
-See the THIRD-PARTY-NOTICES file for licenses related to included third party libraries.
+{
+    auto wt = db->start_write();
+    if (!wt->has_table("Person")) {
+        auto table = wt->add_table("Person");
+        table->add_column(tessera::type_String, "name");
+        table->add_column(tessera::type_Int, "age");
+    }
+    auto table = wt->get_table("Person");
+    table->create_object()
+        .set(table->get_column_key("name"), "Ada")
+        .set(table->get_column_key("age"), 36);
+    wt->commit();
+}
 
-## Feedback
+auto rt = db->start_read();
+auto table = rt->get_table("Person");
+auto results = table->where().greater(table->get_column_key("age"), 30).find_all();
+```
 
-Feedback to the Realm SDK's should be given in the respective SDK's github mentioned in the top of this readme.
-For anything specifically about Realm Core, please create an [issue here](https://github.com/realm/realm-core/issues/new).
+## The two API tiers
 
-<img style="width: 0px; height: 0px;" src="https://3eaz4mshcd.execute-api.us-east-1.amazonaws.com/prod?s=https://github.com/realm/realm-core#README.md">
+```cpp
+#include <tessera/api.hpp>      // schemas, typed objects, live results, notifications
+#include <tessera/engine.hpp>   // DB, Transaction, Table, Query, Obj
+```
+
+Tier 1 (`api.hpp`) is the high-level API most applications want: declare a schema,
+work with typed objects, subscribe to changes. Tier 2 (`engine.hpp`) is direct
+access to the storage engine for binding authors and anyone with unusual needs.
+
+Both are supported and stable from v1.0, and both can be used in the same program.
+Anything not reachable from these two headers carries no stability promise.
+
+## Documentation
+
+| | |
+|---|---|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | How the engine works: storage layout, MVCC, sync |
+| [FORK.md](FORK.md) | Lineage, licensing, and what changed from Realm |
+| [how-to-build.md](how-to-build.md) | Platform-specific build instructions |
+| [doc/protocol.md](doc/protocol.md) | The sync wire protocol, message by message |
+| [doc/algebra_of_changesets.md](doc/algebra_of_changesets.md) | Why concurrent edits converge |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
+
+## Licence
+
+Apache 2.0. See [LICENSE](LICENSE) and [THIRD-PARTY-NOTICES](THIRD-PARTY-NOTICES).
+
+Copyright notices from Realm Inc. are retained throughout, as Apache 2.0 §4(b)
+requires. Do not remove them.

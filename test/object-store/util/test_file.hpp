@@ -16,21 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_TEST_UTIL_TEST_FILE_HPP
-#define REALM_TEST_UTIL_TEST_FILE_HPP
+#ifndef TESSERA_TEST_UTIL_TEST_FILE_HPP
+#define TESSERA_TEST_UTIL_TEST_FILE_HPP
 
-#include <realm/object-store/shared_realm.hpp>
-#include <realm/util/logger.hpp>
-#include <realm/util/tagged_bool.hpp>
+#include <tessera/object-store/shared_db.hpp>
+#include <tessera/util/logger.hpp>
+#include <tessera/util/tagged_bool.hpp>
 
-#if REALM_ENABLE_SYNC
+#if TESSERA_ENABLE_SYNC
 #include "test_utils.hpp"
 
-#include <realm/object-store/sync/sync_manager.hpp>
-#include <realm/sync/client.hpp>
-#include <realm/sync/config.hpp>
-#include <realm/sync/noinst/server/server.hpp>
-#endif // REALM_ENABLE_SYNC
+#include <tessera/object-store/sync/sync_manager.hpp>
+#include <tessera/sync/client.hpp>
+#include <tessera/sync/config.hpp>
+#include <tessera/sync/noinst/server/server.hpp>
+#endif // TESSERA_ENABLE_SYNC
 
 #include <thread>
 
@@ -38,12 +38,12 @@
 #define TEST_TIMEOUT_EXTRA 0
 #endif
 
-namespace realm {
+namespace tessera {
 class Schema;
 enum class SyncSessionStopPolicy;
 struct DBOptions;
 struct SyncConfig;
-} // namespace realm
+} // namespace tessera
 
 class JoiningThread {
 public:
@@ -67,7 +67,7 @@ private:
 };
 
 
-struct TestFile : realm::Realm::Config {
+struct TestFile : tessera::Realm::Config {
     TestFile();
     ~TestFile();
 
@@ -82,27 +82,27 @@ struct TestFile : realm::Realm::Config {
         m_persist = true;
     }
 
-    realm::DBOptions options() const;
+    tessera::DBOptions options() const;
 
 private:
     bool m_persist = false;
     std::string m_temp_dir;
 };
 
-struct InMemoryTestFile : realm::Realm::Config {
+struct InMemoryTestFile : tessera::Realm::Config {
     InMemoryTestFile();
-    realm::DBOptions options() const;
+    tessera::DBOptions options() const;
 };
 
-void advance_and_notify(realm::Realm& realm);
-void on_change_but_no_notify(realm::Realm& realm);
+void advance_and_notify(tessera::Realm& realm);
+void on_change_but_no_notify(tessera::Realm& realm);
 
-#if REALM_ENABLE_SYNC
+#if TESSERA_ENABLE_SYNC
 
-using StartImmediately = realm::util::TaggedBool<class StartImmediatelyTag>;
-using EnableSSL = realm::util::TaggedBool<class EnableSSLTag>;
+using StartImmediately = tessera::util::TaggedBool<class StartImmediatelyTag>;
+using EnableSSL = tessera::util::TaggedBool<class EnableSSLTag>;
 
-class SyncServer : private realm::sync::Clock {
+class SyncServer : private tessera::sync::Clock {
 public:
     struct Config {
         StartImmediately start_immediately = true;
@@ -116,7 +116,7 @@ public:
     void start();
     void stop();
 
-    std::string url_for_realm(realm::StringData realm_name) const;
+    std::string url_for_realm(tessera::StringData realm_name) const;
     std::string base_url() const
     {
         return m_url;
@@ -135,8 +135,8 @@ public:
 
 private:
     std::string m_local_root_dir;
-    std::shared_ptr<realm::util::Logger> m_logger;
-    realm::sync::Server m_server;
+    std::shared_ptr<tessera::util::Logger> m_logger;
+    tessera::sync::Server m_server;
     std::thread m_thread;
     std::string m_url;
     std::atomic<time_point::rep> m_now{0};
@@ -147,14 +147,14 @@ private:
     }
 };
 
-struct TestUser : realm::SyncUser {
+struct TestUser : tessera::SyncUser {
     const std::string m_user_id;
     std::string m_access_token;
     std::string m_refresh_token;
-    std::shared_ptr<realm::SyncManager> m_sync_manager;
-    realm::SyncUser::State m_state = realm::SyncUser::State::LoggedIn;
+    std::shared_ptr<tessera::SyncManager> m_sync_manager;
+    tessera::SyncUser::State m_state = tessera::SyncUser::State::LoggedIn;
 
-    TestUser(std::string user_id, std::shared_ptr<realm::SyncManager> sync_manager)
+    TestUser(std::string user_id, std::shared_ptr<tessera::SyncManager> sync_manager)
         : m_user_id(std::move(user_id))
         , m_sync_manager(std::move(sync_manager))
     {
@@ -163,14 +163,14 @@ struct TestUser : realm::SyncUser {
     void log_out()
     {
         auto old_state = m_state;
-        m_state = realm::SyncUser::State::LoggedOut;
+        m_state = tessera::SyncUser::State::LoggedOut;
         m_sync_manager->update_sessions_for(*this, old_state, m_state, {});
     }
 
     void log_in()
     {
         auto old_state = m_state;
-        m_state = realm::SyncUser::State::LoggedIn;
+        m_state = tessera::SyncUser::State::LoggedIn;
         m_sync_manager->update_sessions_for(*this, old_state, m_state, m_access_token);
     }
 
@@ -191,7 +191,7 @@ struct TestUser : realm::SyncUser {
     {
         return m_access_token;
     }
-    realm::SyncUser::State state() const override
+    tessera::SyncUser::State state() const override
     {
         return m_state;
     }
@@ -199,7 +199,7 @@ struct TestUser : realm::SyncUser {
     {
         return false;
     }
-    realm::SyncManager* sync_manager() override
+    tessera::SyncManager* sync_manager() override
     {
         return m_sync_manager.get();
     }
@@ -209,7 +209,7 @@ struct TestUser : realm::SyncUser {
     void request_access_token(CompletionHandler&&) override {}
 
     void track_realm(std::string_view) override {}
-    std::string create_file_action(realm::SyncFileAction, std::string_view, std::optional<std::string>) override
+    std::string create_file_action(tessera::SyncFileAction, std::string_view, std::optional<std::string>) override
     {
         return "";
     }
@@ -217,23 +217,23 @@ struct TestUser : realm::SyncUser {
 
 struct SyncTestFile : TestFile {
     template <typename ErrorHandler>
-    SyncTestFile(const realm::SyncConfig& sync_config, realm::SyncSessionStopPolicy stop_policy,
+    SyncTestFile(const tessera::SyncConfig& sync_config, tessera::SyncSessionStopPolicy stop_policy,
                  ErrorHandler&& error_handler)
     {
-        this->sync_config = std::make_shared<realm::SyncConfig>(sync_config);
+        this->sync_config = std::make_shared<tessera::SyncConfig>(sync_config);
         this->sync_config->stop_policy = stop_policy;
         this->sync_config->error_handler = std::forward<ErrorHandler>(error_handler);
-        schema_mode = realm::SchemaMode::AdditiveExplicit;
+        schema_mode = tessera::SchemaMode::AdditiveExplicit;
     }
 
     SyncTestFile(TestSyncManager&, std::string name = "", std::string user_name = "test");
-    SyncTestFile(std::shared_ptr<realm::SyncUser> user, realm::bson::Bson partition,
-                 realm::util::Optional<realm::Schema> schema = realm::util::none);
-    SyncTestFile(std::shared_ptr<realm::SyncUser> user, realm::bson::Bson partition,
-                 realm::util::Optional<realm::Schema> schema,
-                 std::function<realm::SyncSessionErrorHandler>&& error_handler);
-    SyncTestFile(TestSyncManager&, realm::bson::Bson partition, realm::Schema schema);
-    SyncTestFile(std::shared_ptr<realm::SyncUser> user, realm::Schema schema, realm::SyncConfig::FLXSyncEnabled);
+    SyncTestFile(std::shared_ptr<tessera::SyncUser> user, tessera::bson::Bson partition,
+                 tessera::util::Optional<tessera::Schema> schema = tessera::util::none);
+    SyncTestFile(std::shared_ptr<tessera::SyncUser> user, tessera::bson::Bson partition,
+                 tessera::util::Optional<tessera::Schema> schema,
+                 std::function<tessera::SyncSessionErrorHandler>&& error_handler);
+    SyncTestFile(TestSyncManager&, tessera::bson::Bson partition, tessera::Schema schema);
+    SyncTestFile(std::shared_ptr<tessera::SyncUser> user, tessera::Schema schema, tessera::SyncConfig::FLXSyncEnabled);
 };
 
 class TestSyncManager {
@@ -256,7 +256,7 @@ public:
     {
         return m_sync_server;
     }
-    const std::shared_ptr<realm::SyncManager>& sync_manager()
+    const std::shared_ptr<tessera::SyncManager>& sync_manager()
     {
         return m_sync_manager;
     }
@@ -264,16 +264,16 @@ public:
     std::shared_ptr<TestUser> fake_user(const std::string& name = "test");
 
 private:
-    std::shared_ptr<realm::SyncManager> m_sync_manager;
+    std::shared_ptr<tessera::SyncManager> m_sync_manager;
     SyncServer m_sync_server;
     const std::string m_base_file_path;
     const bool m_should_teardown_test_directory = true;
 };
 
 
-bool wait_for_upload(realm::Realm& realm, std::chrono::seconds timeout = std::chrono::seconds(60));
-bool wait_for_download(realm::Realm& realm, std::chrono::seconds timeout = std::chrono::seconds(60));
+bool wait_for_upload(tessera::Realm& realm, std::chrono::seconds timeout = std::chrono::seconds(60));
+bool wait_for_download(tessera::Realm& realm, std::chrono::seconds timeout = std::chrono::seconds(60));
 
-#endif // REALM_ENABLE_SYNC
+#endif // TESSERA_ENABLE_SYNC
 
 #endif

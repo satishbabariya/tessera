@@ -20,15 +20,15 @@
 #ifdef TEST_LINKS
 
 
-#include <realm.hpp>
-#include <realm/util/file.hpp>
-#include <realm/array_key.hpp>
+#include <tessera.hpp>
+#include <tessera/util/file.hpp>
+#include <tessera/array_key.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 namespace {
 
@@ -241,7 +241,7 @@ TEST(Links_SetLinkLogicErrors)
     CHECK_THROW(obj.set(col0, ObjKey(10)), KeyNotFound);
 
     group.remove_table("origin");
-    CHECK_THROW(obj.set(col0, ObjKey(10)), realm::InvalidTableRef);
+    CHECK_THROW(obj.set(col0, ObjKey(10)), tessera::InvalidTableRef);
 }
 
 
@@ -1064,7 +1064,7 @@ TEST(Links_Transactions)
     CHECK(tim.is_null(dog_col));
 }
 
-#if !REALM_ANDROID // FIXME
+#if !TESSERA_ANDROID // FIXME
 // When compiling for Android (armeabi-v7a) you will get this error:
 // internal compiler error: in possible_polymorphic_call_targets, at ipa-devirt.c:1556
 TEST(Links_RemoveTargetRows)
@@ -1132,7 +1132,7 @@ TEST(Links_ClearColumnWithTwoLevelBptree)
 
     auto col = origin->add_column_list(*target, "");
     std::vector<ObjKey> keys;
-    origin->create_objects(REALM_MAX_BPNODE_SIZE + 1, keys);
+    origin->create_objects(TESSERA_MAX_BPNODE_SIZE + 1, keys);
     origin->clear();
     origin->create_object().get_linklist(col).add(obj.get_key());
     group.verify();
@@ -1147,7 +1147,7 @@ TEST(Links_ClearLinkListWithTwoLevelBptree)
     auto col_link = origin->add_column_list(*target, "");
     ObjKey k = target->create_object().get_key();
     auto ll = origin->create_object().get_linklist(col_link);
-    for (size_t i = 0; i < REALM_MAX_BPNODE_SIZE + 1; ++i)
+    for (size_t i = 0; i < TESSERA_MAX_BPNODE_SIZE + 1; ++i)
         ll.add(k);
     ll.clear();
     group.verify();
@@ -1211,7 +1211,7 @@ TEST(Links_CascadeRemove_ColumnLink)
     // Break link by nullifying
     {
         Fixture f;
-        f.get_origin_obj(0).set(f.col_link, null_key); // origin[0].o_1 -> realm::null()
+        f.get_origin_obj(0).set(f.col_link, null_key); // origin[0].o_1 -> tessera::null()
         // Cascade: target->remove_object(key[0])
         CHECK(!f.target->is_valid(f.target_keys[0]));
         CHECK(f.target->is_valid(f.target_keys[1]) && f.target->is_valid(f.target_keys[2]));
@@ -1220,7 +1220,7 @@ TEST(Links_CascadeRemove_ColumnLink)
     }
     {
         Fixture f;
-        f.get_origin_obj(1).set(f.col_link, null_key); // origin[1].o_1 -> realm::null()
+        f.get_origin_obj(1).set(f.col_link, null_key); // origin[1].o_1 -> tessera::null()
         // Cascade: target->remove_object(key[1])
         CHECK(!f.target->is_valid(f.target_keys[1]));
         CHECK(f.target->is_valid(f.target_keys[0]) && f.target->is_valid(f.target_keys[2]));
@@ -1229,7 +1229,7 @@ TEST(Links_CascadeRemove_ColumnLink)
     }
     {
         Fixture f;
-        f.get_origin_obj(2).set(f.col_link, null_key); // origin[0].o_1 -> realm::null()
+        f.get_origin_obj(2).set(f.col_link, null_key); // origin[0].o_1 -> tessera::null()
         // Cascade: target->remove_object(key[2])
         CHECK(!f.target->is_valid(f.target_keys[2]));
         CHECK(f.target->is_valid(f.target_keys[0]) && f.target->is_valid(f.target_keys[1]));

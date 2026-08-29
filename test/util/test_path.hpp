@@ -16,32 +16,32 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_TEST_PATH_HPP
-#define REALM_TEST_UTIL_TEST_PATH_HPP
+#ifndef TESSERA_TEST_UTIL_TEST_PATH_HPP
+#define TESSERA_TEST_UTIL_TEST_PATH_HPP
 
 #include <string>
 #include <memory>
 
-#include <realm/string_data.hpp>
-#include <realm/util/features.h>
+#include <tessera/string_data.hpp>
+#include <tessera/util/features.h>
 
 #define TEST_PATH_HELPER(class_name, var_name, suffix)                                                               \
-    class_name var_name(realm::test_util::get_test_path(test_context.get_test_name(), "." #var_name "." suffix))
+    class_name var_name(tessera::test_util::get_test_path(test_context.get_test_name(), "." #var_name "." suffix))
 
-#if REALM_PLATFORM_APPLE
+#if TESSERA_PLATFORM_APPLE
 // Apple doesn't support file names with "�"
-#define TEST_PATH(var_name) TEST_PATH_HELPER(realm::test_util::TestPathGuard, var_name, "test");
+#define TEST_PATH(var_name) TEST_PATH_HELPER(tessera::test_util::TestPathGuard, var_name, "test");
 #else
-#define TEST_PATH(var_name) TEST_PATH_HELPER(realm::test_util::TestPathGuard, var_name, "tempor�re");
+#define TEST_PATH(var_name) TEST_PATH_HELPER(tessera::test_util::TestPathGuard, var_name, "tempor�re");
 #endif
 
-#define TEST_DIR(var_name) TEST_PATH_HELPER(realm::test_util::TestDirGuard, var_name, "test-dir");
+#define TEST_DIR(var_name) TEST_PATH_HELPER(tessera::test_util::TestDirGuard, var_name, "test-dir");
 
-#define GROUP_TEST_PATH(var_name) TEST_PATH_HELPER(realm::test_util::TestPathGuard, var_name, "realm");
+#define GROUP_TEST_PATH(var_name) TEST_PATH_HELPER(tessera::test_util::TestPathGuard, var_name, "realm");
 
-#define SHARED_GROUP_TEST_PATH(var_name) TEST_PATH_HELPER(realm::test_util::DBTestPathGuard, var_name, "realm");
+#define SHARED_GROUP_TEST_PATH(var_name) TEST_PATH_HELPER(tessera::test_util::DBTestPathGuard, var_name, "realm");
 
-namespace realm {
+namespace tessera {
 
 class DB;
 
@@ -185,6 +185,6 @@ private:
 std::shared_ptr<DB> get_test_db(const std::string& path, const char* crypt_key = nullptr);
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_TEST_PATH_HPP
+#endif // TESSERA_TEST_UTIL_TEST_PATH_HPP

@@ -18,9 +18,9 @@
 
 #include "fuzz_group.hpp"
 
-#include <realm.hpp>
-#include <realm/disable_sync_to_disk.hpp>
-#include <realm/index_string.hpp>
+#include <tessera.hpp>
+#include <tessera/disable_sync_to_disk.hpp>
+#include <tessera/index_string.hpp>
 
 #include <ctime>
 #include <cstdio>
@@ -29,24 +29,24 @@
 
 #include "util/test_path.hpp"
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 #define TEST_FUZZ
 #ifdef TEST_FUZZ
 // Determines whether or not to run the shared group verify function
 // after each transaction. This will find errors earlier but is expensive.
-#define REALM_VERIFY true
+#define TESSERA_VERIFY true
 
-#if REALM_VERIFY
-#define REALM_DO_IF_VERIFY(log, op)                                                                                  \
+#if TESSERA_VERIFY
+#define TESSERA_DO_IF_VERIFY(log, op)                                                                                  \
     do {                                                                                                             \
         if (log)                                                                                                     \
             *log << #op << ";\n";                                                                                    \
         op;                                                                                                          \
     } while (false)
 #else
-#define REALM_DO_IF_VERIFY(log, owner)                                                                               \
+#define TESSERA_DO_IF_VERIFY(log, owner)                                                                               \
     do {                                                                                                             \
     } while (false)
 #endif
@@ -109,7 +109,7 @@ unsigned char get_next(State& s)
 
 const char* get_encryption_key()
 {
-#if REALM_ENABLE_ENCRYPTION
+#if TESSERA_ENABLE_ENCRYPTION
     return "1234567890123456789012345678901123456789012345678901234567890123";
 #else
     return nullptr;
@@ -138,7 +138,7 @@ int32_t get_int32(State& s)
 
 std::string create_string(size_t length)
 {
-    REALM_ASSERT_3(length, <, 256);
+    TESSERA_ASSERT_3(length, <, 256);
     char buf[256] = {0};
     for (size_t i = 0; i < length; i++)
         buf[i] = 'a' + (rand() % 20);
@@ -231,8 +231,8 @@ int iteration = 0;
 
 void parse_and_apply_instructions(std::string& in, const std::string& path, std::ostream* log)
 {
-    const size_t add_empty_row_max = REALM_MAX_BPNODE_SIZE * REALM_MAX_BPNODE_SIZE + 1000;
-    const size_t max_tables = REALM_MAX_BPNODE_SIZE * 10;
+    const size_t add_empty_row_max = TESSERA_MAX_BPNODE_SIZE * TESSERA_MAX_BPNODE_SIZE + 1000;
+    const size_t max_tables = TESSERA_MAX_BPNODE_SIZE * 10;
 
     // Max number of rows in a table. Overridden only by create_object() and only in the case where
     // max_rows is not exceeded *prior* to executing add_empty_row.
@@ -248,8 +248,8 @@ void parse_and_apply_instructions(std::string& in, const std::string& path, std:
     const char* encryption_key = use_encryption ? get_encryption_key() : nullptr;
 
     if (log) {
-        *log << "// Test case generated in " REALM_VER_CHUNK " on " << get_current_time_stamp() << ".\n";
-        *log << "// REALM_MAX_BPNODE_SIZE is " << REALM_MAX_BPNODE_SIZE << "\n";
+        *log << "// Test case generated in " TESSERA_VER_CHUNK " on " << get_current_time_stamp() << ".\n";
+        *log << "// TESSERA_MAX_BPNODE_SIZE is " << TESSERA_MAX_BPNODE_SIZE << "\n";
         *log << "// ----------------------------------------------------------------------\n";
         std::string printable_key;
         if (encryption_key == nullptr) {
@@ -615,31 +615,31 @@ void parse_and_apply_instructions(std::string& in, const std::string& path, std:
                     *log << "wt->commit_and_continue_as_read();\n";
                 }
                 wt->commit_and_continue_as_read();
-                REALM_DO_IF_VERIFY(log, wt->verify());
+                TESSERA_DO_IF_VERIFY(log, wt->verify());
                 if (log) {
                     *log << "wt->promote_to_write();\n";
                 }
                 wt->promote_to_write();
-                REALM_DO_IF_VERIFY(log, wt->verify());
+                TESSERA_DO_IF_VERIFY(log, wt->verify());
             }
             else if (instr == ROLLBACK) {
                 if (log) {
                     *log << "wt->rollback_and_continue_as_read();\n";
                 }
                 wt->rollback_and_continue_as_read();
-                REALM_DO_IF_VERIFY(log, wt->verify());
+                TESSERA_DO_IF_VERIFY(log, wt->verify());
                 if (log) {
                     *log << "wt->promote_to_write();\n";
                 }
                 wt->promote_to_write();
-                REALM_DO_IF_VERIFY(log, wt->verify());
+                TESSERA_DO_IF_VERIFY(log, wt->verify());
             }
             else if (instr == ADVANCE) {
                 if (log) {
                     *log << "rt->advance_read();\n";
                 }
                 rt->advance_read();
-                REALM_DO_IF_VERIFY(log, rt->verify());
+                TESSERA_DO_IF_VERIFY(log, rt->verify());
             }
             else if (instr == CLOSE_AND_REOPEN) {
                 if (log) {
@@ -660,7 +660,7 @@ void parse_and_apply_instructions(std::string& in, const std::string& path, std:
                 }
                 rt = db->start_read();
                 wt = db->start_write();
-                REALM_DO_IF_VERIFY(log, rt->verify());
+                TESSERA_DO_IF_VERIFY(log, rt->verify());
             }
             else if (instr == GET_ALL_COLUMN_NAMES && wt->size() > 0) {
                 // try to fuzz find this: https://github.com/realm/realm-core/issues/1769
@@ -694,9 +694,9 @@ void parse_and_apply_instructions(std::string& in, const std::string& path, std:
                 wt->commit();
 
                 if (log) {
-                    *log << "REALM_ASSERT_RELEASE(db_w.compact());\n";
+                    *log << "TESSERA_ASSERT_RELEASE(db_w.compact());\n";
                 }
-                REALM_ASSERT_RELEASE(db_w.compact());
+                TESSERA_ASSERT_RELEASE(db_w.compact());
 
                 if (log) {
                     *log << "wt = db_w.start_write();\n";
@@ -710,7 +710,7 @@ void parse_and_apply_instructions(std::string& in, const std::string& path, std:
                     *log << "rt = db_r.start_read();\n";
                 }
                 rt = db_r.start_read();
-                REALM_DO_IF_VERIFY(log, rt->verify());
+                TESSERA_DO_IF_VERIFY(log, rt->verify());
                 */
             }
             else if (instr == IS_NULL && rt->size() > 0) {
@@ -744,7 +744,7 @@ static void usage(const char* argv[])
             "Pass -- without argument to read filenames from stdin\n"
             "Pass --log to have code printed to stdout producing the same instructions.\n"
             "Pass --name NAME with distinct values when running on multiple threads,\n"
-            "                 to make sure the test don't use the same Realm file\n"
+            "                 to make sure the test don't use the same database file\n"
             "Pass --prefix PATH to supply a path that should be prepended to all filenames\n"
             "                 read from stdin.\n",
             argv[0]);
@@ -795,7 +795,7 @@ int run_fuzzy(int argc, const char* argv[])
             }
             else {
                 std::cout << file_name << std::endl;
-                realm::test_util::RealmPathInfo test_context{name};
+                tessera::test_util::RealmPathInfo test_context{name};
                 SHARED_GROUP_TEST_PATH(path);
 
                 std::string contents((std::istreambuf_iterator<char>(in)), (std::istreambuf_iterator<char>()));
@@ -812,7 +812,7 @@ int run_fuzzy(int argc, const char* argv[])
             exit(1);
         }
 
-        realm::test_util::RealmPathInfo test_context{name};
+        tessera::test_util::RealmPathInfo test_context{name};
         SHARED_GROUP_TEST_PATH(path);
 
         std::string contents((std::istreambuf_iterator<char>(in)), (std::istreambuf_iterator<char>()));

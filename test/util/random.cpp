@@ -19,7 +19,7 @@
 #include "random.hpp"
 
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 
@@ -43,4 +43,4 @@ GlobalRandom& GlobalRandom::get() noexcept
 
 
 } // namespace _impl
-} // namespace realm
+} // namespace tessera

@@ -23,6 +23,18 @@ HITS=$(grep -rInE "$FORBIDDEN" \
     | grep -vE '^\./build' \
     | grep -v '^\./tools/check-no-vendor-hosts\.sh:' || true)
 
+# GitHub Actions from organisations we do not control are the same class of
+# dependency as a download URL, and are easy to miss because they look like
+# configuration rather than a fetch. Phase 0b found check-pr-title.yml using
+# realm/ci-actions/title-checker@main -- MongoDB-owned, unpinned, and enforcing
+# their JIRA ticket convention.
+ACTIONS=$(grep -rInE 'uses:\s*(realm|mongodb)/' .github 2>/dev/null || true)
+if [ -n "$ACTIONS" ]; then
+    echo "FAIL: CI depends on an action from a vendor-controlled organisation:"
+    echo "$ACTIONS"
+    HITS="${HITS:-}${HITS:+$'\n'}$ACTIONS"
+fi
+
 if [ -n "$HITS" ]; then
     echo "FAIL: the build references a host the project does not control:"
     echo "$HITS"

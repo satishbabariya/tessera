@@ -27,8 +27,8 @@
 #include <fstream>
 #include <thread>
 
-#include <realm/util/thread.hpp>
-#include <realm/util/timestamp_logger.hpp>
+#include <tessera/util/thread.hpp>
+#include <tessera/util/timestamp_logger.hpp>
 
 #include <external/json/json.hpp>
 
@@ -38,10 +38,10 @@
 #include "wildcard.hpp"
 #include "unit_test.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
-using namespace realm::test_util::unit_test;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
+using namespace tessera::test_util::unit_test;
 
 
 // FIXME: Write quoted strings with escaped nonprintables
@@ -82,14 +82,14 @@ public:
     void fail(const TestContext& context, const char*, long, const std::string&) override
     {
         auto it = m_results.find(context.get_test_name());
-        REALM_ASSERT(it != m_results.end());
+        TESSERA_ASSERT(it != m_results.end());
         it->second.status = "fail";
     }
 
     void end(const TestContext& context, double) override
     {
         auto it = m_results.find(context.get_test_name());
-        REALM_ASSERT(it != m_results.end());
+        TESSERA_ASSERT(it != m_results.end());
         if (it->second.status == "unknown") {
             it->second.status = "pass";
         }
@@ -413,7 +413,7 @@ private:
 } // anonymous namespace
 
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 namespace unit_test {
 
@@ -775,7 +775,7 @@ void TestContext::check_succeeded(long line)
 }
 
 
-REALM_NORETURN void TestContext::abort()
+TESSERA_NORETURN void TestContext::abort()
 {
     const SharedContext& context = thread_context.shared_context;
     const char* format =
@@ -1043,7 +1043,7 @@ void SimpleReporter::summary(const SharedContext& context, const Summary& result
             logger.info(str.c_str());
         }
     }
-    if (auto ident = getenv("REALM_CHILD_IDENT")) {
+    if (auto ident = getenv("TESSERA_CHILD_IDENT")) {
         logger.info("Spawned process with ident '%1' completed.", ident);
     }
     logger.info("Test time: %1", Timer::format(results_summary.elapsed_seconds));
@@ -1082,4 +1082,4 @@ std::unique_ptr<Filter> create_wildcard_filter(const std::string& filter)
 
 } // namespace unit_test
 } // namespace test_util
-} // namespace realm
+} // namespace tessera

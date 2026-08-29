@@ -40,17 +40,17 @@
 #include <windows.h>
 #endif
 
-#include <realm.hpp>
-#include <realm/util/encrypted_file_mapping.hpp>
-#include <realm/util/features.h>
-#include <realm/util/file.hpp>
-#include <realm/util/safe_int_ops.hpp>
-#include <realm/util/scope_exit.hpp>
-#include <realm/util/terminate.hpp>
-#include <realm/util/thread.hpp>
-#include <realm/util/to_string.hpp>
-#include <realm/impl/copy_replication.hpp>
-#include <realm/impl/simulated_failure.hpp>
+#include <tessera.hpp>
+#include <tessera/util/encrypted_file_mapping.hpp>
+#include <tessera/util/features.h>
+#include <tessera/util/file.hpp>
+#include <tessera/util/safe_int_ops.hpp>
+#include <tessera/util/scope_exit.hpp>
+#include <tessera/util/terminate.hpp>
+#include <tessera/util/thread.hpp>
+#include <tessera/util/to_string.hpp>
+#include <tessera/impl/copy_replication.hpp>
+#include <tessera/impl/simulated_failure.hpp>
 
 #include "fuzz_group.hpp"
 
@@ -60,9 +60,9 @@
 
 extern unsigned int unit_test_random_seed;
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 using unit_test::TestContext;
 
 
@@ -124,27 +124,27 @@ ONLY(Query_QuickSort2)
 }
 #endif
 
-#if REALM_WINDOWS
+#if TESSERA_WINDOWS
 namespace {
 // NOTE: This does not work like on POSIX: The child will begin execution from
 // the unit test entry point, not from where fork() took place.
 //
 DWORD winfork(std::string unit_test_name)
 {
-    if (getenv("REALM_SPAWNED"))
+    if (getenv("TESSERA_SPAWNED"))
         return GetCurrentProcessId();
 
     wchar_t filename[MAX_PATH];
     DWORD success = GetModuleFileName(nullptr, filename, MAX_PATH);
     if (success == 0 || success == MAX_PATH) {
         DWORD err = GetLastError();
-        REALM_ASSERT_EX(false, err, MAX_PATH, filename);
+        TESSERA_ASSERT_EX(false, err, MAX_PATH, filename);
     }
 
     GetModuleFileName(nullptr, filename, MAX_PATH);
 
     std::string environment;
-    environment.append("REALM_SPAWNED=1");
+    environment.append("TESSERA_SPAWNED=1");
     environment.append("\0", 1);
     environment.append("UNITTEST_FILTER=" + unit_test_name);
     environment.append("\0\0", 2);
@@ -156,7 +156,7 @@ DWORD winfork(std::string unit_test_name)
     info.cb = sizeof(info);
 
     BOOL b = CreateProcess(filename, nullptr, 0, 0, false, 0, environment.data(), nullptr, &info, &process);
-    REALM_ASSERT_RELEASE(b);
+    TESSERA_ASSERT_RELEASE(b);
 
     CloseHandle(process.hProcess);
     CloseHandle(process.hThread);
@@ -210,11 +210,11 @@ void writer(DBRef sg, uint64_t id)
     }
     catch (...) {
         // std::cerr << "Exception from " << getpid() << std::endl;
-        REALM_ASSERT(false);
+        TESSERA_ASSERT(false);
     }
 }
 
-#if !defined(_WIN32) && !REALM_ENABLE_ENCRYPTION
+#if !defined(_WIN32) && !TESSERA_ENABLE_ENCRYPTION
 void killer(TestContext& test_context, int pid, std::string path, int id)
 {
     {
@@ -248,7 +248,7 @@ void killer(TestContext& test_context, int pid, std::string path, int id)
             std::cerr << "waitpid got bad arguments" << std::endl;
         if (errno == ECHILD)
             std::cerr << "waitpid tried to wait for the wrong child: " << pid << std::endl;
-        REALM_TERMINATE("waitpid failed");
+        TESSERA_TERMINATE("waitpid failed");
     }
     bool child_exited_from_signal = WIFSIGNALED(stat_loc);
     CHECK(child_exited_from_signal);
@@ -272,7 +272,7 @@ void killer(TestContext& test_context, int pid, std::string path, int id)
 } // anonymous namespace
 
 
-#if !defined(_WIN32) && !REALM_ENABLE_ENCRYPTION && !REALM_ANDROID
+#if !defined(_WIN32) && !TESSERA_ENABLE_ENCRYPTION && !TESSERA_ANDROID
 
 TEST_IF(Shared_PipelinedWritesWithKills, false)
 {
@@ -302,7 +302,7 @@ TEST_IF(Shared_PipelinedWritesWithKills, false)
     }
     int pid = fork();
     if (pid == -1)
-        REALM_TERMINATE("fork() failed");
+        TESSERA_TERMINATE("fork() failed");
     if (pid == 0) {
         // first writer!
         writer(sg, 0);
@@ -313,7 +313,7 @@ TEST_IF(Shared_PipelinedWritesWithKills, false)
             int pid2 = pid;
             pid = fork();
             if (pid == pid_t(-1))
-                REALM_TERMINATE("fork() failed");
+                TESSERA_TERMINATE("fork() failed");
             if (pid == 0) {
                 writer(sg, k);
                 _Exit(0);
@@ -334,7 +334,7 @@ TEST_IF(Shared_PipelinedWritesWithKills, false)
 
 #if 0
 
-// This unit test will test the case where the .realm file exceeds the available disk space. To run it, do
+// This unit test will test the case where the .tess file exceeds the available disk space. To run it, do
 // following:
 //
 // 1: Create a drive that has around 10 MB free disk space *after* the realm-tests binary has been copied to it
@@ -348,12 +348,12 @@ ONLY(Shared_DiskSpace)
 {
     for (;;) {
         if (!File::exists("x")) {
-            File f("x", realm::util::File::mode_Write);
+            File f("x", tessera::util::File::mode_Write);
             f.write(std::string(18 * 1024 * 1024, 'x'));
             f.close();
         }
 
-        std::string path = "test.realm";
+        std::string path = "test.tess";
 
         SharedGroup sg(path, DBOptions("1234567890123456789012345678901123456789012345678901234567890123"));
         //    SharedGroup sg(path, false, SharedGroupOptions(nullptr));
@@ -505,8 +505,10 @@ TEST(Shared_ReadAfterCompact)
         sg->compact();
     }
     {
+        // Tessera: this test is about reading after compaction, not upgrades. It
+        // set allow_file_format_upgrade = false defensively; with a single
+        // supported format there is nothing to upgrade and the option is gone.
         DBOptions options;
-        options.allow_file_format_upgrade = false;
         DBRef sg = DB::create(make_in_realm_history(), path, options);
         auto rt = sg->start_read();
         auto table = rt->get_table("table");
@@ -1110,7 +1112,7 @@ TEST(Shared_Writes)
     }
 }
 
-#if !REALM_ANDROID // FIXME
+#if !TESSERA_ANDROID // FIXME
 TEST(Shared_ManyReaders)
 {
     // This test was written primarily to expose a former bug in
@@ -1129,7 +1131,7 @@ TEST(Shared_ManyReaders)
 #if TEST_DURATION < 1
     // Mac OS X 10.8 cannot handle more than 15 due to its default ulimit settings.
     int rounds[] = {3, 5, 7, 9, 11, 13};
-#elif REALM_DEBUG // this test is disproportionately slower in debug
+#elif TESSERA_DEBUG // this test is disproportionately slower in debug
     int rounds[] = {3, 5, 7, 9, 11, 13, 15, 17, 23};
 #else
     int rounds[] = {3, 5, 11, 15, 17, 23, 27, 31, 47, 59};
@@ -1430,7 +1432,7 @@ TEST(Many_ConcurrentReaders)
                 ReadTransaction rt(sg_r);
                 ConstTableRef t = rt.get_table("table");
                 auto col_key = t->get_column_key("column");
-                REALM_ASSERT(t->get_object(0).get<StringData>(col_key) == "string");
+                TESSERA_ASSERT(t->get_object(0).get<StringData>(col_key) == "string");
                 rt.get_group().verify();
             }
         }
@@ -1439,7 +1441,7 @@ TEST(Many_ConcurrentReaders)
             std::cerr << "Reason: '" << e.what() << "'" << std::endl;
             std::cerr << logs.str();
             constexpr bool unexpected_exception = false;
-            REALM_ASSERT_EX(unexpected_exception, e.what());
+            TESSERA_ASSERT_EX(unexpected_exception, e.what());
         }
     };
 
@@ -1460,7 +1462,7 @@ TEST(Shared_WritesSpecialOrder)
     DBRef sg = DB::create(path, DBOptions(crypt_key()));
 
     const int num_rows =
-        5; // FIXME: Should be strictly greater than REALM_MAX_BPNODE_SIZE, but that takes too long time.
+        5; // FIXME: Should be strictly greater than TESSERA_MAX_BPNODE_SIZE, but that takes too long time.
     const int num_reps = 25;
 
     {
@@ -1584,11 +1586,11 @@ TEST(Shared_WriterThreads)
 }
 
 
-#if !REALM_ENABLE_ENCRYPTION && defined(ENABLE_ROBUST_AGAINST_DEATH_DURING_WRITE)
+#if !TESSERA_ENABLE_ENCRYPTION && defined(ENABLE_ROBUST_AGAINST_DEATH_DURING_WRITE)
 // this unittest has issues that has not been fully understood, but could be
 // related to interaction between posix robust mutexes and the fork() system call.
 // it has so far only been seen failing on Linux, so we enable it on ios.
-#if REALM_PLATFORM_APPLE
+#if TESSERA_PLATFORM_APPLE
 
 // Not supported on Windows in particular? Keywords: winbug
 TEST(Shared_RobustAgainstDeathDuringWrite)
@@ -1613,7 +1615,7 @@ TEST(Shared_RobustAgainstDeathDuringWrite)
     for (int i = 0; i < process_count; ++i) {
         pid_t pid = fork();
         if (pid == pid_t(-1))
-            REALM_TERMINATE("fork() failed");
+            TESSERA_TERMINATE("fork() failed");
         if (pid == 0) {
             // Child
             DBRef sg = DB::create(path, DBOptions(crypt_key()));
@@ -1628,7 +1630,7 @@ TEST(Shared_RobustAgainstDeathDuringWrite)
             int options = 0;
             pid = waitpid(pid, &stat_loc, options);
             if (pid == pid_t(-1))
-                REALM_TERMINATE("waitpid() failed");
+                TESSERA_TERMINATE("waitpid() failed");
             bool child_exited_normaly = WIFEXITED(stat_loc);
             CHECK(child_exited_normaly);
             int child_exit_status = WEXITSTATUS(stat_loc);
@@ -1665,7 +1667,7 @@ TEST(Shared_RobustAgainstDeathDuringWrite)
 #endif // encryption enabled
 
 // not ios or android
-// #endif // defined TEST_ROBUSTNESS && defined ENABLE_ROBUST_AGAINST_DEATH_DURING_WRITE && !REALM_ENABLE_ENCRYPTION
+// #endif // defined TEST_ROBUSTNESS && defined ENABLE_ROBUST_AGAINST_DEATH_DURING_WRITE && !TESSERA_ENABLE_ENCRYPTION
 
 
 TEST(Shared_SpaceOveruse)
@@ -1689,13 +1691,13 @@ TEST(Shared_SpaceOveruse)
         auto table = wt.get_or_add_table("my_table");
 
         if (table->is_empty()) {
-            REALM_ASSERT(table);
+            TESSERA_ASSERT(table);
             table->add_column(type_String, "text");
         }
         auto cols = table->get_column_keys();
 
         for (int j = 0; j != n_inner; ++j) {
-            REALM_ASSERT(table);
+            TESSERA_ASSERT(table);
             table->create_object().set(cols[0], "x");
         }
         wt.commit();
@@ -1816,9 +1818,9 @@ TEST_IF(Shared_StringIndexBug1, TEST_DURATION >= 1)
         TableRef table = tr->add_table("users");
         auto col = table->add_column(type_String, "username");
         table->add_search_index(col);
-        for (int i = 0; i < REALM_MAX_BPNODE_SIZE + 1; ++i)
+        for (int i = 0; i < TESSERA_MAX_BPNODE_SIZE + 1; ++i)
             table->create_object();
-        for (int i = 0; i < REALM_MAX_BPNODE_SIZE + 1; ++i)
+        for (int i = 0; i < TESSERA_MAX_BPNODE_SIZE + 1; ++i)
             table->remove_object(table->begin());
         tr->commit();
     }
@@ -1972,9 +1974,9 @@ TEST(Shared_WaitForChangeAfterOwnCommit)
 
 NONCONCURRENT_TEST(Shared_InterprocessWaitForChange)
 {
-    // We can't use SHARED_GROUP_TEST_PATH() because it will attempt to clean up the .realm file at the end,
-    // and hence throw if the other processstill has the .realm file open
-    std::string path = get_test_path("Shared_InterprocessWaitForChange", ".realm");
+    // We can't use SHARED_GROUP_TEST_PATH() because it will attempt to clean up the .tess file at the end,
+    // and hence throw if the other processstill has the .tess file open
+    std::string path = get_test_path("Shared_InterprocessWaitForChange", ".tess");
 
     // This works differently from POSIX: Here, the child process begins execution from the start of this unit
     // test and not from the place of fork().
@@ -1987,7 +1989,7 @@ NONCONCURRENT_TEST(Shared_InterprocessWaitForChange)
 
     auto sg = DB::create(path);
 
-    // An old .realm file with random contents can exist (such as a leftover from earlier crash) with random
+    // An old .tess file with random contents can exist (such as a leftover from earlier crash) with random
     // data, so we always initialize the database
     {
         auto tr = sg->start_write();
@@ -2209,7 +2211,7 @@ TEST(Shared_MultipleSharersOfStreamingFormat)
     }
 }
 
-#if REALM_ENABLE_ENCRYPTION
+#if TESSERA_ENABLE_ENCRYPTION
 // verify that even though different threads share the same encrypted pages,
 // a thread will not get access without the key.
 TEST(Shared_EncryptionKeyCheck)
@@ -2328,7 +2330,7 @@ TEST(Shared_KeyWithNulBytes)
     }
 }
 
-#endif // REALM_ENABLE_ENCRYPTION
+#endif // TESSERA_ENABLE_ENCRYPTION
 
 TEST(Shared_VersionCount)
 {
@@ -2378,7 +2380,7 @@ TEST(Shared_MultipleEndReads)
     reader->end_read();
 }
 
-#ifdef REALM_DEBUG
+#ifdef TESSERA_DEBUG
 // SharedGroup::reserve() is a debug method only available in debug mode
 TEST(Shared_ReserveDiskSpace)
 {
@@ -2891,7 +2893,7 @@ NONCONCURRENT_TEST(Shared_BigAllocations)
     sg->close();
 }
 
-TEST_IF(Shared_CompactEncrypt, REALM_ENABLE_ENCRYPTION)
+TEST_IF(Shared_CompactEncrypt, TESSERA_ENABLE_ENCRYPTION)
 {
     SHARED_GROUP_TEST_PATH(path);
     const char* key1 = "KdrL2ieWyspILXIPetpkLD6rQYKhYnS6lvGsgk4qsJAMr1adQnKsYo3oTEYJDIfa";
@@ -2992,7 +2994,7 @@ NONCONCURRENT_TEST(Shared_TopSizeNotEqualNine)
         t->create_objects(241, keys);
         writer->commit();
     }
-    REALM_ASSERT_RELEASE(sg->compact());
+    TESSERA_ASSERT_RELEASE(sg->compact());
     DBRef sg2 = DB::create(path, DBOptions(crypt_key()));
     {
         TransactionRef writer = sg2->start_write();
@@ -3018,7 +3020,7 @@ TEST(Shared_Bptree_insert_failure)
     std::vector<ObjKey> keys;
     writer->get_table(tk)->create_objects(246, keys);
     writer->commit();
-    REALM_ASSERT_RELEASE(sg_w->compact());
+    TESSERA_ASSERT_RELEASE(sg_w->compact());
 #if 0
     {
         // This intervening sg can do the same operation as the one doing compact,
@@ -3184,7 +3186,7 @@ TEST(Shared_LockFileOfWrongSizeThrows)
         // On Windows, we implement a shared lock on a file by locking the first byte of the file. Since
         // you cannot write to a locked region using WriteFile(), we use memory mapping which works fine, and
         // which is also the same method used by the .lock file initialization in SharedGroup::do_open()
-        File::Map<char> mem(f, realm::util::File::access_ReadWrite, 1);
+        File::Map<char> mem(f, tessera::util::File::access_ReadWrite, 1);
 
         // set init_complete flag to 1 and sync
         mem.get_addr()[0] = 1;
@@ -3421,12 +3423,12 @@ TEST(Shared_ConstObjectIterator)
     t4->clear();
     auto i5(i4);
     // dereferencing an invalid iterator will throw
-    CHECK_THROW(*i5, realm::Exception);
+    CHECK_THROW(*i5, tessera::Exception);
     // but moving it will not, it just stays invalid
     ++i5;
     i5 += 3;
     // so, should still throw
-    CHECK_THROW(*i5, realm::Exception);
+    CHECK_THROW(*i5, tessera::Exception);
     CHECK(i5 == t4->end());
 }
 
@@ -3453,15 +3455,15 @@ TEST(Shared_ConstList)
 #ifdef LEGACY_TESTS
 
 // Test if we can successfully open an existing encrypted file (generated by Core 4.0.3)
-#if !REALM_ANDROID // FIXME
-TEST_IF(Shared_DecryptExisting, REALM_ENABLE_ENCRYPTION)
+#if !TESSERA_ANDROID // FIXME
+TEST_IF(Shared_DecryptExisting, TESSERA_ENABLE_ENCRYPTION)
 {
-    // Page size of system that reads the .realm file must be the same as on the system
+    // Page size of system that reads the .tess file must be the same as on the system
     // that created it, because we are running with encryption
     std::string path = test_util::get_test_resource_path() + "test_shared_decrypt_" +
-                       realm::util::to_string(page_size() / 1024) + "k_page.realm";
+                       tessera::util::to_string(page_size() / 1024) + "k_page.tess";
 
-#if 0 // set to 1 to generate the .realm file
+#if 0 // set to 1 to generate the .tess file
     {
         File::try_remove(path);
         //DB db(path, DBOptions(crypt_key(true)));
@@ -3532,7 +3534,7 @@ TEST(Shared_SimpleTransaction)
 TEST(Shared_OpenAfterClose)
 {
     // Test case generated in [realm-core-6.0.0-rc1] on Wed Apr 11 16:08:05 2018.
-    // REALM_MAX_BPNODE_SIZE is 4
+    // TESSERA_MAX_BPNODE_SIZE is 4
     // ----------------------------------------------------------------------
     SHARED_GROUP_TEST_PATH(path);
     const char* key = nullptr;
@@ -3581,7 +3583,7 @@ TEST(Shared_RemoveTableWithEnumAndLinkColumns)
 TEST(Shared_GenerateObjectIdAfterRollback)
 {
     // Test case generated in [realm-core-6.0.0-alpha.0] on Mon Aug 13 14:43:06 2018.
-    // REALM_MAX_BPNODE_SIZE is 1000
+    // TESSERA_MAX_BPNODE_SIZE is 1000
     // ----------------------------------------------------------------------
     SHARED_GROUP_TEST_PATH(path);
     std::unique_ptr<Replication> hist_w(make_in_realm_history());
@@ -3647,8 +3649,8 @@ TEST(Shared_UpgradeBinArray)
     CHECK(rt->get_table(TableKey(0))->get_object(ObjKey(54)).is_null(col));
 }
 
-#if !REALM_ANDROID // FIXME
-TEST_IF(Shared_MoreVersionsInUse, REALM_ENABLE_ENCRYPTION)
+#if !TESSERA_ANDROID // FIXME
+TEST_IF(Shared_MoreVersionsInUse, TESSERA_ENABLE_ENCRYPTION)
 {
     SHARED_GROUP_TEST_PATH(path);
     const char* key = "1234567890123456789012345678901123456789012345678901234567890123";
@@ -3699,7 +3701,7 @@ TEST_IF(Shared_MoreVersionsInUse, REALM_ENABLE_ENCRYPTION)
     }
 }
 
-TEST_IF(Shared_LinksToSameCluster, REALM_ENABLE_ENCRYPTION)
+TEST_IF(Shared_LinksToSameCluster, TESSERA_ENABLE_ENCRYPTION)
 {
     // There was a problem when a link referred an object living in the same
     // Cluster as the origin object.
@@ -3772,7 +3774,7 @@ TEST(Shared_GetCommitSize)
     }
 }
 
-TEST_IF(Shared_LargeFile, TEST_DURATION > 0 && !REALM_ANDROID)
+TEST_IF(Shared_LargeFile, TEST_DURATION > 0 && !TESSERA_ANDROID)
 {
     SHARED_GROUP_TEST_PATH(path);
     DBOptions options;
@@ -4402,7 +4404,7 @@ TEST(Shared_WriteToFail)
 
 NONCONCURRENT_TEST_IF(Shared_LockFileConcurrentInit, testing_supports_spawn_process)
 {
-    auto path = realm::test_util::get_test_path(test_context.get_test_name(), ".test-dir");
+    auto path = tessera::test_util::get_test_path(test_context.get_test_name(), ".test-dir");
     test_util::TestDirGuard test_dir(path, false);
     test_dir.do_remove = SpawnedProcess::is_parent();
     auto lock_prefix = std::string(path) + "/lock";
@@ -4508,7 +4510,7 @@ TEST(Shared_ClearOnError_ResetInvalidFile)
     }
 }
 
-#if REALM_ENABLE_ENCRYPTION
+#if TESSERA_ENABLE_ENCRYPTION
 TEST(Shared_ClearOnError_ChangeEncryptionKey)
 {
     auto key_1 = "1234567890123456789012345678901123456789012345678901234567890123";

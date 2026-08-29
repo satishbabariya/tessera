@@ -18,9 +18,9 @@
 
 #include "testsettings.hpp"
 
-#include <realm.hpp>
-#include <realm/parser/keypath_mapping.hpp>
-#include <realm/parser/query_parser.hpp>
+#include <tessera.hpp>
+#include <tessera/parser/keypath_mapping.hpp>
+#include <tessera/parser/query_parser.hpp>
 #if defined(TEST_PARSER)
 
 #include "test.hpp"
@@ -54,11 +54,11 @@
 // `experiments/testcase.cpp` and then run `sh build.sh
 // check-testcase` (or one of its friends) from the command line.
 
-#include <realm.hpp>
-#include <realm/replication.hpp>
-#include <realm/util/any.hpp>
-#include <realm/util/encrypted_file_mapping.hpp>
-#include <realm/util/to_string.hpp>
+#include <tessera.hpp>
+#include <tessera/replication.hpp>
+#include <tessera/util/any.hpp>
+#include <tessera/util/encrypted_file_mapping.hpp>
+#include <tessera/util/to_string.hpp>
 #include "test_table_helper.hpp"
 #include "test_types_helper.hpp"
 
@@ -69,9 +69,9 @@
 #include <vector>
 #include <set>
 
-using namespace realm;
-using namespace realm::test_util;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::test_util;
+using namespace tessera::util;
 
 // clang-format off
 static std::vector<std::string> valid_queries = {
@@ -394,7 +394,7 @@ TEST(Parser_valid_queries)
 {
     for (auto& query : valid_queries) {
         // std::cout << "query: " << query << std::endl;
-        realm::query_parser::parse(query);
+        tessera::query_parser::parse(query);
     }
 }
 
@@ -402,7 +402,7 @@ TEST(Parser_invalid_queries)
 {
     for (auto& query : invalid_queries) {
         // std::cout << "query: " << query << std::endl;
-        CHECK_THROW(realm::query_parser::parse(query), realm::query_parser::SyntaxError);
+        CHECK_THROW(tessera::query_parser::parse(query), tessera::query_parser::SyntaxError);
     }
 }
 
@@ -429,7 +429,7 @@ static Query verify_query(test_util::unit_test::TestContext& test_context, Table
 static Query verify_query(test_util::unit_test::TestContext& test_context, TableRef t, std::string query_string,
                           size_t num_results, query_parser::KeyPathMapping mapping = {})
 {
-    realm::query_parser::NoArguments args;
+    tessera::query_parser::NoArguments args;
     Query q = t->query(query_string, args, mapping);
 
     size_t q_count = q.count();
@@ -450,7 +450,7 @@ static void verify_query_sub(test_util::unit_test::TestContext& test_context, Ta
                              const std::any* arg_list, size_t num_args, size_t num_results)
 {
     query_parser::AnyContext ctx;
-    realm::query_parser::ArgumentConverter<std::any, query_parser::AnyContext> args(ctx, arg_list, num_args);
+    tessera::query_parser::ArgumentConverter<std::any, query_parser::AnyContext> args(ctx, arg_list, num_args);
 
     Query q = t->query(query_string, args, {});
 
@@ -494,7 +494,7 @@ TEST(Parser_empty_input)
     t->create_objects(5, keys);
 
     // an empty query string is an invalid predicate
-    CHECK_THROW(verify_query(test_context, t, "", 5), realm::query_parser::SyntaxError);
+    CHECK_THROW(verify_query(test_context, t, "", 5), tessera::query_parser::SyntaxError);
 
     Query q = t->where(); // empty query
     std::string empty_description = q.get_description();
@@ -566,7 +566,7 @@ TEST(Parser_basic_serialisation)
     for (size_t i = 0; i < t->size(); ++i) {
         t->get_object(keys[i]).set_all(int(i), StringData(names[i]), fees[i], float(fees[i]), (i % 2 == 0));
     }
-    t->get_object(keys[0]).set(time_col, Timestamp(realm::null()));
+    t->get_object(keys[0]).set(time_col, Timestamp(tessera::null()));
     t->get_object(keys[1]).set(time_col, Timestamp(1512130073, 0));   // 2017/12/02 @ 12:47am (UTC)
     t->get_object(keys[2]).set(time_col, Timestamp(1512130073, 505)); // with nanoseconds
     t->get_object(keys[3]).set(time_col, Timestamp(1, 2));
@@ -715,7 +715,7 @@ TEST_TYPES(Parser_Numerics, Prop<Int>, Nullable<Int>, Indexed<Int>, NullableInde
         t->create_object(ObjKey{}, {{col_key, values[i]}});
     }
     if (nullable) {
-        t->create_object(ObjKey{}, {{col_key, realm::null{}}});
+        t->create_object(ObjKey{}, {{col_key, tessera::null{}}});
     }
     for (size_t i = 0; i < values.size(); ++i) {
         std::stringstream out;
@@ -986,7 +986,7 @@ TEST(Parser_Timestamps)
     t->get_object(keys[0]).set(birthday_col, Timestamp(-1, -1)); // before epoch by 1 second and one nanosecond
     t->get_object(keys[1]).set(birthday_col, Timestamp(0, -1));  // before epoch by one nanosecond
 
-    t->get_object(keys[0]).set(internal_col, Timestamp(realm::null()));
+    t->get_object(keys[0]).set(internal_col, Timestamp(tessera::null()));
     t->get_object(keys[1]).set(internal_col, Timestamp(1512130073, 0));   // 2017/12/02 @ 12:47am (UTC)
     t->get_object(keys[2]).set(internal_col, Timestamp(1512130073, 505)); // with nanoseconds
     t->get_object(keys[3]).set(internal_col, Timestamp(1, 2));
@@ -1516,7 +1516,7 @@ TEST(Parser_substitution)
     LnkLst list_1 = t->get_object(obj_keys[1]).get_linklist(list_col);
     list_1.add(obj_keys[0]);
 
-    std::any args[] = {Int(2), Double(2.25), String("oe"), realm::null{}, Bool(true), Timestamp(1512130073, 505),
+    std::any args[] = {Int(2), Double(2.25), String("oe"), tessera::null{}, Bool(true), Timestamp(1512130073, 505),
                        bd0,    Float(2.33),  obj_keys[0],  Int(3),        Int(4),     Bool(false)};
     size_t num_args = 13;
     verify_query_sub(test_context, t, "age > $0", args, num_args, 2);
@@ -2291,7 +2291,7 @@ TEST_TYPES(Parser_list_of_primitive_strings, std::true_type, std::false_type)
     }
     t->create_object();
     Obj obj_with_null = t->create_object();
-    obj_with_null.get_list<String>(col_str_list).add(StringData(realm::null()));
+    obj_with_null.get_list<String>(col_str_list).add(StringData(tessera::null()));
     Obj obj_with_empty_string = t->create_object();
     obj_with_empty_string.get_list<String>(col_str_list).add("");
     size_t num_special_objects = 3;
@@ -2510,7 +2510,7 @@ TEST_TYPES(Parser_list_of_primitive_types, Prop<Int>, Nullable<Int>, Prop<Bool>,
     std::string message;
     CHECK_THROW_ANY_GET_MESSAGE(verify_query(test_context, t, "missing.length == 2", 0), message);
     CHECK_EQUAL(message, "'table' has no property 'missing'");
-    if constexpr (realm::is_any_v<underlying_type, StringData, BinaryData>) {
+    if constexpr (tessera::is_any_v<underlying_type, StringData, BinaryData>) {
         verify_query(test_context, t, "values.length == 0", 1);
     }
     else {
@@ -2598,7 +2598,7 @@ TEST(Parser_list_of_primitive_mixed)
     mixed_list.add(Mixed{true});
     mixed_list.add(Mixed{null::get_null_float<float>()});
     mixed_list.add(Mixed{null::get_null_float<double>()});
-    mixed_list.add(Mixed{Decimal128{realm::null()}});
+    mixed_list.add(Mixed{Decimal128{tessera::null()}});
     mixed_list.add(Mixed{Decimal128{StringData{}}}); // NaN
     CHECK_EQUAL(mixed_list.min(), Mixed(false));
     CHECK_EQUAL(mixed_list.max(), Mixed(UUID()));
@@ -3055,7 +3055,7 @@ TEST(Parser_Limit)
 
     TableView items = peopleRead->where().find_all();
     CHECK_EQUAL(items.size(), 3);
-    realm::DescriptorOrdering desc;
+    tessera::DescriptorOrdering desc;
     CHECK(!desc.will_apply_limit());
     desc.append_limit(1);
     CHECK(desc.will_apply_limit());
@@ -3954,7 +3954,7 @@ TEST(Parser_OperatorIN)
                                      ObjKey{},
                                      ObjLink{t->get_key(), people_keys[0]}};
     std::vector<Mixed> empty_list = {};
-    util::Any args[] = {realm::null(),          int_list, strings_list, mixed_list, empty_list, String("customer_id"),
+    util::Any args[] = {tessera::null(),          int_list, strings_list, mixed_list, empty_list, String("customer_id"),
                         String("fav_item.name")};
     size_t num_args = 7;
     verify_query_sub(test_context, t, "customer_id IN $1", args, num_args, 3);
@@ -4167,7 +4167,7 @@ TEST(Parser_KeyPathSubstitution)
     persons->create_object_with_primary_key("David").set("Pet", pluto.get_key());
     persons->create_object_with_primary_key("Eric");
 
-    std::any args[] = {String("Pet"), String("Pet.Legs"), 25, realm::null(), String("Pet.Weight")};
+    std::any args[] = {String("Pet"), String("Pet.Legs"), 25, tessera::null(), String("Pet.Weight")};
 
     size_t num_args = 5;
     verify_query_sub(test_context, persons, "$K0 != null", args, num_args, 4);
@@ -4281,7 +4281,7 @@ TEST(Parser_Object)
     std::string description = q0.get_description(); // shouldn't throw
     CHECK(description.find("L0:0") != std::string::npos);
 
-    Query q1 = table->column<Link>(link_col) == realm::null();
+    Query q1 = table->column<Link>(link_col) == tessera::null();
     description = q1.get_description(); // shouldn't throw
     CHECK(description.find("NULL") != std::string::npos);
     CHECK_EQUAL(q1.count(), 1);
@@ -4456,7 +4456,7 @@ TEST(Parser_TimestampNullable)
                   .group()
                   .equal(a_col, Timestamp(100, 0))
                   .Or()
-                  .equal(a_col, Timestamp(realm::null()))
+                  .equal(a_col, Timestamp(tessera::null()))
                   .end_group();
     std::string description = q.get_description();
     CHECK(description.find("NULL") != std::string::npos);
@@ -4526,7 +4526,7 @@ TEST(Parser_ObjectId)
     verify_query(test_context, table, "nid == NULL", 1);
 
     // argument substitution checks with an ObjectId
-    std::any args[] = {oid_1, oid_before_now, oid_after_now, oid_0, realm::null()};
+    std::any args[] = {oid_1, oid_before_now, oid_after_now, oid_0, tessera::null()};
     size_t num_args = 5;
 
     verify_query_sub(test_context, table, "id == $0", args, num_args, 1);
@@ -4645,7 +4645,7 @@ TEST(Parser_UUID)
     }
 
     // argument substitution checks
-    std::any args[] = {u1, u2, u3, realm::null()};
+    std::any args[] = {u1, u2, u3, tessera::null()};
     size_t num_args = 4;
     verify_query_sub(test_context, table, "id == $0", args, num_args, 1);
     verify_query_sub(test_context, table, "id == $1", args, num_args, 1);
@@ -4743,7 +4743,7 @@ TEST(Parser_Decimal128)
     verify_query(test_context, table, "dec >= -infinity", table->size() - num_nans);
 
     // argument substitution checks
-    std::any args[] = {Decimal128("0"), Decimal128("123"), realm::null{}, 123.0};
+    std::any args[] = {Decimal128("0"), Decimal128("123"), tessera::null{}, 123.0};
     size_t num_args = 4;
     verify_query_sub(test_context, table, "dec == $0", args, num_args, 1);
     verify_query_sub(test_context, table, "dec == $1", args, num_args, 1);
@@ -4836,7 +4836,7 @@ TEST(Parser_Mixed)
                        ObjLink(table->get_key(), table->begin()->get_key()),
                        ObjLink(origin->get_key(), origin->begin()->get_key()),
                        ObjLink(TableKey(), ObjKey()), // null link
-                       realm::null{},
+                       tessera::null{},
                        StringData(str_value)};
     size_t num_args = 6;
     verify_query_sub(test_context, table, "mixed endswith $0", args, num_args, 0);
@@ -5639,7 +5639,7 @@ TEST_TYPES(Parser_Set, Prop<int64_t>, Prop<float>, Prop<double>, Prop<Decimal128
     verify_query(test_context, table, "ALL set == value", 2);  // 3, 4
     verify_query(test_context, table, "NONE set == value", 3); // 0, 2, 4
 
-    if constexpr (realm::is_any_v<underlying_type, Int, Double, Float, Decimal128>) {
+    if constexpr (tessera::is_any_v<underlying_type, Int, Double, Float, Decimal128>) {
         verify_query(test_context, table, "set == 3", 2);          // 1, 3
         verify_query(test_context, table, "set.@max == 100", 1);   // 2
         verify_query(test_context, table, "set.@min == 0", 1);     // 0
@@ -5661,7 +5661,7 @@ TEST_TYPES(Parser_Set, Prop<int64_t>, Prop<float>, Prop<double>, Prop<Decimal128
         CHECK_THROW_ANY(verify_query(test_context, table, "set.@sum > 100", 1));
         CHECK_THROW_ANY(verify_query(test_context, table, "set.@avg > 100", 1));
     }
-    if constexpr (realm::is_any_v<underlying_type, StringData, BinaryData>) {
+    if constexpr (tessera::is_any_v<underlying_type, StringData, BinaryData>) {
         verify_query_sub(test_context, table, "set ==[c] $0", args, num_args, 2);           // 1, 3
         verify_query_sub(test_context, table, "set LIKE $0", args, num_args, 2);            // 1, 3
         verify_query_sub(test_context, table, "set BEGINSWITH $0", args, num_args, 2);      // 1, 3
@@ -5713,7 +5713,7 @@ TEST(Parser_SetMixed)
     set_values(table->get_object(keys[2]).get_set<Mixed>(col_set), {same_value});
     // the fourth set is empty
     set_values(table->get_object(keys[4]).get_set<Mixed>(col_set),
-               {int64_t(-1), Decimal128(StringData(/*NaN*/)), 4.4f, 7.6, 0, realm::null()});
+               {int64_t(-1), Decimal128(StringData(/*NaN*/)), 4.4f, 7.6, 0, tessera::null()});
     auto list0 = table->get_object(keys[0]).get_set<Mixed>(col_set);
     CHECK_EQUAL(list0.min(), 3);
     CHECK_EQUAL(list0.max(), StringData("hello"));
@@ -5849,7 +5849,7 @@ TEST(Parser_CollectionsConsistency)
     set_values(keys[1], {{3.5f}, {"world"}, {data}, {ObjectId::gen()}, {UUID()}, {}});
     set_values(keys[2], {same_value});
     // the collections at keys[3] are empty
-    set_values(keys[4], {int64_t(-1), Decimal128(StringData(/*NaN*/)), 4.4f, 7.6, 0, realm::null()});
+    set_values(keys[4], {int64_t(-1), Decimal128(StringData(/*NaN*/)), 4.4f, 7.6, 0, tessera::null()});
 
     check_agg(keys[0], 3, StringData("hello"), 303, 151.5);
     check_agg(keys[1], 3.5, UUID(), 3.5, 3.5);
@@ -6237,7 +6237,7 @@ TEST(Parser_Geospatial)
     ColKey name_col = table->add_column(type_String, "name");
     ColKey col_link = table->add_column(*geo_table, "location");
 
-#if !REALM_ENABLE_GEOSPATIAL
+#if !TESSERA_ENABLE_GEOSPATIAL
     auto error = "Support for Geospatial queries is not enabled";
 
     static_cast<void>(self_col);
@@ -6246,7 +6246,7 @@ TEST(Parser_Geospatial)
     static_cast<void>(col_link);
 #define CHECK_QUERY(query)                                                                                           \
     do {                                                                                                             \
-        CHECK_THROW_EX(verify_query(test_context, table, query, 1), realm::LogicError,                               \
+        CHECK_THROW_EX(verify_query(test_context, table, query, 1), tessera::LogicError,                               \
                        CHECK(std::string(e.what()).find(error) != std::string::npos));                               \
     } while (false)
 
@@ -6256,7 +6256,7 @@ TEST(Parser_Geospatial)
     CHECK_QUERY("location geoWithin geoCircle([0.3, 0.3, 0.3], 1000.0)");
     CHECK_QUERY("location geoWithin geoPolygon({[0.0, 0.0], [1.0, 0.0], [1, 1], [0, 1], [0.0, 0.0]})");
 
-    CHECK_THROW_EX(verify_query_sub(test_context, table, "location GEOWITHIN $0", {}, 1), realm::LogicError,
+    CHECK_THROW_EX(verify_query_sub(test_context, table, "location GEOWITHIN $0", {}, 1), tessera::LogicError,
                    CHECK(std::string(e.what()).find(error) != std::string::npos));
 #else
     struct Restaurant {
@@ -6316,7 +6316,7 @@ TEST(Parser_Geospatial)
     std::string str_of_polygon = polygon.to_string();
     std::string str_of_point = point.to_string();
     std::vector<Mixed> args = {Mixed{&box},          Mixed{&circle},        Mixed{&polygon},
-                               Mixed{&invalid},      Mixed{realm::null()},  Mixed{1.2},
+                               Mixed{&invalid},      Mixed{tessera::null()},  Mixed{1.2},
                                Mixed{1000},          Mixed{"string value"}, Mixed{str_of_box},
                                Mixed{str_of_circle}, Mixed{str_of_polygon}, Mixed{str_of_point}};
 

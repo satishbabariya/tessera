@@ -25,13 +25,13 @@
 #include <functional>
 #include <thread>
 
-#include <realm/util/thread.hpp>
-#include <realm/util/file.hpp>
-#include <realm/util/features.h>
+#include <tessera/util/thread.hpp>
+#include <tessera/util/file.hpp>
+#include <tessera/util/features.h>
 #include "test.hpp"
 
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 
 // Test independence and thread-safety

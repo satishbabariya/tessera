@@ -1,7 +1,7 @@
 #include "testsettings.hpp"
 #ifdef TEST_UTIL_FILE
 
-#include <realm/util/file.hpp>
+#include <tessera/util/file.hpp>
 #include <filesystem>
 
 #include "test.hpp"
@@ -11,8 +11,8 @@
 #include <unistd.h>
 #endif
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 // Test independence and thread-safety
 // -----------------------------------
@@ -147,7 +147,7 @@ TEST(Utils_File_dir_unicode)
     CHECK(std::filesystem::exists(u8path(test_util::get_test_path_prefix()) / u8path(all_the_unicode)));
 
     // Create file
-    File f(File::resolve("test.realm", dir_name), File::mode_Write);
+    File f(File::resolve("test.tess", dir_name), File::mode_Write);
     f.close();
     File::remove(f.get_path());
 
@@ -178,7 +178,7 @@ TEST(Utils_File_resolve)
     std::string res;
     res = File::resolve("", "");
 
-#if REALM_HAVE_STD_FILESYSTEM
+#if TESSERA_HAVE_STD_FILESYSTEM
     // The std::filesystem-based implementation canonicalizes the resolved path in terms of '.' and '..'
     // This doesn't affect the actual behavior of the file APIs since 'some/dir/.' == 'some/dir'
     // but it does produce a different string value.

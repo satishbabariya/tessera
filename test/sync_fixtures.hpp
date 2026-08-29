@@ -3,25 +3,25 @@
 #include <string>
 #include <vector>
 
-#include <realm/impl/simulated_failure.hpp>
-#include <realm/string_data.hpp>
-#include <realm/sync/client.hpp>
-#include <realm/sync/network/default_socket.hpp>
-#include <realm/sync/network/http.hpp>
-#include <realm/sync/network/network.hpp>
-#include <realm/sync/noinst/client_history_impl.hpp>
-#include <realm/sync/noinst/protocol_codec.hpp>
-#include <realm/sync/noinst/server/server.hpp>
-#include <realm/sync/noinst/server/server_dir.hpp>
-#include <realm/transaction.hpp>
-#include <realm/version.hpp>
+#include <tessera/impl/simulated_failure.hpp>
+#include <tessera/string_data.hpp>
+#include <tessera/sync/client.hpp>
+#include <tessera/sync/network/default_socket.hpp>
+#include <tessera/sync/network/http.hpp>
+#include <tessera/sync/network/network.hpp>
+#include <tessera/sync/noinst/client_history_impl.hpp>
+#include <tessera/sync/noinst/protocol_codec.hpp>
+#include <tessera/sync/noinst/server/server.hpp>
+#include <tessera/sync/noinst/server/server_dir.hpp>
+#include <tessera/transaction.hpp>
+#include <tessera/version.hpp>
 
 #include "test.hpp"
 
-namespace realm::fixtures {
+namespace tessera::fixtures {
 
-using namespace realm::sync;
-using namespace realm::test_util;
+using namespace tessera::sync;
+using namespace tessera::test_util;
 
 // This public key must match the private key used to sign the token
 // below (test.pem).
@@ -61,7 +61,7 @@ const char g_unsigned_test_user_token[] =
 //    "admin": false,
 //    "timestamp": 1455530614,
 //    "expires": null,
-//    "app_id": "io.realm.Test"
+//    "app_id": "io.tessera.Test"
 //}
 const char g_user_0_token[] = "ewogICAgImlkZW50aXR5IjogInVzZXJfMCIsCiAgICAiYWRtaW4iOiBmYWxzZSwKICAgICJ0aW"
                               "1lc3RhbXAiOiAxNDU1NTMwNjE0LAogICAgImV4cGlyZXMiOiBudWxsLAogICAgImFwcF9pZCI6"
@@ -80,7 +80,7 @@ const char g_user_0_token[] = "ewogICAgImlkZW50aXR5IjogInVzZXJfMCIsCiAgICAiYWRta
 //    "admin": false,
 //    "timestamp": 1455530614,
 //    "expires": null,
-//    "app_id": "io.realm.Test"
+//    "app_id": "io.tessera.Test"
 //}
 const char g_user_1_token[] = "ewogICAgImlkZW50aXR5IjogInVzZXJfMSIsCiAgICAiYWRtaW4iOiBmYWxzZSwKICAgICJ0aW"
                               "1lc3RhbXAiOiAxNDU1NTMwNjE0LAogICAgImV4cGlyZXMiOiBudWxsLAogICAgImFwcF9pZCI6"
@@ -99,7 +99,7 @@ const char g_user_1_token[] = "ewogICAgImlkZW50aXR5IjogInVzZXJfMSIsCiAgICAiYWRta
 //    "admin": false,
 //    "timestamp": 1455530614,
 //    "expires": null,
-//    "app_id": "io.realm.Test"
+//    "app_id": "io.tessera.Test"
 // }
 const char g_user_2_token[] = "ewogICAgImlkZW50aXR5IjogInVzZXJfMiIsCiAgICAiYWRtaW4iOiBmYWxzZSwKICAgICJ0aW"
                               "1lc3RhbXAiOiAxNDU1NTMwNjE0LAogICAgImV4cGlyZXMiOiBudWxsLAogICAgImFwcF9pZCI6"
@@ -117,7 +117,7 @@ const char g_user_2_token[] = "ewogICAgImlkZW50aXR5IjogInVzZXJfMiIsCiAgICAiYWRta
 //     "admin": false,
 //     "timestamp": 1455530614,
 //     "expires": null,
-//     "app_id": "io.realm.Test",
+//     "app_id": "io.tessera.Test",
 //     "path": "/test",
 //     "access": ["download", "upload", "manage"]
 // }
@@ -138,7 +138,7 @@ const char g_user_0_path_test_token[] = "ewogICAgImlkZW50aXR5IjogInVzZXJfMCIsCiA
 //     "admin": false,
 //     "timestamp": 1455530614,
 //     "expires": null,
-//     "app_id": "io.realm.Test",
+//     "app_id": "io.tessera.Test",
 //     "path": "/test",
 //     "access": ["download", "upload", "manage"]
 // }
@@ -439,7 +439,7 @@ public:
 
         size_t max_download_size = 0x1000000; // 16 MB as in Server::Config
 
-#if REALM_DISABLE_SYNC_MULTIPLEXING
+#if TESSERA_DISABLE_SYNC_MULTIPLEXING
         bool one_connection_per_session = true;
 #else
         bool one_connection_per_session = false;
@@ -475,7 +475,7 @@ public:
         , m_enable_server_ssl{config.enable_server_ssl}
         , m_test_context{test_context}
     {
-        REALM_ASSERT(num_servers >= 1);
+        TESSERA_ASSERT(num_servers >= 1);
 
         m_server_loggers.resize(num_servers);
         m_client_loggers.resize(num_clients);
@@ -591,7 +591,7 @@ public:
                                                               std::optional<SessionErrorInfo> error_info) {
             if (state != ConnectionState::disconnected)
                 return;
-            REALM_ASSERT(error_info);
+            TESSERA_ASSERT(error_info);
             handler(error_info->status, error_info->is_fatal);
         };
         m_connection_state_change_listeners[client_index] = std::move(handler_wrapped);
@@ -599,7 +599,7 @@ public:
 
     void set_client_side_error_rate(int client_index, int n, int m)
     {
-        REALM_ASSERT(client_index >= 0 && client_index < m_num_clients);
+        TESSERA_ASSERT(client_index >= 0 && client_index < m_num_clients);
         auto sim = std::make_pair(n, m);
         // Save the simulated error rate
         m_simulated_client_error_rates[client_index] = sim;
@@ -616,7 +616,7 @@ public:
     // Must be called before start().
     void set_server_side_error_rate(int server_index, int n, int m)
     {
-        REALM_ASSERT(server_index >= 0 && server_index < m_num_servers);
+        TESSERA_ASSERT(server_index >= 0 && server_index < m_num_servers);
         m_simulated_server_error_rates[server_index] = std::make_pair(n, m);
     }
 
@@ -634,14 +634,14 @@ public:
 
     void start_client(int index)
     {
-        REALM_ASSERT(index >= 0 && index < m_num_clients);
+        TESSERA_ASSERT(index >= 0 && index < m_num_clients);
         m_client_socket_providers[index]->start();
     }
 
     // Use either the methods below or `start()`.
     void start_server(int index)
     {
-        REALM_ASSERT(index >= 0 && index < m_num_servers);
+        TESSERA_ASSERT(index >= 0 && index < m_num_servers);
         m_server_threads[index].start([this, index] {
             run_server(index);
         });
@@ -649,7 +649,7 @@ public:
 
     void stop_server(int index)
     {
-        REALM_ASSERT(index >= 0 && index < m_num_servers);
+        TESSERA_ASSERT(index >= 0 && index < m_num_servers);
         m_servers[index]->stop();
         unit_test::TestContext& test_context = m_test_context;
         if (m_server_threads[index].joinable())
@@ -659,7 +659,7 @@ public:
 
     void stop_client(int index)
     {
-        REALM_ASSERT(index >= 0 && index < m_num_clients);
+        TESSERA_ASSERT(index >= 0 && index < m_num_clients);
         auto& client = get_client(index);
         auto sim = m_simulated_client_error_rates[index];
         if (sim.first != 0) {
@@ -694,9 +694,9 @@ public:
     Session make_session(int client_index, int server_index, DBRef db, std::string realm_identifier,
                          Session::Config config = {})
     {
-        //  *ClientServerFixture uses the service identifier "/realm-sync" to distinguish Sync
+        //  *ClientServerFixture uses the service identifier "/tessera-sync" to distinguish Sync
         //  connections, while BaaS does not.
-        config.service_identifier = "/realm-sync";
+        config.service_identifier = "/tessera-sync";
         config.realm_identifier = std::move(realm_identifier);
         config.server_port = m_server_ports[server_index];
         config.server_address = "localhost";
@@ -707,7 +707,7 @@ public:
             auto fallback_listener = [this](ConnectionState state, std::optional<SessionErrorInfo> error) {
                 if (state != ConnectionState::disconnected)
                     return;
-                REALM_ASSERT(error);
+                TESSERA_ASSERT(error);
                 unit_test::TestContext& test_context = m_test_context;
                 test_context.logger->error("Client disconnect: %1 (is_fatal=%2)", error->status, error->is_fatal);
                 bool client_error_occurred = true;
@@ -751,7 +751,7 @@ public:
         auto duration_2 = std::chrono::duration_cast<time_point::duration>(duration_1);
         auto now_1 = m_fake_token_expiration_clock.now();
         auto now_2 = time_point{duration_2};
-        REALM_ASSERT(now_2 >= now_1);
+        TESSERA_ASSERT(now_2 >= now_1);
         m_fake_token_expiration_clock.add_time(now_2 - now_1);
     }
 
@@ -1067,10 +1067,10 @@ inline RealmFixture::Config RealmFixture::setup_error_handler(Config&& config)
                                                         const std::optional<SessionErrorInfo>& error_info) {
                 if (state != ConnectionState::disconnected)
                     return;
-                REALM_ASSERT(error_info);
+                TESSERA_ASSERT(error_info);
                 handler(error_info->status, error_info->is_fatal);
             };
     }
     return std::move(config);
 }
-} // namespace realm::fixtures
+} // namespace tessera::fixtures

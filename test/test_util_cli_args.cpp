@@ -3,11 +3,11 @@
 
 #include <array>
 
-#include "realm/util/cli_args.hpp"
+#include "tessera/util/cli_args.hpp"
 
 #include "test.hpp"
 
-using namespace realm::util;
+using namespace tessera::util;
 
 TEST(CliArgs_Basic)
 {

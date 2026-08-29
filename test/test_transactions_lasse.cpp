@@ -23,15 +23,15 @@
 #include <iostream>
 #include <thread>
 
-#include <realm.hpp>
-#include <realm/column_integer.hpp>
-#include <realm/utilities.hpp>
-#include <realm/util/file.hpp>
+#include <tessera.hpp>
+#include <tessera/column_integer.hpp>
+#include <tessera/utilities.hpp>
+#include <tessera/util/file.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::test_util;
 using unit_test::TestContext;
 
 #ifdef LEGACY_TESTS
@@ -71,7 +71,7 @@ using unit_test::TestContext;
 
 namespace {
 
-REALM_FORCEINLINE void rand_sleep(Random& random)
+TESSERA_FORCEINLINE void rand_sleep(Random& random)
 {
     const int64_t ms = 500000;
     unsigned char r = static_cast<unsigned char>(random.draw_int<unsigned int>());
@@ -284,7 +284,7 @@ TEST_IF(Transactions_Stress3, TEST_DURATION >= 3)
     const int ITER = 20;
     const int WRITERS = 4;
     const int READERS = 4;
-    const size_t ROWS = 1 * 1000 * 1000 + 1000; // + 1000 to add extra depth level if REALM_MAX_BPNODE_SIZE = 1000
+    const size_t ROWS = 1 * 1000 * 1000 + 1000; // + 1000 to add extra depth level if TESSERA_MAX_BPNODE_SIZE = 1000
     std::atomic<bool> terminate{false};
 
     auto write_thread = [&] {

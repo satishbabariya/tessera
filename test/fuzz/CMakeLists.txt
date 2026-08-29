@@ -1,7 +1,7 @@
 
 # if AFL build is enabled, add the AFL-specific stuff to the output portfolio
 
-if(REALM_AFL OR REALM_BUILD_FUZZING_TOOLS)
+if(TESSERA_AFL OR TESSERA_BUILD_FUZZING_TOOLS)
     set(FUZZ_TRANSFORM_SOURCES
         fuzz_transform.cpp
     )

@@ -1,9 +1,9 @@
-#include <realm/util/enum.hpp>
+#include <tessera/util/enum.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 namespace {
 

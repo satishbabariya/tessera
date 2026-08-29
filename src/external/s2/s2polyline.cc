@@ -76,7 +76,7 @@ bool S2Polyline::IsValid(vector<S2Point> const& v, string* err) {
     if (!S2::IsUnitLength(v[i])) {
         s2_logger()->info("Vertex %1 is not unit length", i);
       if (err) {
-        *err = realm::util::format("Vertex %1 is not unit length", i);
+        *err = tessera::util::format("Vertex %1 is not unit length", i);
       }
       return false;
     }
@@ -85,7 +85,7 @@ bool S2Polyline::IsValid(vector<S2Point> const& v, string* err) {
   // Adjacent vertices must not be identical or antipodal.
   for (int i = 1; i < n; ++i) {
     if (v[i-1] == v[i] || v[i-1] == -v[i]) {
-        std::string msg = realm::util::format("Vertices %1 and %2 are identical or antipodal", (i - 1), i);
+        std::string msg = tessera::util::format("Vertices %1 and %2 are identical or antipodal", (i - 1), i);
         s2_logger()->info(msg.c_str());
       if (err) {
           *err = msg;

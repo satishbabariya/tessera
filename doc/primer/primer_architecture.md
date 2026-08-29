@@ -235,5 +235,5 @@ run 'sh build.sh lcov' which generates a html coverage report for the project.
 [realm-java]: https://github.com/realm/realm-java
 [realm-dotnet]: https://github.com/realm/realm-dotnet
 [realm-js]: https://github.com/realm/realm-js
-[test-shared]: https://github.com/realm/realm-core/blob/master/test/test_shared.cpp
-[test-table]: https://github.com/realm/realm-core/blob/master/test/test_table.cpp
+[test-shared]: ../../test/test_shared.cpp
+[test-table]: ../../test/test_table.cpp

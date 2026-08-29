@@ -11,12 +11,12 @@
 #include <iostream>
 #include <fstream>
 
-#include <realm/util/features.h>
-#include <realm/binary_data.hpp>
-#include <realm/db.hpp>
-#include <realm/replication.hpp>
-#include <realm/list.hpp>
-#include <realm/sync/transform.hpp>
+#include <tessera/util/features.h>
+#include <tessera/binary_data.hpp>
+#include <tessera/db.hpp>
+#include <tessera/replication.hpp>
+#include <tessera/list.hpp>
+#include <tessera/merge/transform.hpp>
 
 #include "test.hpp"
 #include "util/quote.hpp"
@@ -25,9 +25,9 @@
 #include "util/compare_groups.hpp"
 #include "util/dump_changesets.hpp"
 
-using namespace realm;
-using namespace realm::sync;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::sync;
+using namespace tessera::test_util;
 using unit_test::TestContext;
 
 // Test independence and thread-safety

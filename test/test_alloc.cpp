@@ -25,17 +25,17 @@
 #include <unordered_map>
 #include <vector>
 
-#include <realm/alloc_slab.hpp>
-#include <realm/array.hpp>
-#include <realm/group.hpp>
-#include <realm/impl/simulated_failure.hpp>
-#include <realm/util/file.hpp>
+#include <tessera/alloc_slab.hpp>
+#include <tessera/array.hpp>
+#include <tessera/group.hpp>
+#include <tessera/impl/simulated_failure.hpp>
+#include <tessera/util/file.hpp>
 
 #include "test.hpp"
 #include "util/test_only.hpp"
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 
 // Test independence and thread-safety

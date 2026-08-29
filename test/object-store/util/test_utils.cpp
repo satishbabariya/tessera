@@ -18,11 +18,11 @@
 
 #include <util/test_utils.hpp>
 
-#include <realm/string_data.hpp>
-#include <realm/object-store/impl/realm_coordinator.hpp>
-#include <realm/util/base64.hpp>
-#include <realm/util/demangle.hpp>
-#include <realm/util/file.hpp>
+#include <tessera/string_data.hpp>
+#include <tessera/object-store/impl/realm_coordinator.hpp>
+#include <tessera/util/base64.hpp>
+#include <tessera/util/demangle.hpp>
+#include <tessera/util/file.hpp>
 
 #include <external/json/json.hpp>
 
@@ -35,12 +35,12 @@
 #include <sys/types.h>
 #endif
 
-#if REALM_PLATFORM_APPLE
+#if TESSERA_PLATFORM_APPLE
 #include <sys/mount.h>
 #include <sys/param.h>
 #endif
 
-namespace realm {
+namespace tessera {
 
 bool ExceptionMatcher<void>::match(Exception const& ex) const
 {
@@ -83,7 +83,7 @@ void create_dummy_realm(std::string path, std::shared_ptr<Realm>* out)
     Realm::Config config;
     config.path = path;
     auto realm = _impl::RealmCoordinator::get_coordinator(path)->get_realm(config, none);
-    REQUIRE_REALM_EXISTS(path);
+    REQUIRE_DB_EXISTS(path);
     if (out) {
         *out = std::move(realm);
     }
@@ -162,13 +162,13 @@ int64_t random_int()
 
 static bool file_is_on_exfat(const std::string& path)
 {
-#if REALM_PLATFORM_APPLE
+#if TESSERA_PLATFORM_APPLE
     if (path.empty())
         return false;
 
     struct statfs fsbuf;
     int ret = statfs(path.c_str(), &fsbuf);
-    REALM_ASSERT_RELEASE(ret == 0);
+    TESSERA_ASSERT_RELEASE(ret == 0);
     // The documentation and headers helpfully don't list any of the values of
     // f_type or provide constants for them
     return fsbuf.f_type == 28 /* exFAT */;
@@ -198,10 +198,10 @@ int get_permissions(const std::string& path)
 {
     int perms = 0;
 #ifndef _WIN32
-    REALM_ASSERT(!path.empty());
+    TESSERA_ASSERT(!path.empty());
     struct stat statbuf;
     int ret = ::stat(path.c_str(), &statbuf);
-    REALM_ASSERT_EX(ret == 0, ret, errno);
+    TESSERA_ASSERT_EX(ret == 0, ret, errno);
     perms = statbuf.st_mode;
 #else
     static_cast<void>(path);
@@ -213,11 +213,11 @@ void chmod(const std::string& path, int permissions)
 {
 #ifndef _WIN32
     int ret = ::chmod(path.c_str(), permissions);
-    REALM_ASSERT_EX(ret == 0, ret, errno);
+    TESSERA_ASSERT_EX(ret == 0, ret, errno);
 #else
     static_cast<void>(path);
     static_cast<void>(permissions);
 #endif
 }
 
-} // namespace realm
+} // namespace tessera

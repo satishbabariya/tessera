@@ -16,8 +16,8 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_SPAWNED_PROCESS_HPP
-#define REALM_TEST_UTIL_SPAWNED_PROCESS_HPP
+#ifndef TESSERA_TEST_UTIL_SPAWNED_PROCESS_HPP
+#define TESSERA_TEST_UTIL_SPAWNED_PROCESS_HPP
 
 #ifdef _WIN32
 #include <windows.h>
@@ -26,7 +26,7 @@
 #include <memory>
 #include <string>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 // This is a wrapper around UNIX posix_spawn(), and Windows CreateProcess(). This
@@ -59,11 +59,11 @@ private:
 };
 
 // This only creates a process from the root parent process. If the current process is detected to be
-// a child process via the REALM_CHILD_IDENT environment variable, then no process is actually started here.
+// a child process via the TESSERA_CHILD_IDENT environment variable, then no process is actually started here.
 std::unique_ptr<SpawnedProcess> spawn_process(const std::string& test_name, const std::string& process_ident);
 int64_t get_pid();
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_SPAWNED_PROCESS_HPP
+#endif // TESSERA_TEST_UTIL_SPAWNED_PROCESS_HPP

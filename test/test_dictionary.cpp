@@ -18,7 +18,7 @@
 
 #include "testsettings.hpp"
 
-#include <realm.hpp>
+#include <tessera.hpp>
 
 #include "test.hpp"
 #include <chrono>
@@ -28,8 +28,8 @@
 
 using namespace std::chrono;
 
-using namespace realm;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::test_util;
 
 #ifndef CALLGRIND_START_INSTRUMENTATION
 #define CALLGRIND_START_INSTRUMENTATION
@@ -91,7 +91,7 @@ TEST(Dictionary_Basics)
         Dictionary dict = obj1.get_dictionary(col_dict);
 
         CHECK_EQUAL(dict.size(), 0);
-        CHECK_EQUAL(dict.find_any(9), realm::npos);
+        CHECK_EQUAL(dict.find_any(9), tessera::npos);
 
         CHECK(dict.insert("Hello", 9).second);
         CHECK_EQUAL(dict.size(), 1);
@@ -99,7 +99,7 @@ TEST(Dictionary_Basics)
         CHECK(dict.contains("Hello"));
         CHECK_NOT(dict.insert("Hello", 10).second);
         CHECK_EQUAL(dict.get("Hello").get_int(), 10);
-        CHECK_EQUAL(dict.find_any(9), realm::npos);
+        CHECK_EQUAL(dict.find_any(9), tessera::npos);
         CHECK_EQUAL(dict.find_any(10), 0);
 
         dict.insert("Goodbye", "cruel world");
@@ -408,7 +408,7 @@ TEST(Dictionary_Aggregate)
     max = dict.max(&ndx);
     CHECK(max);
     CHECK(max->is_null());
-    CHECK_EQUAL(ndx, realm::npos);
+    CHECK_EQUAL(ndx, tessera::npos);
 }
 
 NONCONCURRENT_TEST(Dictionary_Performance)
@@ -644,7 +644,7 @@ public:
     Mixed get_value_by_key(std::string key)
     {
         auto it = the_map.find(key);
-        REALM_ASSERT(it != the_map.end());
+        TESSERA_ASSERT(it != the_map.end());
         return it->second;
     }
     bool insert(std::string key, Mixed value)
@@ -715,7 +715,7 @@ NONCONCURRENT_TEST(Dictionary_HashRandomOpsTransaction)
     }
 }
 
-static void do_Dictionary_HashCollisionTransaction(realm::test_util::unit_test::TestContext& test_context,
+static void do_Dictionary_HashCollisionTransaction(tessera::test_util::unit_test::TestContext& test_context,
                                                    int64_t nb_entries)
 {
     SHARED_GROUP_TEST_PATH(path);

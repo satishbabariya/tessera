@@ -19,13 +19,13 @@
 #include "testsettings.hpp"
 #include "test.hpp"
 
-#include <realm/sync/noinst/protocol_codec.hpp>
+#include <tessera/sync/noinst/protocol_codec.hpp>
 
 #include <string>
 #include <memory>
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 using TestContext = test_util::unit_test::TestContext;
 

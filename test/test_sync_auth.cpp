@@ -2,21 +2,21 @@
 #include <mutex>
 #include <condition_variable>
 
-#include <realm/binary_data.hpp>
-#include <realm/sync/noinst/server/crypto_server.hpp>
-#include <realm/sync/client.hpp>
-#include <realm/sync/noinst/server/access_token.hpp>
-#include <realm/sync/noinst/server/access_control.hpp>
+#include <tessera/binary_data.hpp>
+#include <tessera/sync/noinst/server/crypto_server.hpp>
+#include <tessera/sync/client.hpp>
+#include <tessera/sync/noinst/server/access_token.hpp>
+#include <tessera/sync/noinst/server/access_control.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::sync;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::sync;
 
 namespace {
 
-#if !REALM_MOBILE
+#if !TESSERA_MOBILE
 
 TEST(Sync_Auth_JWTAccessToken)
 {
@@ -47,6 +47,6 @@ TEST(Sync_Auth_JWTAccessToken)
     CHECK_EQUAL(tok.sync_label, "default");
 }
 
-#endif // !REALM_MOBILE
+#endif // !TESSERA_MOBILE
 
 } // unnamed namespace

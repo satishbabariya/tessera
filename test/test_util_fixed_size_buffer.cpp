@@ -18,11 +18,11 @@
 #include "testsettings.hpp"
 #ifdef TEST_UTIL_FIXED_SIZE_BUFFER
 
-#include <realm/util/fixed_size_buffer.hpp>
+#include <tessera/util/fixed_size_buffer.hpp>
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 // Test independence and thread-safety
 // -----------------------------------

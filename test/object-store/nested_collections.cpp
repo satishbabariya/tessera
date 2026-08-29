@@ -19,20 +19,20 @@
 #include <catch2/catch_all.hpp>
 
 #include "util/test_file.hpp"
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/schema.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/schema.hpp>
 
-#include <realm/object-store/list.hpp>
-#include <realm/object-store/set.hpp>
-#include <realm/object-store/dictionary.hpp>
+#include <tessera/object-store/list.hpp>
+#include <tessera/object-store/set.hpp>
+#include <tessera/object-store/dictionary.hpp>
 
-#include <realm/db.hpp>
-#include <realm/list.hpp>
-#include <realm/set.hpp>
-#include <realm/dictionary.hpp>
+#include <tessera/db.hpp>
+#include <tessera/list.hpp>
+#include <tessera/set.hpp>
+#include <tessera/dictionary.hpp>
 
-using namespace realm;
+using namespace tessera;
 
 TEST_CASE("nested-list-mixed", "[nested-collections]") {
     InMemoryTestFile config;

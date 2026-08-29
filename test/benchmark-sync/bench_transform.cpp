@@ -5,9 +5,9 @@
 #include "../test_all.hpp"
 #include "../sync_fixtures.hpp"
 
-using namespace realm;
-using namespace realm::test_util::unit_test;
-using namespace realm::fixtures;
+using namespace tessera;
+using namespace tessera::test_util::unit_test;
+using namespace tessera::fixtures;
 
 namespace bench {
 
@@ -72,10 +72,10 @@ void transform_transactions(TestContext& test_context)
             }
 
             switch (data.event) {
-                case realm::SyncClientHookEvent::DownloadMessageReceived:
+                case tessera::SyncClientHookEvent::DownloadMessageReceived:
                     t.reset();
                     break;
-                case realm::SyncClientHookEvent::DownloadMessageIntegrated:
+                case tessera::SyncClientHookEvent::DownloadMessageIntegrated:
                     results->submit(ident.c_str(), t.get_elapsed_time());
                     break;
                 default:
@@ -152,10 +152,10 @@ void transform_instructions(TestContext& test_context)
             }
 
             switch (data.event) {
-                case realm::SyncClientHookEvent::DownloadMessageReceived:
+                case tessera::SyncClientHookEvent::DownloadMessageReceived:
                     t.reset();
                     break;
-                case realm::SyncClientHookEvent::DownloadMessageIntegrated:
+                case tessera::SyncClientHookEvent::DownloadMessageIntegrated:
                     results->submit(ident.c_str(), t.get_elapsed_time());
                     break;
                 default:
@@ -229,10 +229,10 @@ void connected_objects(TestContext& test_context)
             }
 
             switch (data.event) {
-                case realm::SyncClientHookEvent::DownloadMessageReceived:
+                case tessera::SyncClientHookEvent::DownloadMessageReceived:
                     t.reset();
                     break;
-                case realm::SyncClientHookEvent::DownloadMessageIntegrated:
+                case tessera::SyncClientHookEvent::DownloadMessageIntegrated:
                     results->submit(ident.c_str(), t.get_elapsed_time());
                     break;
                 default:
@@ -330,10 +330,10 @@ TEST(BenchMergeManyConnectedObjects)
     bench::connected_objects<1000>(test_context);
 }
 
-#if !REALM_IOS
+#if !TESSERA_IOS
 int main()
 {
-    std::string results_file_stem = realm::test_util::get_test_path_prefix() + "results";
+    std::string results_file_stem = tessera::test_util::get_test_path_prefix() + "results";
     bench::results =
         std::make_unique<BenchmarkResults>(max_lead_text_width, "benchmark-sync", results_file_stem.c_str());
     auto exit_status = test_all();
@@ -341,4 +341,4 @@ int main()
     bench::results.reset();
     return exit_status;
 }
-#endif // REALM_IOS
+#endif // TESSERA_IOS

@@ -18,7 +18,7 @@
 
 #include "compatibility.hpp"
 
-using realm::DB;
+using tessera::DB;
 
 namespace compatibility {
 
@@ -32,7 +32,7 @@ DB::DurabilityLevel durability(RealmDurability level)
         case RealmDurability::Async:
             return DB::durability_Async;
     }
-    REALM_ASSERT(false); // unhandled case
+    TESSERA_ASSERT(false); // unhandled case
     return DB::durability_Full;
 }
 

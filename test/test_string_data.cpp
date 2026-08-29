@@ -23,13 +23,13 @@
 #include <string>
 #include <sstream>
 
-#include <realm.hpp>
-#include <realm/string_data.hpp>
-#include <realm/unicode.hpp>
+#include <tessera.hpp>
+#include <tessera/string_data.hpp>
+#include <tessera/unicode.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 
 // Test independence and thread-safety
@@ -79,7 +79,7 @@ TEST(StringData_Null)
     }
     // Null must be strictly less-than the empty string.
     {
-        StringData a = realm::null{};
+        StringData a = tessera::null{};
         StringData b{""};
         CHECK(a < b);
         CHECK(b > a);
@@ -257,7 +257,7 @@ TEST(StringData_LexicographicCompare)
 
 TEST(StringData_Like)
 {
-    StringData null = realm::null();
+    StringData null = tessera::null();
     StringData empty("");
     StringData f("f");
     StringData foo("foo");
@@ -314,7 +314,7 @@ TEST(StringData_Like)
 
 TEST(StringData_Like_CaseInsensitive)
 {
-    StringData null = realm::null();
+    StringData null = tessera::null();
     StringData empty("");
     StringData f("f");
     StringData foo("FoO");
@@ -376,7 +376,7 @@ TEST(StringData_Substrings)
     // original unchanged
 
     StringData empty("");
-    StringData null = realm::null();
+    StringData null = tessera::null();
     StringData data("x");
 
     // null.
@@ -500,7 +500,7 @@ TEST(StringData_Hash_Murmur2)
 {
     const StringData input{"Hello, World!"};
     const uint_least32_t expected = 0x2da26fc3UL;
-    const uint_least32_t hash = realm::murmur2_32(reinterpret_cast<const unsigned char*>(input.data()), input.size());
+    const uint_least32_t hash = tessera::murmur2_32(reinterpret_cast<const unsigned char*>(input.data()), input.size());
     CHECK_EQUAL(expected, hash);
 }
 
@@ -527,7 +527,7 @@ TEST(StringData_Hash_CityHash64)
     const size_t num_checks = 15;
     for (size_t i = 0; i < num_checks; ++i) {
         const auto data = reinterpret_cast<const unsigned char*>(input_expected[i].first.data());
-        const uint_least64_t hash = realm::cityhash_64(data, input_expected[i].first.size());
+        const uint_least64_t hash = tessera::cityhash_64(data, input_expected[i].first.size());
 
         // With libc++ (on macOS), use this line to generate a reference hash:
         // const uint_least64_t hash = std::__murmur2_or_cityhash<uint_least64_t, 64>{}(data,

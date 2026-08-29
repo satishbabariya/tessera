@@ -1,13 +1,13 @@
 #include "test.hpp"
 
-#include <realm/util/backtrace.hpp>
-#include <realm/exceptions.hpp>
-#include <realm/string_data.hpp>
+#include <tessera/util/backtrace.hpp>
+#include <tessera/exceptions.hpp>
+#include <tessera/string_data.hpp>
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
-REALM_NOINLINE static void throw_logic_error(ErrorCodes::Error kind)
+TESSERA_NOINLINE static void throw_logic_error(ErrorCodes::Error kind)
 {
     throw LogicError{kind, "Some error"};
 }
@@ -20,7 +20,7 @@ TEST_IF(Backtrace_LogicError, false)
     }
     catch (const LogicError& err) {
         // arm requires -funwind-tables to make backtraces, and that increases binary size.
-#if REALM_PLATFORM_APPLE || (defined(__linux__) && !REALM_ANDROID && !defined(__arm__))
+#if TESSERA_PLATFORM_APPLE || (defined(__linux__) && !TESSERA_ANDROID && !defined(__arm__))
         if (!CHECK(StringData{err.what()}.contains("throw_logic_error")))
             std::cout << err.what() << std::endl;
 

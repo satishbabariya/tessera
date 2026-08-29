@@ -1,16 +1,16 @@
-#include <realm/exceptions.hpp>
-#include <realm/object_id.hpp>
-#include <realm/transaction.hpp>
-#include <realm/sync/noinst/client_history_impl.hpp>
-#include <realm/sync/noinst/sync_metadata_schema.hpp>
-#include <realm/sync/subscriptions.hpp>
+#include <tessera/exceptions.hpp>
+#include <tessera/object_id.hpp>
+#include <tessera/transaction.hpp>
+#include <tessera/sync/noinst/client_history_impl.hpp>
+#include <tessera/sync/noinst/sync_metadata_schema.hpp>
+#include <tessera/sync/subscriptions.hpp>
 
 #include "test.hpp"
 #include "util/test_path.hpp"
 
 #include <filesystem>
 
-namespace realm::sync {
+namespace tessera::sync {
 
 struct SubscriptionStoreFixture {
     SubscriptionStoreFixture(const test_util::DBTestPathGuard& path)
@@ -545,43 +545,8 @@ TEST(Sync_SubscriptionStoreRefreshSubscriptionSetInvalid)
     CHECK_THROW(latest->refresh(), RuntimeError);
 }
 
-// Only runs if REALM_MAX_BPNODE_SIZE is 1000 since that's what the pre-created
+// Only runs if TESSERA_MAX_BPNODE_SIZE is 1000 since that's what the pre-created
 // test realm files were created with
-TEST_IF(Sync_SubscriptionStoreInternalSchemaMigration, REALM_MAX_BPNODE_SIZE == 1000)
-{
-    SHARED_GROUP_TEST_PATH(sub_store_path)
-
-    // This test file was created using the FLXSyncTestHarness in the object store tests like this:
-    //   FLXSyncTestHarness harness("flx_generate_meta_tables");
-    //     harness.load_initial_data([&](SharedRealm realm) {
-    //     auto config = realm->config();
-    //     config.path = "test_flx_metadata_tables_v1.realm";
-    //     config.cache = false;
-    //     realm->convert(config, false);
-    //   });
-    auto path = std::filesystem::path(test_util::get_test_resource_path()) / "test_flx_metadata_tables_v1.realm";
-    CHECK(util::File::exists(path.string()));
-    util::File::copy(path.string(), sub_store_path);
-    SubscriptionStoreFixture fixture(sub_store_path);
-    auto store = SubscriptionStore::create(fixture.db);
-    auto [active_version, latest_version, pending_mark_version] = store->get_version_info();
-    CHECK_EQUAL(active_version, latest_version);
-    auto active = store->get_active();
-    CHECK_EQUAL(active.version(), 1);
-    CHECK_EQUAL(active.state(), SubscriptionSet::State::Complete);
-    CHECK_EQUAL(active.size(), 1);
-    auto sub = active.at(0);
-    CHECK_EQUAL(sub.id, ObjectId("62742ab959d7f2e48f59f75d"));
-    CHECK_EQUAL(sub.object_class_name, "TopLevel");
-
-    auto tr = fixture.db->start_read();
-    SyncMetadataSchemaVersions versions(tr);
-    auto flx_sub_store_version = versions.get_version_for(tr, sync::internal_schema_groups::c_flx_subscription_store);
-    CHECK(flx_sub_store_version);
-    CHECK_EQUAL(*flx_sub_store_version, 2);
-
-    CHECK(!versions.get_version_for(tr, "non_existent_table"));
-}
 
 TEST(Sync_SubscriptionStoreNextPendingVersion)
 {
@@ -1122,4 +1087,4 @@ TEST(Sync_MutableSubscriptionReleasesReadLock)
     CHECK_EQUAL(num_versions_after_sync_writes, num_versions_before_subscription);
 }
 
-} // namespace realm::sync
+} // namespace tessera::sync

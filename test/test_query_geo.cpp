@@ -25,18 +25,18 @@
 
 #include "test.hpp"
 
-#include <realm/geospatial.hpp>
-#include <realm/group.hpp>
-#include <realm/table.hpp>
-#include <realm/query_expression.hpp>
-#include <realm/table_view.hpp>
+#include <tessera/geospatial.hpp>
+#include <tessera/group.hpp>
+#include <tessera/table.hpp>
+#include <tessera/query_expression.hpp>
+#include <tessera/table_view.hpp>
 
 #include <ostream>
 #include <sstream>
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 // From https://github.com/10gen/mongo/pull/11605
 // Test which verifies that the rounding functions used by s2 follow 'round to even' rounding

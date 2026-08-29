@@ -1,15 +1,15 @@
 #include "test.hpp"
 #include "util/compare_groups.hpp"
 
-#include <realm.hpp>
-#include <realm/sync/history.hpp>
-#include <realm/sync/instruction_applier.hpp>
-#include <realm/sync/changeset_parser.hpp>
-#include <realm/sync/noinst/client_history_impl.hpp>
+#include <tessera.hpp>
+#include <tessera/sync/history.hpp>
+#include <tessera/merge/instruction_applier.hpp>
+#include <tessera/merge/changeset_parser.hpp>
+#include <tessera/sync/noinst/client_history_impl.hpp>
 
-using namespace realm;
-using namespace realm::sync;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::sync;
+using namespace tessera::test_util;
 
 namespace {
 
@@ -24,8 +24,8 @@ struct Fixture {
 
     explicit Fixture(unit_test::TestContext& test_context)
         : test_context(test_context)
-        , path_1(realm::test_util::get_test_path(test_context.get_test_name(), ".path_1.realm"))
-        , path_2(realm::test_util::get_test_path(test_context.get_test_name(), ".path_2.realm"))
+        , path_1(tessera::test_util::get_test_path(test_context.get_test_name(), ".path_1.tess"))
+        , path_2(tessera::test_util::get_test_path(test_context.get_test_name(), ".path_2.tess"))
         , history_1(make_client_replication())
         , history_2(make_client_replication())
         , sg_1(DB::create(*history_1, path_1))
@@ -597,22 +597,22 @@ TEST(InstructionReplication_NullablePrimaryKeys)
 
         t->create_object_with_primary_key(123).set(col_ndx, 123);
         ObjKey first = t->find_first<util::Optional<int64_t>>(t->get_primary_key_column(), 123);
-        REALM_ASSERT(first);
+        TESSERA_ASSERT(first);
 
         t->create_object_with_primary_key(util::none).set(col_ndx, 456);
         ObjKey second = t->find_first_null(t->get_primary_key_column());
-        REALM_ASSERT(second);
+        TESSERA_ASSERT(second);
 
         t->create_object_with_primary_key(789).set(col_ndx, 789);
         ObjKey third = t->find_first<util::Optional<int64_t>>(t->get_primary_key_column(), 789);
-        REALM_ASSERT(third);
+        TESSERA_ASSERT(third);
 
         first = t->find_first<util::Optional<int64_t>>(t->get_primary_key_column(), 123);
-        REALM_ASSERT(first);
+        TESSERA_ASSERT(first);
         second = t->find_first_null(t->get_primary_key_column());
-        REALM_ASSERT(second);
+        TESSERA_ASSERT(second);
         third = t->find_first<util::Optional<int64_t>>(t->get_primary_key_column(), 789);
-        REALM_ASSERT(third);
+        TESSERA_ASSERT(third);
 
         wt.commit();
     }

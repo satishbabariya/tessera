@@ -18,13 +18,13 @@
 
 #include <map>
 
-#include <realm/array.hpp>
-#include <realm/impl/destroy_guard.hpp>
+#include <tessera/array.hpp>
+#include <tessera/impl/destroy_guard.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::_impl;
+using namespace tessera;
+using namespace tessera::_impl;
 
 
 // Test independence and thread-safety
@@ -89,7 +89,7 @@ public:
     {
         ref_type ref = m_offset;
         char*& addr = m_map[ref]; // Throws
-        REALM_ASSERT(!addr);
+        TESSERA_ASSERT(!addr);
         addr = new char[size]; // Throws
         m_offset += size;
         return MemRef(addr, ref, *this);
@@ -106,9 +106,9 @@ public:
     {
         typedef std::map<ref_type, char*>::iterator iter;
         iter i = m_map.find(ref);
-        REALM_ASSERT(i != m_map.end());
+        TESSERA_ASSERT(i != m_map.end());
         char* addr_2 = i->second;
-        REALM_ASSERT(addr_2 == addr);
+        TESSERA_ASSERT(addr_2 == addr);
         static_cast<void>(addr_2);
         m_map.erase(i);
         delete[] addr;
@@ -118,7 +118,7 @@ public:
     {
         typedef std::map<ref_type, char*>::const_iterator iter;
         iter i = m_map.find(ref);
-        REALM_ASSERT(i != m_map.end());
+        TESSERA_ASSERT(i != m_map.end());
         char* addr = i->second;
         return addr;
     }
@@ -142,7 +142,7 @@ public:
     void verify() const override {}
     void get_or_add_xover_mapping(RefTranslation&, size_t, size_t, size_t) override
     {
-        REALM_ASSERT(false);
+        TESSERA_ASSERT(false);
     }
 
 private:

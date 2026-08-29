@@ -16,13 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_TEST_UTILS_HPP
-#define REALM_TEST_UTILS_HPP
+#ifndef TESSERA_TEST_UTILS_HPP
+#define TESSERA_TEST_UTILS_HPP
 
 #include <catch2/catch_all.hpp>
 #include <catch2/matchers/catch_matchers_all.hpp>
-#include <realm/util/file.hpp>
-#include <realm/util/optional.hpp>
+#include <tessera/util/file.hpp>
+#include <tessera/util/optional.hpp>
 
 #include <functional>
 #include <filesystem>
@@ -30,7 +30,7 @@
 #include <condition_variable>
 namespace fs = std::filesystem;
 
-namespace realm {
+namespace tessera {
 template <typename E>
 class TestingStateMachine {
 public:
@@ -209,7 +209,7 @@ bool chmod_supported(const std::string& path);
 int get_permissions(const std::string& path);
 void chmod(const std::string& path, int permissions);
 
-} // namespace realm
+} // namespace tessera
 
 #define REQUIRE_DIR_EXISTS(macro_path)                                                                               \
     do {                                                                                                             \
@@ -231,14 +231,14 @@ void chmod(const std::string& path, int permissions);
         REQUIRE_FALSE(util::File::exists((macro_path).string()));                                                    \
     } while (0)
 
-#define REQUIRE_REALM_EXISTS(macro_path)                                                                             \
+#define REQUIRE_DB_EXISTS(macro_path)                                                                             \
     do {                                                                                                             \
         REQUIRE(util::File::exists(macro_path));                                                                     \
         REQUIRE(util::File::exists((macro_path) + ".lock"));                                                         \
         REQUIRE_DIR_EXISTS((macro_path) + ".management");                                                            \
     } while (0)
 
-#define REQUIRE_REALM_DOES_NOT_EXIST(macro_path)                                                                     \
+#define REQUIRE_DB_DOES_NOT_EXIST(macro_path)                                                                     \
     do {                                                                                                             \
         REQUIRE(!util::File::exists(macro_path));                                                                    \
         REQUIRE(!util::File::exists((macro_path) + ".lock"));                                                        \
@@ -248,12 +248,12 @@ void chmod(const std::string& path, int permissions);
 #define REQUIRE_THROWS_CONTAINING(expr, msg) REQUIRE_THROWS_WITH(expr, Catch::Matchers::ContainsSubstring(msg))
 
 #define REQUIRE_EXCEPTION(expr, c, msg)                                                                              \
-    REQUIRE_THROWS_MATCHES(expr, realm::Exception, _impl::make_exception_matcher(realm::ErrorCodes::c, msg))
+    REQUIRE_THROWS_MATCHES(expr, tessera::Exception, _impl::make_exception_matcher(tessera::ErrorCodes::c, msg))
 #define REQUIRE_THROWS_OUT_OF_BOUNDS(expr, index, size, msg)                                                         \
     REQUIRE_THROWS_MATCHES(expr, OutOfBounds, OutOfBoundsMatcher(index, size, msg));
 #define REQUIRE_THROW_LOGIC_ERROR_WITH_CODE(expr, err)                                                               \
     REQUIRE_THROWS_MATCHES(expr, LogicError, LogicErrorMatcher(err))
 
-#define ENCODE_FAKE_JWT(in) realm::encode_fake_jwt(in)
+#define ENCODE_FAKE_JWT(in) tessera::encode_fake_jwt(in)
 
-#endif // REALM_TEST_UTILS_HPP
+#endif // TESSERA_TEST_UTILS_HPP

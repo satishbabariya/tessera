@@ -16,11 +16,11 @@
  *
  **************************************************************************/
 
-#include <realm/impl/simulated_failure.hpp>
+#include <tessera/impl/simulated_failure.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 // Test independence and thread-safety
 // -----------------------------------

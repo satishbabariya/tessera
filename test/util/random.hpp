@@ -16,8 +16,8 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_RANDOM_HPP
-#define REALM_TEST_UTIL_RANDOM_HPP
+#ifndef TESSERA_TEST_UTIL_RANDOM_HPP
+#define TESSERA_TEST_UTIL_RANDOM_HPP
 
 #include <limits>
 #include <iterator>
@@ -25,12 +25,12 @@
 #include <algorithm>
 #include <random>
 
-#include <realm/util/features.h>
-#include <realm/util/assert.hpp>
-#include <realm/util/safe_int_ops.hpp>
-#include <realm/util/thread.hpp>
+#include <tessera/util/features.h>
+#include <tessera/util/assert.hpp>
+#include <tessera/util/safe_int_ops.hpp>
+#include <tessera/util/thread.hpp>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 
@@ -269,6 +269,6 @@ inline void random_seed(unsigned long initial_seed) noexcept
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_RANDOM_HPP
+#endif // TESSERA_TEST_UTIL_RANDOM_HPP

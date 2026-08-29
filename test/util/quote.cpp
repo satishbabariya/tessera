@@ -18,7 +18,7 @@
 
 #include "quote.hpp"
 
-std::string realm::test_util::quote(const std::string& string)
+std::string tessera::test_util::quote(const std::string& string)
 {
     std::string quoted;
     for (char c : string) {

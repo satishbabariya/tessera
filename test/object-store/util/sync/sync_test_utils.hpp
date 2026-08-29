@@ -22,16 +22,16 @@
 #include "util/test_file.hpp"
 #include "util/test_utils.hpp"
 
-#include <realm/object-store/sync/generic_network_transport.hpp>
-#include <realm/object-store/sync/impl/sync_file.hpp>
-#include <realm/object-store/sync/sync_session.hpp>
-#include <realm/object-store/thread_safe_reference.hpp>
-#include <realm/sync/network/http.hpp>
-#include <realm/sync/socket_provider.hpp>
-#include <realm/sync/network/default_socket.hpp>
+#include <tessera/object-store/sync/generic_network_transport.hpp>
+#include <tessera/object-store/sync/impl/sync_file.hpp>
+#include <tessera/object-store/sync/sync_session.hpp>
+#include <tessera/object-store/thread_safe_reference.hpp>
+#include <tessera/sync/network/http.hpp>
+#include <tessera/sync/socket_provider.hpp>
+#include <tessera/sync/network/default_socket.hpp>
 
-#include <realm/util/functional.hpp>
-#include <realm/util/function_ref.hpp>
+#include <tessera/util/functional.hpp>
+#include <tessera/util/function_ref.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_templated.hpp>
@@ -39,14 +39,14 @@
 #include <chrono>
 #include <vector>
 
-#if REALM_ENABLE_SYNC
-#define REALM_REGISTER_SYNC_CLIENT_HOOK_EVENT(X) realm::SyncClientHookEvent::X
-CATCH_REGISTER_ENUM(realm::SyncClientHookEvent,
-                    REALM_FOR_EACH_SYNC_CLIENT_HOOK_EVENT(REALM_REGISTER_SYNC_CLIENT_HOOK_EVENT))
-#undef REALM_REGISTER_SYNC_CLIENT_HOOK_EVENT
+#if TESSERA_ENABLE_SYNC
+#define TESSERA_REGISTER_SYNC_CLIENT_HOOK_EVENT(X) tessera::SyncClientHookEvent::X
+CATCH_REGISTER_ENUM(tessera::SyncClientHookEvent,
+                    TESSERA_FOR_EACH_SYNC_CLIENT_HOOK_EVENT(TESSERA_REGISTER_SYNC_CLIENT_HOOK_EVENT))
+#undef TESSERA_REGISTER_SYNC_CLIENT_HOOK_EVENT
 #endif
 
-namespace realm {
+namespace tessera {
 
 void timed_wait_for(util::FunctionRef<bool()> condition,
                     std::chrono::milliseconds max_ms = std::chrono::milliseconds(5000));
@@ -131,7 +131,7 @@ struct ExpectedRealmPaths {
 // and returns an owned string without the quotes.
 std::string unquote_string(std::string_view possibly_quoted_string);
 
-#if REALM_ENABLE_SYNC
+#if TESSERA_ENABLE_SYNC
 
 template <typename Transport>
 const std::shared_ptr<app::GenericNetworkTransport> instance_of = std::make_shared<Transport>();
@@ -274,7 +274,7 @@ struct HookedSocketProvider : public sync::websocket::DefaultSocketProvider {
     util::UniqueFunction<std::optional<SocketProviderError>()> websocket_connect_func;
 };
 
-#endif // REALM_ENABLE_SYNC
+#endif // TESSERA_ENABLE_SYNC
 
 namespace reset_utils {
 
@@ -307,8 +307,8 @@ struct TestClientReset {
     virtual void run() = 0;
 
 protected:
-    realm::Realm::Config m_local_config;
-    realm::Realm::Config m_remote_config;
+    tessera::Realm::Config m_local_config;
+    tessera::Realm::Config m_remote_config;
 
     Callback m_on_setup;
     InitialObjectCallback m_populate_initial_object;
@@ -321,14 +321,14 @@ protected:
     bool m_wait_for_reset_completion = true;
 };
 
-#if REALM_ENABLE_SYNC
+#if TESSERA_ENABLE_SYNC
 
 
-#endif // REALM_ENABLE_SYNC
+#endif // TESSERA_ENABLE_SYNC
 
 std::unique_ptr<TestClientReset> make_fake_local_client_reset(const Realm::Config& local_config,
                                                               const Realm::Config& remote_config);
 
 } // namespace reset_utils
 
-} // namespace realm
+} // namespace tessera

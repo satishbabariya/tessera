@@ -20,43 +20,43 @@
 
 #include "verified_integer.hpp"
 
-using namespace realm;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::test_util;
 
 
 void VerifiedInteger::verify_neighbours(size_t ndx)
 {
     if (v.size() > ndx)
-        REALM_ASSERT(v[ndx] == u.get(ndx));
+        TESSERA_ASSERT(v[ndx] == u.get(ndx));
 
     if (ndx > 0)
-        REALM_ASSERT(v[ndx - 1] == u.get(ndx - 1));
+        TESSERA_ASSERT(v[ndx - 1] == u.get(ndx - 1));
 
     if (v.size() > ndx + 1)
-        REALM_ASSERT(v[ndx + 1] == u.get(ndx + 1));
+        TESSERA_ASSERT(v[ndx + 1] == u.get(ndx + 1));
 }
 
 void VerifiedInteger::add(int64_t value)
 {
     v.push_back(value);
     u.add(value);
-    REALM_ASSERT(v.size() == u.size());
+    TESSERA_ASSERT(v.size() == u.size());
     verify_neighbours(v.size());
-    REALM_ASSERT(occasional_verify());
+    TESSERA_ASSERT(occasional_verify());
 }
 
 void VerifiedInteger::insert(size_t ndx, int64_t value)
 {
     v.insert(v.begin() + ndx, value);
     u.insert(ndx, value);
-    REALM_ASSERT(v.size() == u.size());
+    TESSERA_ASSERT(v.size() == u.size());
     verify_neighbours(ndx);
-    REALM_ASSERT(occasional_verify());
+    TESSERA_ASSERT(occasional_verify());
 }
 
 int64_t VerifiedInteger::get(size_t ndx)
 {
-    REALM_ASSERT(v[ndx] == u.get(ndx));
+    TESSERA_ASSERT(v[ndx] == u.get(ndx));
     return v[ndx];
 }
 
@@ -73,7 +73,7 @@ int64_t VerifiedInteger::sum(size_t start, size_t end)
     for (size_t t = start; t < end; ++t)
         running_sum += v[t];
 #ifdef LEGACY_TEST
-    REALM_ASSERT(running_sum == u.sum(start, end));
+    TESSERA_ASSERT(running_sum == u.sum(start, end));
 #endif
     return running_sum;
 }
@@ -93,7 +93,7 @@ int64_t VerifiedInteger::maximum(size_t start, size_t end)
             max = v[t];
 
 #ifdef LEGACY_TEST
-    REALM_ASSERT(max == u.maximum(start, end));
+    TESSERA_ASSERT(max == u.maximum(start, end));
 #endif
     return max;
 }
@@ -113,7 +113,7 @@ int64_t VerifiedInteger::minimum(size_t start, size_t end)
             min = v[t];
 
 #ifdef LEGACY_TEST
-    REALM_ASSERT(min == u.minimum(start, end));
+    TESSERA_ASSERT(min == u.minimum(start, end));
 #endif
     return min;
 }
@@ -123,24 +123,24 @@ void VerifiedInteger::set(size_t ndx, int64_t value)
     v[ndx] = value;
     u.set(ndx, value);
     verify_neighbours(ndx);
-    REALM_ASSERT(occasional_verify());
+    TESSERA_ASSERT(occasional_verify());
 }
 
 void VerifiedInteger::erase(size_t ndx)
 {
     v.erase(v.begin() + ndx);
     u.erase(ndx);
-    REALM_ASSERT(v.size() == u.size());
+    TESSERA_ASSERT(v.size() == u.size());
     verify_neighbours(ndx);
-    REALM_ASSERT(occasional_verify());
+    TESSERA_ASSERT(occasional_verify());
 }
 
 void VerifiedInteger::clear()
 {
     v.clear();
     u.clear();
-    REALM_ASSERT(v.size() == u.size());
-    REALM_ASSERT(occasional_verify());
+    TESSERA_ASSERT(v.size() == u.size());
+    TESSERA_ASSERT(occasional_verify());
 }
 
 size_t VerifiedInteger::find_first(int64_t value)
@@ -148,25 +148,25 @@ size_t VerifiedInteger::find_first(int64_t value)
     std::vector<int64_t>::iterator it = std::find(v.begin(), v.end(), value);
     size_t ndx = std::distance(v.begin(), it);
     size_t index2 = u.find_first(value);
-    REALM_ASSERT(ndx == index2 || (it == v.end() && index2 == size_t(-1)));
+    TESSERA_ASSERT(ndx == index2 || (it == v.end() && index2 == size_t(-1)));
     static_cast<void>(index2);
     return ndx;
 }
 
 size_t VerifiedInteger::size()
 {
-    REALM_ASSERT(v.size() == u.size());
+    TESSERA_ASSERT(v.size() == u.size());
     return v.size();
 }
 
 bool VerifiedInteger::verify()
 {
-    REALM_ASSERT(u.size() == v.size());
+    TESSERA_ASSERT(u.size() == v.size());
     if (u.size() != v.size())
         return false;
 
     for (size_t t = 0; t < v.size(); ++t) {
-        REALM_ASSERT(v[t] == u.get(t));
+        TESSERA_ASSERT(v[t] == u.get(t));
         if (v[t] != u.get(t))
             return false;
     }

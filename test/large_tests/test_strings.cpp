@@ -16,8 +16,8 @@
  *
  **************************************************************************/
 
-#include <realm/column_integer.hpp>
-#include <realm/array_key.hpp>
+#include <tessera/column_integer.hpp>
+#include <tessera/array_key.hpp>
 
 #include "../util/number_names.hpp"
 #include "../util/verified_string.hpp"
@@ -25,8 +25,8 @@
 #include "../testsettings.hpp"
 #include "../test.hpp"
 
-using namespace realm;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::test_util;
 
 
 // Test independence and thread-safety
@@ -63,7 +63,7 @@ namespace {
 
 std::string randstring(Random& random)
 {
-    // If there are in the order of REALM_MAX_BPNODE_SIZE different strings, then we'll get a good
+    // If there are in the order of TESSERA_MAX_BPNODE_SIZE different strings, then we'll get a good
     // distribution btw. arrays with no matches and arrays with multiple matches, when
     // testing Find/FindAll
     int64_t t = random.draw_int_mod(100) * 100;

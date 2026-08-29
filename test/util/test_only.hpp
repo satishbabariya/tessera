@@ -16,24 +16,24 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_TEST_ONLY_HPP
-#define REALM_TEST_UTIL_TEST_ONLY_HPP
+#ifndef TESSERA_TEST_UTIL_TEST_ONLY_HPP
+#define TESSERA_TEST_UTIL_TEST_ONLY_HPP
 
 #include "unit_test.hpp"
 
 #define ONLY(name)                                                                                                   \
-    realm::test_util::SetTestOnly realm_set_test_only__##name(#name);                                                \
+    tessera::test_util::SetTestOnly realm_set_test_only__##name(#name);                                                \
     TEST(name)
 
 #define NONCONCURRENT_ONLY(name)                                                                                     \
-    realm::test_util::SetTestOnly realm_set_test_only__##name(#name);                                                \
+    tessera::test_util::SetTestOnly realm_set_test_only__##name(#name);                                                \
     NONCONCURRENT_TEST(name)
 
 #define ONLY_TYPES(name, ...)                                                                                        \
-    realm::test_util::SetTestOnly realm_set_test_only__##name(#name "*");                                            \
+    tessera::test_util::SetTestOnly realm_set_test_only__##name(#name "*");                                            \
     TEST_TYPES(name, __VA_ARGS__)
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 struct SetTestOnly {
@@ -43,6 +43,6 @@ struct SetTestOnly {
 const char* get_test_only();
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_TEST_ONLY_HPP
+#endif // TESSERA_TEST_UTIL_TEST_ONLY_HPP

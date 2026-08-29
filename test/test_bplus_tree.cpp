@@ -18,7 +18,7 @@
 
 #include "testsettings.hpp"
 
-#include "realm.hpp"
+#include "tessera.hpp"
 
 #include "test.hpp"
 
@@ -33,8 +33,8 @@
 #define CALLGRIND_STOP_INSTRUMENTATION
 #endif
 
-using namespace realm;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::test_util;
 using namespace std::chrono;
 
 // Test independence and thread-safety
@@ -87,7 +87,7 @@ TEST(BPlusTree_Integer)
     CHECK_EQUAL(tree.find_first(7), 8);
     tree.erase(0);
     CHECK_EQUAL(tree.find_first(7), 7);
-    CHECK_EQUAL(tree.find_first(100), realm::npos);
+    CHECK_EQUAL(tree.find_first(100), tessera::npos);
 
     std::vector<Int> all = tree.get_all();
     size_t sz = tree.size();
@@ -398,7 +398,7 @@ TEST(BinaryColumn_get_at)
     CHECK_EQUAL(std::string(read.data(), read.size()), very_lazy_fox);
 
     // Split root
-    for (unsigned i = 0; i < REALM_MAX_BPNODE_SIZE; i++) {
+    for (unsigned i = 0; i < TESSERA_MAX_BPNODE_SIZE; i++) {
         c.add(BinaryData());
     }
 

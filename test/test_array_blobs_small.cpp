@@ -19,11 +19,11 @@
 #include "testsettings.hpp"
 #ifdef TEST_ARRAY_BINARY
 
-#include <realm/array_blobs_small.hpp>
+#include <tessera/array_blobs_small.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 
 // Test independence and thread-safety

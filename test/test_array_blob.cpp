@@ -21,16 +21,16 @@
 
 #include <cstring>
 
-#include <realm/array_blob.hpp>
-#include <realm/bplustree.hpp>
-#include <realm/array_string.hpp>
-#include <realm/array_key.hpp>
+#include <tessera/array_blob.hpp>
+#include <tessera/bplustree.hpp>
+#include <tessera/array_string.hpp>
+#include <tessera/array_key.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 // Test independence and thread-safety
 // -----------------------------------
@@ -143,7 +143,7 @@ TEST(ArrayBlob_Null)
 
         a.add("foo");
         a.add("");
-        a.add(realm::null());
+        a.add(tessera::null());
 
         CHECK_EQUAL(a.is_null(0), false);
         CHECK_EQUAL(a.is_null(1), false);
@@ -167,7 +167,7 @@ TEST(ArrayBlob_Null)
         a.add("70 chars  70 chars  70 chars  70 chars  70 chars  70 chars  70 chars  ");
         a.clear();
 
-        a.add(realm::null());
+        a.add(tessera::null());
         a.add("");
         a.add("foo");
 
@@ -177,9 +177,9 @@ TEST(ArrayBlob_Null)
         CHECK(a.get(2) == "foo");
 
         // Test insert
-        a.insert(0, realm::null());
-        a.insert(2, realm::null());
-        a.insert(4, realm::null());
+        a.insert(0, tessera::null());
+        a.insert(2, tessera::null());
+        a.insert(4, tessera::null());
 
         CHECK_EQUAL(a.is_null(0), true);
         CHECK_EQUAL(a.is_null(1), true);
@@ -198,7 +198,7 @@ TEST(ArrayBlob_Null)
         a.clear();
 
         a.add("");
-        a.add(realm::null());
+        a.add(tessera::null());
         a.add("foo");
 
         CHECK_EQUAL(a.is_null(0), false);
@@ -252,7 +252,7 @@ TEST(ArrayBlob_Null)
                 std::string stdstr;
 
                 if (random.draw_int<int>() > 100) {
-                    sd = realm::null();
+                    sd = tessera::null();
                     stdstr = "null";
                 }
                 else {

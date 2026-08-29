@@ -1,15 +1,15 @@
 #include "test.hpp"
 #include "util/random.hpp"
 
-#include <realm/util/buffer.hpp>
-#include <realm/util/compression.hpp>
+#include <tessera/util/buffer.hpp>
+#include <tessera/util/compression.hpp>
 
 #include <algorithm>
 #include <cstring>
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 namespace {
 
@@ -33,7 +33,7 @@ Buffer<char> generate_compressible_data(size_t size)
 Buffer<char> generate_non_compressible_data(size_t size)
 {
     Buffer<char> result(size);
-#if REALM_PLATFORM_APPLE
+#if TESSERA_PLATFORM_APPLE
     // arc4random is orders of magnitude faster than Random, so use that when we can
     arc4random_buf(result.data(), result.size());
 #else
@@ -129,7 +129,7 @@ TEST(Compression_Decompress_Too_Small_Buffer)
     Buffer<char> decompressed_buf(decompressed_size);
 
     auto ec = compression::decompress(compressed_buf, decompressed_buf);
-#if REALM_USE_LIBCOMPRESSION
+#if TESSERA_USE_LIBCOMPRESSION
     // There doesn't appear to be a good way to distinguish this with libcompression
     CHECK_EQUAL(ec, compression::error::corrupt_input);
 #else

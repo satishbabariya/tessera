@@ -18,15 +18,15 @@
 
 #include "testsettings.hpp"
 
-#include <realm.hpp>
-#include <realm/array_typed_link.hpp>
-#include <realm/array_mixed.hpp>
+#include <tessera.hpp>
+#include <tessera/array_typed_link.hpp>
+#include <tessera/array_mixed.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 /*
 TEST(TypedLinks_Single)

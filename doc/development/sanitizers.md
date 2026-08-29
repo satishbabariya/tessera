@@ -4,11 +4,11 @@ To do this:
 
 1. Build the image
 ```
-docker build -f clang.Dockerfile -t realm-core-clang:snapshot .
+docker build -f clang.Dockerfile -t tessera-clang:snapshot .
 ```
 2. Run the image
 ```
-docker run -ti -v $(pwd):/tmp -w /tmp realm-core-clang:snapshot bash
+docker run -ti -v $(pwd):/tmp -w /tmp tessera-clang:snapshot bash
 ```
 
 Now you can build core and run the tests as usual. An example for the address sanitizer:

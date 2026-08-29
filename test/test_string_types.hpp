@@ -16,19 +16,19 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_STRING_TYPES_HPP
-#define REALM_TEST_STRING_TYPES_HPP
+#ifndef TESSERA_TEST_STRING_TYPES_HPP
+#define TESSERA_TEST_STRING_TYPES_HPP
 
-#include <realm/alloc.hpp>
-#include <realm/bplustree.hpp>
-#include <realm/array_string.hpp>
-#include <realm/array_key.hpp>
+#include <tessera/alloc.hpp>
+#include <tessera/bplustree.hpp>
+#include <tessera/array_string.hpp>
+#include <tessera/array_key.hpp>
 
 struct string_array {
-    using ColumnTestType = realm::ArrayString;
+    using ColumnTestType = tessera::ArrayString;
     string_array(bool = false)
     {
-        m_col = new ColumnTestType(realm::Allocator::get_default());
+        m_col = new ColumnTestType(tessera::Allocator::get_default());
         m_col->create();
         m_ref = m_col->get_ref();
     }
@@ -42,7 +42,7 @@ struct string_array {
     {
         return *m_col;
     }
-    realm::ref_type m_ref;
+    tessera::ref_type m_ref;
     ColumnTestType* m_col;
     static bool is_nullable()
     {
@@ -55,10 +55,10 @@ struct string_array {
 };
 
 struct string_column {
-    using ColumnTestType = realm::BPlusTree<realm::StringData>;
+    using ColumnTestType = tessera::BPlusTree<tessera::StringData>;
     string_column(bool = false)
     {
-        m_col = new ColumnTestType(realm::Allocator::get_default());
+        m_col = new ColumnTestType(tessera::Allocator::get_default());
         m_col->create();
         m_ref = m_col->get_ref();
     }
@@ -72,7 +72,7 @@ struct string_column {
     {
         return *m_col;
     }
-    realm::ref_type m_ref;
+    tessera::ref_type m_ref;
     ColumnTestType* m_col;
     static bool is_nullable()
     {
@@ -84,4 +84,4 @@ struct string_column {
     }
 };
 
-#endif // REALM_TEST_STRING_TYPES_HPP
+#endif // TESSERA_TEST_STRING_TYPES_HPP

@@ -1,9 +1,9 @@
 #include "test.hpp"
 
-#include <realm/chunked_binary.hpp>
+#include <tessera/chunked_binary.hpp>
 
-using namespace realm;
-using namespace realm::_impl;
+using namespace tessera;
+using namespace tessera::_impl;
 
 TEST(ChunkedBinaryData_From_BinaryData)
 {

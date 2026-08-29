@@ -23,8 +23,8 @@
 
 #include "test.hpp"
 
-using namespace realm::util;
-using namespace realm::test_util::unit_test;
+using namespace tessera::util;
+using namespace tessera::test_util::unit_test;
 
 
 // Test independence and thread-safety

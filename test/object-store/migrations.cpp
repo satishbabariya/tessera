@@ -19,16 +19,16 @@
 #include <util/test_file.hpp>
 #include <util/test_utils.hpp>
 
-#include <realm/group.hpp>
-#include <realm/table.hpp>
+#include <tessera/group.hpp>
+#include <tessera/table.hpp>
 
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/object_store.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/schema.hpp>
-#include <realm/object-store/impl/object_accessor_impl.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/object_store.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/schema.hpp>
+#include <tessera/object-store/impl/object_accessor_impl.hpp>
 
-#include <realm/util/scope_exit.hpp>
+#include <tessera/util/scope_exit.hpp>
 
 #include <catch2/catch_all.hpp>
 
@@ -37,7 +37,7 @@
 #endif
 
 
-using namespace realm;
+using namespace tessera;
 using ObjectType = ObjectSchema::ObjectType;
 using util::any_cast;
 
@@ -651,7 +651,7 @@ TEST_CASE("migration: Automatic", "[migration]") {
             auto parent_object = parent_table->create_object();
             ColKey link_col = parent_table->get_column_key("link");
 
-            REALM_ASSERT(link_col.get_type() == col_type_Mixed);
+            TESSERA_ASSERT(link_col.get_type() == col_type_Mixed);
             Mixed child_link = ObjLink{child_table->get_key(), child};
             if (link_col.is_set()) {
                 parent_object.get_set<Mixed>(link_col).insert(child_link);
@@ -663,7 +663,7 @@ TEST_CASE("migration: Automatic", "[migration]") {
                 parent_object.get_dictionary(link_col).insert("foo", child_link);
             }
             else {
-                REALM_ASSERT(!link_col.is_collection());
+                TESSERA_ASSERT(!link_col.is_collection());
                 parent_object.set_any(link_col, child_link);
             }
             realm->commit_transaction();
@@ -1328,7 +1328,7 @@ TEST_CASE("migration: Automatic", "[migration]") {
                 REQUIRE_EXCEPTION(obj.set_property_value(ctx, "bool", std::any(false)), WrongTransactionState,
                                   "Cannot modify managed objects outside of a write transaction.");
                 REQUIRE_EXCEPTION(old_realm->begin_transaction(), WrongTransactionState,
-                                  "Can't perform transactions on read-only Realms.");
+                                  "Can't perform transactions on read-only databases.");
             });
         }
 
@@ -1700,7 +1700,7 @@ TEST_CASE("migration: Automatic", "[migration]") {
 
         SECTION("table does not exist in new schema") {
             FAILED_RENAME(schema, {},
-                          "Cannot rename properties for type 'object' because it has been removed from the Realm.",
+                          "Cannot rename properties for type 'object' because it has been removed from the database.",
                           {"object", "value", "value 2"});
         }
 
@@ -2412,7 +2412,7 @@ TEST_CASE("migration: Additive", "[migration]") {
         REQUIRE(realm->schema().find("object")->persisted_properties[1].column_key == k1);
     }
 
-    SECTION("obtaining a frozen Realm from before an external schema change") {
+    SECTION("obtaining a frozen database from before an external schema change") {
         auto realm2 = Realm::get_shared_realm(config);
         realm->read_group();
         realm2->read_group();
@@ -2451,7 +2451,7 @@ TEST_CASE("migration: Additive", "[migration]") {
         REQUIRE(frozen->schema().find("object")->persisted_properties[1].column_key == col_keys[1]);
     }
 
-    SECTION("can have different subsets of columns in different Realm instances") {
+    SECTION("can have different subsets of columns in different database instances") {
         Realm::Config config2 = config;
         config2.schema = add_property(schema, "object", {"value 3", PropertyType::Int});
         Realm::Config config3 = config;

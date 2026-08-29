@@ -101,7 +101,7 @@ bool S2Loop::IsValid(string* err) const {
   for (int i = 0; i < num_vertices(); ++i) {
     if (!S2::IsUnitLength(vertex(i))) {
         s2_logger()->error("Vertex %1 is not unit length", i);
-      if (err) *err = realm::util::format("Vertex %1 is not unit length", i);
+      if (err) *err = tessera::util::format("Vertex %1 is not unit length", i);
       return false;
     }
   }
@@ -110,7 +110,7 @@ bool S2Loop::IsValid(string* err) const {
   for (int i = 0; i < num_vertices(); ++i) {
     if (!vmap.insert(make_pair(vertex(i), i)).second) {
         s2_logger()->error("Duplicate vertices: %1 and %2", vmap[vertex(i)], i);
-        if (err) *err = realm::util::format("Duplicate vertices: %1 and %2", vmap[vertex(i)], i);
+        if (err) *err = tessera::util::format("Duplicate vertices: %1 and %2", vmap[vertex(i)], i);
         return false;
     }
   }
@@ -133,7 +133,7 @@ bool S2Loop::IsValid(string* err) const {
         crosses = crosser.RobustCrossing(&vertex(ai+1)) > 0;
         previous_index = ai + 1;
         if (crosses) {
-            std::string msg = realm::util::format("Edges %1 and %2 cross. Edge locations in degrees: %3-%4 and %5-%6", i, ai, S2LatLng(vertex(i)), S2LatLng(vertex(i + 1)), S2LatLng(vertex(ai)), S2LatLng(vertex(ai + 1)));
+            std::string msg = tessera::util::format("Edges %1 and %2 cross. Edge locations in degrees: %3-%4 and %5-%6", i, ai, S2LatLng(vertex(i)), S2LatLng(vertex(i + 1)), S2LatLng(vertex(ai)), S2LatLng(vertex(ai + 1)));
             // additional debugging information, reverse Lat/Lng order.
           if (err) {
               *err = msg;

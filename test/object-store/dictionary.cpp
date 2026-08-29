@@ -23,20 +23,20 @@
 #include "util/test_utils.hpp"
 #include "util/index_helpers.hpp"
 
-#include <realm/object-store/dictionary.hpp>
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/results.hpp>
-#include <realm/object-store/schema.hpp>
-#include <realm/object-store/thread_safe_reference.hpp>
+#include <tessera/object-store/dictionary.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/results.hpp>
+#include <tessera/object-store/schema.hpp>
+#include <tessera/object-store/thread_safe_reference.hpp>
 
-#include <realm/object-store/impl/realm_coordinator.hpp>
-#include <realm/object-store/impl/object_accessor_impl.hpp>
+#include <tessera/object-store/impl/realm_coordinator.hpp>
+#include <tessera/object-store/impl/object_accessor_impl.hpp>
 
 #include <numeric>
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 namespace Catch {
 template <>
@@ -60,7 +60,7 @@ struct StringMaker<object_store::Dictionary> {
 };
 } // namespace Catch
 
-namespace cf = realm::collection_fixtures;
+namespace cf = tessera::collection_fixtures;
 
 TEST_CASE("nested dictionary in mixed", "[dictionary]") {
     InMemoryTestFile config;
@@ -303,7 +303,7 @@ TEMPLATE_TEST_CASE("dictionary types", "[dictionary]", cf::MixedVal, cf::Int, cf
         r->invalidate();
         REQUIRE_EXCEPTION(dict.verify_attached(), InvalidatedObject,
                           "Dictionary is no longer valid. Either the parent object was deleted or the containing "
-                          "Realm has been invalidated or closed.");
+                          "database has been invalidated or closed.");
     }
 
     SECTION("verify_in_transaction()") {
@@ -407,11 +407,11 @@ TEMPLATE_TEST_CASE("dictionary types", "[dictionary]", cf::MixedVal, cf::Int, cf
     SECTION("find_any()") {
         for (auto val : values) {
             auto ndx = dict.find_any(Mixed{val});
-            REQUIRE(ndx != realm::not_found);
+            REQUIRE(ndx != tessera::not_found);
         }
         dict.remove_all();
         for (auto val : values) {
-            REQUIRE(dict.find_any(Mixed{val}) == realm::not_found);
+            REQUIRE(dict.find_any(Mixed{val}) == tessera::not_found);
         }
     }
 
@@ -475,7 +475,7 @@ TEMPLATE_TEST_CASE("dictionary types", "[dictionary]", cf::MixedVal, cf::Int, cf
     SECTION("iteration") {
         for (size_t i = 0; i < values.size(); ++i) {
             auto ndx = dict.find_any(T(values[i]));
-            REQUIRE(ndx != realm::not_found);
+            REQUIRE(ndx != tessera::not_found);
             Dictionary::Iterator it = dict.begin() + ndx;
             REQUIRE((*it).first.get_string() == keys[i]);
             Mixed val_i{values[i]};
@@ -914,7 +914,7 @@ TEMPLATE_TEST_CASE("dictionary types", "[dictionary]", cf::MixedVal, cf::Int, cf
             advance_and_notify(*r);
             REQUIRE(local_change.insertions.count() == 2);
 
-            SECTION("with links on frozen Realm") {
+            SECTION("with links on frozen database") {
                 // this could have deadlocked
                 auto frozen = r->freeze();
                 auto frozen_table = frozen->read_group().get_table("class_object");

@@ -18,9 +18,9 @@
 
 #include "util/event_loop.hpp"
 
-#include <realm/object-store/util/event_loop_dispatcher.hpp>
-#include <realm/util/scope_exit.hpp>
-#include <realm/util/features.h>
+#include <tessera/object-store/util/event_loop_dispatcher.hpp>
+#include <tessera/util/scope_exit.hpp>
+#include <tessera/util/features.h>
 
 #include <mutex>
 #include <stdexcept>
@@ -28,10 +28,10 @@
 
 #if TEST_SCHEDULER_UV
 #include <uv.h>
-#elif REALM_PLATFORM_APPLE
-#include <realm/util/cf_ptr.hpp>
+#elif TESSERA_PLATFORM_APPLE
+#include <tessera/util/cf_ptr.hpp>
 #include <CoreFoundation/CoreFoundation.h>
-#elif REALM_ANDROID
+#elif TESSERA_ANDROID
 // TODO: implement event loop for android: see Scheduler::make_alooper()
 #elif defined(__EMSCRIPTEN__)
 // TODO: implement event loop for Emscripten
@@ -39,7 +39,7 @@
 #error "No EventLoop implementation selected, tests will fail"
 #endif
 
-using namespace realm::util;
+using namespace tessera::util;
 
 namespace {
 template <typename Desired, typename Actual>
@@ -96,7 +96,7 @@ private:
     std::mutex m_mutex;
     uv_loop_t* m_loop;
     uv_async_t m_perform_work;
-#elif REALM_PLATFORM_APPLE
+#elif TESSERA_PLATFORM_APPLE
     Impl(util::CFPtr<CFRunLoopRef> loop)
         : m_loop(std::move(loop))
     {
@@ -219,7 +219,7 @@ void EventLoop::Impl::run_pending()
     uv_run(m_loop, UV_RUN_NOWAIT);
 }
 
-#elif REALM_PLATFORM_APPLE
+#elif TESSERA_PLATFORM_APPLE
 
 bool EventLoop::has_implementation()
 {
@@ -235,7 +235,7 @@ EventLoop::Impl::~Impl() = default;
 
 void EventLoop::Impl::run_until(util::FunctionRef<bool()> predicate)
 {
-    REALM_ASSERT(m_loop.get() == CFRunLoopGetCurrent());
+    TESSERA_ASSERT(m_loop.get() == CFRunLoopGetCurrent());
 
     auto callback = [](CFRunLoopObserverRef, CFRunLoopActivity, void* info) {
         if ((*static_cast<util::FunctionRef<bool()>*>(info))()) {

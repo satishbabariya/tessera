@@ -1,11 +1,11 @@
-#ifndef REALM_TEST_UTIL_DUMP_CHANGESETS_HPP
-#define REALM_TEST_UTIL_DUMP_CHANGESETS_HPP
+#ifndef TESSERA_TEST_UTIL_DUMP_CHANGESETS_HPP
+#define TESSERA_TEST_UTIL_DUMP_CHANGESETS_HPP
 
 #include <memory>
 
 #include "test_path.hpp"
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 namespace unit_test {
 
@@ -18,6 +18,6 @@ get_changeset_dump_dir_generator(const unit_test::TestContext& test_context,
                                  const char* env_var = "UNITTEST_DUMP_TRANSFORM");
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_DUMP_CHANGESETS_HPP
+#endif // TESSERA_TEST_UTIL_DUMP_CHANGESETS_HPP

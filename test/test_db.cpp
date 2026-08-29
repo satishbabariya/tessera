@@ -16,10 +16,10 @@
  *
  **************************************************************************/
 
-#include <realm/db.hpp>
+#include <tessera/db.hpp>
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 TEST(DB_getCoreFiles_adding_path)
 {

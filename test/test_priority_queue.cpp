@@ -19,9 +19,9 @@
 #include "testsettings.hpp"
 #include "test.hpp"
 
-#include <realm/util/priority_queue.hpp>
+#include <tessera/util/priority_queue.hpp>
 
-using namespace realm::util;
+using namespace tessera::util;
 
 TEST(PriorityQueue_Push)
 {

@@ -20,23 +20,23 @@
 
 #include <util/test_file.hpp>
 
-#include <realm/object-store/binding_context.hpp>
-#include <realm/object-store/object_store.hpp>
-#include <realm/object-store/impl/object_accessor_impl.hpp>
-#include <realm/object-store/sync/async_open_task.hpp>
+#include <tessera/object-store/binding_context.hpp>
+#include <tessera/object-store/object_store.hpp>
+#include <tessera/object-store/impl/object_accessor_impl.hpp>
+#include <tessera/object-store/sync/async_open_task.hpp>
 
-#include <realm/sync/client_base.hpp>
-#include <realm/sync/protocol.hpp>
-#include <realm/sync/noinst/client_history_impl.hpp>
-#include <realm/sync/noinst/client_reset.hpp>
+#include <tessera/sync/client_base.hpp>
+#include <tessera/sync/protocol.hpp>
+#include <tessera/sync/noinst/client_history_impl.hpp>
+#include <tessera/sync/noinst/client_reset.hpp>
 
-#include <realm/util/base64.hpp>
-#include <realm/util/hex_dump.hpp>
-#include <realm/util/sha_crypto.hpp>
+#include <tessera/util/base64.hpp>
+#include <tessera/util/hex_dump.hpp>
+#include <tessera/util/sha_crypto.hpp>
 
 #include <chrono>
 
-namespace realm {
+namespace tessera {
 
 std::ostream& operator<<(std::ostream& os, util::Optional<app::AppError> error)
 {
@@ -130,22 +130,22 @@ ExpectedRealmPaths::ExpectedRealmPaths(const std::string& base_path, const std::
             cleaned_partition = "null";
             break;
         default:
-            REALM_ASSERT(false);
+            TESSERA_ASSERT(false);
     }
 
     std::string clean_name = cleaned_partition;
     std::string cleaned_app_id = util::make_percent_encoded_string(app_id);
     const auto manager_path = fs::path{base_path}.make_preferred() / "mongodb-realm" / cleaned_app_id;
     const auto preferred_name = manager_path / identity / clean_name;
-    current_preferred_path = preferred_name.string() + ".realm";
-    fallback_hashed_path = (manager_path / do_hash(preferred_name.string())).string() + ".realm";
+    current_preferred_path = preferred_name.string() + ".tess";
+    fallback_hashed_path = (manager_path / do_hash(preferred_name.string())).string() + ".tess";
 
     if (legacy_identities.size() < 1)
         return;
     auto& local_identity = legacy_identities[0];
     legacy_sync_directories_to_make.push_back((manager_path / local_identity).string());
     std::string encoded_partition = util::make_percent_encoded_string(partition);
-    legacy_local_id_path = (manager_path / local_identity / encoded_partition).concat(".realm").string();
+    legacy_local_id_path = (manager_path / local_identity / encoded_partition).concat(".tess").string();
     auto dir_builder = manager_path / "realm-object-server";
     legacy_sync_directories_to_make.push_back(dir_builder.string());
     dir_builder /= local_identity;
@@ -170,7 +170,7 @@ std::string unquote_string(std::string_view possibly_quoted_string)
     return std::string{possibly_quoted_string};
 }
 
-#if REALM_ENABLE_SYNC
+#if TESSERA_ENABLE_SYNC
 
 sync::SubscriptionSet subscribe_to_all(Realm& realm)
 {
@@ -245,7 +245,7 @@ std::shared_ptr<Realm> successfully_async_open_realm(const Realm::Config& config
     return status.get_value();
 }
 
-#endif // REALM_ENABLE_SYNC
+#endif // TESSERA_ENABLE_SYNC
 
 class TestHelper {
 public:
@@ -260,12 +260,12 @@ namespace reset_utils {
 Obj create_object(Realm& realm, StringData object_type, util::Optional<ObjectId> primary_key,
                   util::Optional<Partition> partition)
 {
-    auto table = realm::ObjectStore::table_for_object_type(realm.read_group(), object_type);
+    auto table = tessera::ObjectStore::table_for_object_type(realm.read_group(), object_type);
     REQUIRE(table);
     FieldValues values = {};
     if (partition) {
         ColKey col = table->get_column_key(partition->property_name);
-        REALM_ASSERT(col);
+        TESSERA_ASSERT(col);
         values.insert(col, Mixed{partition->value});
     }
     return table->create_object_with_primary_key(primary_key ? *primary_key : ObjectId::gen(), std::move(values));
@@ -275,7 +275,7 @@ namespace {
 
 TableRef get_table(Realm& realm, StringData object_type)
 {
-    return realm::ObjectStore::table_for_object_type(realm.read_group(), object_type);
+    return tessera::ObjectStore::table_for_object_type(realm.read_group(), object_type);
 }
 
 // Run through the client reset steps manually without involving a sync server.
@@ -284,9 +284,9 @@ struct FakeLocalClientReset : public TestClientReset {
     FakeLocalClientReset(const Realm::Config& local_config, const Realm::Config& remote_config)
         : TestClientReset(local_config, remote_config)
     {
-        REALM_ASSERT(m_local_config.sync_config);
+        TESSERA_ASSERT(m_local_config.sync_config);
         m_mode = m_local_config.sync_config->client_resync_mode;
-        REALM_ASSERT(m_mode == ClientResyncMode::DiscardLocal || m_mode == ClientResyncMode::Recover);
+        TESSERA_ASSERT(m_mode == ClientResyncMode::DiscardLocal || m_mode == ClientResyncMode::Recover);
         // Turn off real sync. But we still need a SyncClientHistory for recovery mode so fake it.
         m_local_config.sync_config = {};
         m_remote_config.sync_config = {};
@@ -311,7 +311,7 @@ struct FakeLocalClientReset : public TestClientReset {
             // has been uploaded so that it doesn't replay during recovery.
             auto history_local =
                 dynamic_cast<sync::ClientHistory*>(local_realm->read_group().get_replication()->_get_history_write());
-            REALM_ASSERT(history_local);
+            TESSERA_ASSERT(history_local);
             sync::version_type current_version;
             sync::SaltedFileIdent file_ident;
             sync::SyncProgress progress;
@@ -383,10 +383,10 @@ private:
 };
 } // anonymous namespace
 
-#if REALM_ENABLE_SYNC
+#if TESSERA_ENABLE_SYNC
 
 
-#endif // REALM_ENABLE_SYNC
+#endif // TESSERA_ENABLE_SYNC
 
 
 TestClientReset::TestClientReset(const Realm::Config& local_config, const Realm::Config& remote_config)
@@ -397,7 +397,7 @@ TestClientReset::TestClientReset(const Realm::Config& local_config, const Realm:
 TestClientReset::~TestClientReset()
 {
     // make sure we didn't forget to call run()
-    REALM_ASSERT(m_did_run || !(m_make_local_changes || m_make_remote_changes || m_on_post_local || m_on_post_reset));
+    TESSERA_ASSERT(m_did_run || !(m_make_local_changes || m_make_remote_changes || m_on_post_local || m_on_post_reset));
 }
 
 TestClientReset* TestClientReset::setup(Callback&& on_setup)
@@ -459,4 +459,4 @@ std::unique_ptr<TestClientReset> make_fake_local_client_reset(const Realm::Confi
 
 } // namespace reset_utils
 
-} // namespace realm
+} // namespace tessera

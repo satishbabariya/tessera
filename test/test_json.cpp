@@ -26,7 +26,7 @@
 #include <ostream>
 #include <chrono>
 
-#include <realm.hpp>
+#include <tessera.hpp>
 #include <external/json/json.hpp>
 #include <external/bson/bson.h>
 
@@ -34,9 +34,9 @@
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 
 // Test independence and thread-safety

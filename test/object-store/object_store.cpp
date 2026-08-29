@@ -20,9 +20,9 @@
 
 #include "util/test_file.hpp"
 
-#include <realm/object-store/object_store.hpp>
+#include <tessera/object-store/object_store.hpp>
 
-using namespace realm;
+using namespace tessera;
 
 TEST_CASE("ObjectStore: table_name_for_object_type()") {
     SECTION("should work with strings that aren't null-terminated") {

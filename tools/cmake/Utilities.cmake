@@ -1,7 +1,7 @@
-if(DEFINED REALM_UTILITIES)
+if(DEFINED TESSERA_UTILITIES)
     return()
 else()
-    set(REALM_UTILITIES 1)
+    set(TESSERA_UTILITIES 1)
 endif()
 
 macro(set_target_xcode_attributes _target)
@@ -20,9 +20,9 @@ macro(set_target_resources _target _resources)
     source_group("Resources" FILES ${_resources})
     set_target_properties("${_target}" PROPERTIES
         MACOSX_BUNDLE TRUE
-        MACOSX_BUNDLE_GUI_IDENTIFIER "io.realm.${_target}"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "io.tess.${_target}"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
-        MACOSX_BUNDLE_LONG_VERSION_STRING "${REALM_VERSION}"
+        MACOSX_BUNDLE_LONG_VERSION_STRING "${TESSERA_VERSION}"
         MACOSX_BUNDLE_BUNDLE_VERSION "1"
         RESOURCE "${_resources}"
     )

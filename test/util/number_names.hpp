@@ -16,13 +16,13 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_NUMBER_NAMES_HPP
-#define REALM_TEST_UTIL_NUMBER_NAMES_HPP
+#ifndef TESSERA_TEST_UTIL_NUMBER_NAMES_HPP
+#define TESSERA_TEST_UTIL_NUMBER_NAMES_HPP
 
 #include <cstddef>
 #include <string>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 std::string number_name(size_t n);
@@ -59,6 +59,6 @@ std::string number_name(size_t n)
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_NUMBER_NAMES_HPP
+#endif // TESSERA_TEST_UTIL_NUMBER_NAMES_HPP

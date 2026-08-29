@@ -37,15 +37,15 @@ static const mode_t2 S_IWUSR = mode_t2(_S_IWRITE);
 static const mode_t2 MS_MODE_MASK = 0x0000ffff;
 #endif
 
-#include <realm.hpp>
-#include <realm/util/file.hpp>
+#include <tessera.hpp>
+#include <tessera/util/file.hpp>
 
 #include "test.hpp"
 #include "test_table_helper.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 // Test independence and thread-safety
 // -----------------------------------
@@ -100,7 +100,7 @@ void setup_table(T t)
 } // Anonymous namespace
 
 
-#if REALM_ENABLE_ENCRYPTION
+#if TESSERA_ENABLE_ENCRYPTION
 TEST(Group_OpenUnencryptedFileWithKey_SinglePage)
 {
     // This results in a file which is too small to be an encrypted file
@@ -143,7 +143,7 @@ TEST(Group_OpenUnencryptedFileWithKey_ThreePages)
 
     CHECK_THROW(Group(path, crypt_key(true)), InvalidDatabase);
 }
-#endif // REALM_ENABLE_ENCRYPTION
+#endif // TESSERA_ENABLE_ENCRYPTION
 
 #ifndef _WIN32
 TEST(Group_Permissions)
@@ -429,7 +429,7 @@ TEST(Group_ObjUseAfterTableDetach)
         obj.set(col, 42);
         CHECK_EQUAL(obj.get<int64_t>(col), 42);
     }
-    CHECK_THROW(obj.get<int64_t>(col), realm::InvalidTableRef);
+    CHECK_THROW(obj.get<int64_t>(col), tessera::InvalidTableRef);
 }
 
 TEST(Group_RemoveTableWithColumns)
@@ -748,7 +748,7 @@ TEST(Group_Serialize1)
         table->create_object(ObjKey(9)).set_all("", 30, true, int(Wed));
         table->create_object(ObjKey(10)).set_all("", 9, true, int(Wed));
 
-#ifdef REALM_DEBUG
+#ifdef TESSERA_DEBUG
         to_disk.verify();
 #endif
 
@@ -776,7 +776,7 @@ TEST(Group_Serialize1)
 
         // Verify that both changed correctly
         CHECK(*table == *t);
-#ifdef REALM_DEBUG
+#ifdef TESSERA_DEBUG
         to_disk.verify();
         from_disk.verify();
 #endif
@@ -806,7 +806,7 @@ TEST(Group_Serialize2)
     table2->create_object().set_all("hey", 0, true, int(Tue));
     table2->create_object().set_all("hello", 3232, false, int(Sun));
 
-#ifdef REALM_DEBUG
+#ifdef TESSERA_DEBUG
     to_disk.verify();
 #endif
 
@@ -822,7 +822,7 @@ TEST(Group_Serialize2)
     CHECK(*table1 == *t1);
     CHECK(*table2 == *t2);
 
-#ifdef REALM_DEBUG
+#ifdef TESSERA_DEBUG
     to_disk.verify();
     from_disk.verify();
 #endif
@@ -842,7 +842,7 @@ TEST(Group_Serialize3)
     table->create_object().set_all("2 xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx 2", 15,
                                    true, int(Wed));
 
-#ifdef REALM_DEBUG
+#ifdef TESSERA_DEBUG
     to_disk.verify();
 #endif
 
@@ -855,7 +855,7 @@ TEST(Group_Serialize3)
 
     // Verify that original values are there
     CHECK(*table == *t);
-#ifdef REALM_DEBUG
+#ifdef TESSERA_DEBUG
     to_disk.verify();
     from_disk.verify();
 #endif
@@ -879,7 +879,7 @@ TEST(Group_Serialize_Mem)
     table->create_object().set_all("", 30, true, int(Wed));
     table->create_object().set_all("", 9, true, int(Wed));
 
-#ifdef REALM_DEBUG
+#ifdef TESSERA_DEBUG
     to_mem.verify();
 #endif
 
@@ -895,7 +895,7 @@ TEST(Group_Serialize_Mem)
 
     // Verify that original values are there
     CHECK(*table == *t);
-#ifdef REALM_DEBUG
+#ifdef TESSERA_DEBUG
     to_mem.verify();
     from_mem.verify();
 #endif
@@ -934,7 +934,7 @@ TEST(Group_Serialize_Optimized)
     ColKey col_string = table->get_column_keys()[0];
     table->enumerate_string_column(col_string);
 
-#ifdef REALM_DEBUG
+#ifdef TESSERA_DEBUG
     to_mem.verify();
 #endif
 
@@ -956,7 +956,7 @@ TEST(Group_Serialize_Optimized)
     const auto res = table->find_first_string(col_string, "search_target");
     CHECK_EQUAL(k, res);
 
-#ifdef REALM_DEBUG
+#ifdef TESSERA_DEBUG
     to_mem.verify();
     from_mem.verify();
 #endif
@@ -1887,8 +1887,8 @@ TEST(Group_WriteEmpty)
 }
 
 
-#ifdef REALM_DEBUG
-#ifdef REALM_TO_DOT
+#ifdef TESSERA_DEBUG
+#ifdef TESSERA_TO_DOT
 
 TEST(Group_ToDot)
 {
@@ -1988,8 +1988,8 @@ TEST(Group_ToDot)
     fs.close();
 }
 
-#endif // REALM_TO_DOT
-#endif // REALM_DEBUG
+#endif // TESSERA_TO_DOT
+#endif // TESSERA_DEBUG
 
 TEST_TYPES(Group_TimestampAddAIndexAndThenInsertEmptyRows, std::true_type, std::false_type)
 {

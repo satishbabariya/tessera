@@ -16,12 +16,12 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_SEMAPHORE_HPP
-#define REALM_TEST_UTIL_SEMAPHORE_HPP
+#ifndef TESSERA_TEST_UTIL_SEMAPHORE_HPP
+#define TESSERA_TEST_UTIL_SEMAPHORE_HPP
 
-#include <realm/util/thread.hpp>
+#include <tessera/util/thread.hpp>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 class BowlOfStonesSemaphore {
@@ -51,6 +51,6 @@ private:
 };
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_SEMAPHORE_HPP
+#endif // TESSERA_TEST_UTIL_SEMAPHORE_HPP

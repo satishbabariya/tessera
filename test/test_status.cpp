@@ -18,10 +18,10 @@
 
 #include "test.hpp"
 
-#include "realm/status.hpp"
-#include "realm/status_with.hpp"
+#include "tessera/status.hpp"
+#include "tessera/status_with.hpp"
 
-namespace realm {
+namespace tessera {
 namespace {
 
 TEST(Status)
@@ -99,4 +99,4 @@ TEST(ErrorCodes)
 }
 
 } // namespace
-} // namespace realm
+} // namespace tessera

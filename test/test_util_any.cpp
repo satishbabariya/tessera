@@ -19,14 +19,14 @@
 #include "testsettings.hpp"
 #ifdef TEST_UTIL_ANY
 
-#include <realm/util/any.hpp>
+#include <tessera/util/any.hpp>
 
 #include <memory>
 #include <string>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 TEST(Util_AnyCast_Basics)
 {

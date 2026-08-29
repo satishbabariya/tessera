@@ -1,10 +1,10 @@
 #include "test.hpp"
 
-#include <realm/util/file.hpp>
-#include <realm/sync/noinst/server/server_dir.hpp>
+#include <tessera/util/file.hpp>
+#include <tessera/sync/noinst/server/server_dir.hpp>
 
-using namespace realm;
-using namespace realm::_impl;
+using namespace tessera;
+using namespace tessera::_impl;
 
 
 TEST(ServerDir_InvalidVirtualPath)
@@ -27,9 +27,9 @@ TEST(ServerDir_InvalidVirtualPath)
         "/abc//def",
         "/abc/.def",
         "/abc+",
-        "/db.realm",
-        "/abc/db.realm.lock",
-        "/abc/db.realm.management",
+        "/db.tess",
+        "/abc/db.tess.lock",
+        "/abc/db.tess.management",
         " ",
         "/ abc",
         "/abc/*",
@@ -57,7 +57,7 @@ TEST(ServerDir_FullSyncPath)
         for (const std::string& virt_path : virt_paths) {
             VirtualPathComponents components = parse_virtual_path(root_path, virt_path);
             CHECK(components.is_valid);
-            const std::string expected_real_path = util::File::resolve(virt_path.substr(1) + ".realm", root_path);
+            const std::string expected_real_path = util::File::resolve(virt_path.substr(1) + ".tess", root_path);
             CHECK_EQUAL(components.real_realm_path, expected_real_path);
             CHECK(!components.is_partial_view);
         }

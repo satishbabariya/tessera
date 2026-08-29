@@ -16,15 +16,15 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_TYPES_HELPER_HPP
-#define REALM_TEST_TYPES_HELPER_HPP
+#ifndef TESSERA_TEST_TYPES_HELPER_HPP
+#define TESSERA_TEST_TYPES_HELPER_HPP
 
-#include <realm.hpp>
-#include <realm/column_type_traits.hpp>
+#include <tessera.hpp>
+#include <tessera/column_type_traits.hpp>
 
 #include <list>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 struct TestValueGenerator {
@@ -203,6 +203,6 @@ struct greater {
 };
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_TYPES_HELPER
+#endif // TESSERA_TEST_TYPES_HELPER

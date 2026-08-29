@@ -20,13 +20,13 @@
 #include <vector>
 #include <locale>
 
-#include <realm/util/logger.hpp>
-#include <realm/util/hex_dump.hpp>
-#include <realm/binary_data.hpp>
+#include <tessera/util/logger.hpp>
+#include <tessera/util/hex_dump.hpp>
+#include <tessera/binary_data.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 // Test independence and thread-safety
 // -----------------------------------
@@ -88,7 +88,7 @@ TEST(Util_Logger_LevelToFromString)
 
 TEST(Util_Logger_LevelThreshold)
 {
-    using namespace realm::util;
+    using namespace tessera::util;
     auto base_logger = std::make_shared<StderrLogger>();
     auto threadsafe_logger = std::make_shared<ThreadSafeLogger>(base_logger);
     auto prefix_logger =
@@ -104,7 +104,7 @@ TEST(Util_Logger_LevelThreshold)
     PrefixLogger storage_logger(LogCategory::storage, "test", threadsafe_logger);
     PrefixLogger query_logger(LogCategory::query, "test", threadsafe_logger);
     PrefixLogger sync_logger(LogCategory::sync, "test", threadsafe_logger);
-    base_logger->set_level_threshold("Realm.Storage", Logger::Level::debug);
+    base_logger->set_level_threshold("Tessera.Storage", Logger::Level::debug);
     CHECK(storage_logger.get_level_threshold() == Logger::Level::debug);
     CHECK(query_logger.get_level_threshold() == Logger::Level::debug);
     CHECK(sync_logger.get_level_threshold() == default_log_level);
@@ -149,7 +149,7 @@ TEST(Util_Logger_LevelThreshold)
 
 TEST(Util_Logger_LocalThresholdLogger)
 {
-    using namespace realm::util;
+    using namespace tessera::util;
     // Get the original level
     auto orig_level = LogCategory::realm.get_default_level_threshold();
 
@@ -211,11 +211,11 @@ TEST(Util_Logger_Categories)
 
     logger.log(util::LogCategory::query, util::Logger::Level::debug, "Query");
     CHECK(logger().empty());
-    logger.set_level_threshold("Realm.Storage.Query", util::Logger::Level::debug);
+    logger.set_level_threshold("Tessera.Storage.Query", util::Logger::Level::debug);
     logger.log(util::LogCategory::object, util::Logger::Level::debug, "Object");
     logger.log(util::LogCategory::query, util::Logger::Level::debug, "Query");
     CHECK_EQUAL(logger(), "Query");
-    logger.set_level_threshold("Realm.Storage.Object", util::Logger::Level::debug);
+    logger.set_level_threshold("Tessera.Storage.Object", util::Logger::Level::debug);
     logger.log(util::LogCategory::object, util::Logger::Level::debug, "Object");
     logger.log(util::LogCategory::query, util::Logger::Level::debug, "Query");
     CHECK_EQUAL(logger(), "ObjectQuery");

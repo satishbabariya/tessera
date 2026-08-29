@@ -1,16 +1,16 @@
 #include "test.hpp"
 
-#include <realm/sync/history.hpp>
-#include <realm/sync/noinst/server/server_history.hpp>
-#include <realm/sync/noinst/client_history_impl.hpp>
-#include <realm/db.hpp>
+#include <tessera/sync/history.hpp>
+#include <tessera/sync/noinst/server/server_history.hpp>
+#include <tessera/sync/noinst/client_history_impl.hpp>
+#include <tessera/db.hpp>
 
-#include <realm/util/base64.hpp>
-#include <realm/sync/changeset_parser.hpp>
-#include <realm/sync/instruction_applier.hpp>
+#include <tessera/util/base64.hpp>
+#include <tessera/merge/changeset_parser.hpp>
+#include <tessera/merge/instruction_applier.hpp>
 
-using namespace realm;
-using namespace realm::sync;
+using namespace tessera;
+using namespace tessera::sync;
 
 
 namespace {
@@ -18,7 +18,7 @@ namespace {
 struct MakeClientHistory {
     static std::unique_ptr<ClientReplication> make_history()
     {
-        return realm::sync::make_client_replication();
+        return tessera::sync::make_client_replication();
     }
 };
 
@@ -260,7 +260,7 @@ TEST_TYPES(StableIDs_PersistPerTableSequenceNumber, MakeClientHistory, MakeServe
 
 TEST_TYPES(StableIDs_CollisionMapping, MakeClientHistory, MakeServerHistory)
 {
-#if REALM_EXERCISE_OBJECT_ID_COLLISION
+#if TESSERA_EXERCISE_OBJECT_ID_COLLISION
 
     // This number corresponds to the mask used to calculate "optimistic"
     // object IDs. See `GlobalKeyProvider::get_optimistic_local_id_hashed`.
@@ -318,5 +318,5 @@ TEST_TYPES(StableIDs_CollisionMapping, MakeClientHistory, MakeServerHistory)
         }
     }
 
-#endif // REALM_EXERCISE_ID_COLLISION
+#endif // TESSERA_EXERCISE_ID_COLLISION
 }

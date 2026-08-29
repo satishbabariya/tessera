@@ -1,8 +1,8 @@
 #include "peer.hpp"
 #include "util/dump_changesets.hpp"
 
-using namespace realm;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::test_util;
 
 struct TransformTestHarness {
     enum ConflictOrdering { ClientOneBeforeTwo, ClientTwoBeforeOne, SameTime };

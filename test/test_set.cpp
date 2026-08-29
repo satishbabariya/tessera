@@ -18,15 +18,15 @@
 
 #include "testsettings.hpp"
 
-#include <realm.hpp>
-#include <realm/array_mixed.hpp>
+#include <tessera.hpp>
+#include <tessera/array_mixed.hpp>
 
 #include "test.hpp"
 #include "test_types_helper.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 extern unsigned int unit_test_random_seed;
 
@@ -52,7 +52,7 @@ TEST(Set_Basics)
         s.insert(5);
         CHECK_EQUAL(s.size(), 2);
         auto ndx = s.find(5);
-        CHECK_NOT_EQUAL(ndx, realm::npos);
+        CHECK_NOT_EQUAL(ndx, tessera::npos);
         auto [erased_ndx, erased] = s.erase(5);
         CHECK(erased);
         CHECK_EQUAL(erased_ndx, 0);
@@ -69,7 +69,7 @@ TEST(Set_Basics)
         CHECK_EQUAL(s.size(), 2);
         CHECK_THROW_ANY(s.insert(StringData{}));
         auto ndx = s.find("Hello");
-        CHECK_NOT_EQUAL(ndx, realm::npos);
+        CHECK_NOT_EQUAL(ndx, tessera::npos);
         auto [erased_ndx, erased] = s.erase("Hello");
         CHECK(erased);
         CHECK_EQUAL(erased_ndx, 0);
@@ -87,8 +87,8 @@ TEST(Set_Basics)
         CHECK_EQUAL(s.size(), 3);
         auto ndx = s.find(Mixed("Hello"));
         auto ndx2 = s.find(Mixed(BinaryData("Hello", 5)));
-        CHECK_NOT_EQUAL(ndx, realm::npos);
-        CHECK_NOT_EQUAL(ndx2, realm::npos);
+        CHECK_NOT_EQUAL(ndx, tessera::npos);
+        CHECK_NOT_EQUAL(ndx2, tessera::npos);
         CHECK_NOT_EQUAL(ndx, ndx2);
         auto [erased_ndx, erased] = s.erase(Mixed("Hello"));
         CHECK(erased);
@@ -132,7 +132,7 @@ TEST(Set_Mixed)
                                   ObjectId::gen(),
                                   UUID("01234567-9abc-4def-9012-3456789abcde"),
                                   bar.get_link()};
-    // Sets of Mixed should be ordered by the rules defined for Set<Mixed>. Refer to "realm/set.hpp".
+    // Sets of Mixed should be ordered by the rules defined for Set<Mixed>. Refer to "tessera/set.hpp".
     std::vector<size_t> indices(ref_values.size());
     std::iota(indices.begin(), indices.end(), 0);
     std::shuffle(indices.begin(), indices.end(), std::mt19937(unit_test_random_seed));
@@ -271,10 +271,10 @@ TEST(Set_Links)
 
     CHECK_EQUAL(set_links.size(), 3);
     CHECK_EQUAL(bar1.get_backlink_count(), 1);
-    CHECK_NOT_EQUAL(set_links.find(bar1.get_key()), realm::npos);
-    CHECK_NOT_EQUAL(set_links.find(bar2.get_key()), realm::npos);
-    CHECK_NOT_EQUAL(set_links.find(bar3.get_key()), realm::npos);
-    CHECK_EQUAL(set_links.find(bar4.get_key()), realm::npos);
+    CHECK_NOT_EQUAL(set_links.find(bar1.get_key()), tessera::npos);
+    CHECK_NOT_EQUAL(set_links.find(bar2.get_key()), tessera::npos);
+    CHECK_NOT_EQUAL(set_links.find(bar3.get_key()), tessera::npos);
+    CHECK_EQUAL(set_links.find(bar4.get_key()), tessera::npos);
     CHECK_THROW_ANY(set_links.insert({}));
     set_links.erase(bar1.get_key());
     CHECK_EQUAL(bar1.get_backlink_count(), 0);
@@ -291,11 +291,11 @@ TEST(Set_Links)
 
     CHECK_EQUAL(set_mixeds.size(), 4);
     CHECK_EQUAL(bar1.get_backlink_count(), 2);
-    CHECK_NOT_EQUAL(set_mixeds.find(bar1.get_link()), realm::npos);
-    CHECK_NOT_EQUAL(set_mixeds.find(bar2.get_link()), realm::npos);
-    CHECK_NOT_EQUAL(set_mixeds.find(cab1.get_link()), realm::npos);
-    CHECK_NOT_EQUAL(set_mixeds.find(cab2.get_link()), realm::npos);
-    CHECK_EQUAL(set_mixeds.find(bar3.get_link()), realm::npos);
+    CHECK_NOT_EQUAL(set_mixeds.find(bar1.get_link()), tessera::npos);
+    CHECK_NOT_EQUAL(set_mixeds.find(bar2.get_link()), tessera::npos);
+    CHECK_NOT_EQUAL(set_mixeds.find(cab1.get_link()), tessera::npos);
+    CHECK_NOT_EQUAL(set_mixeds.find(cab2.get_link()), tessera::npos);
+    CHECK_EQUAL(set_mixeds.find(bar3.get_link()), tessera::npos);
 
     bar1.remove();
     set_links.insert(bar4.get_key());
@@ -303,8 +303,8 @@ TEST(Set_Links)
     CHECK_EQUAL(set_links.size(), 3);
     CHECK_EQUAL(set_mixeds.size(), 3);
 
-    CHECK_EQUAL(set_links.find(bar1.get_key()), realm::npos);
-    CHECK_EQUAL(set_mixeds.find(bar1.get_link()), realm::npos);
+    CHECK_EQUAL(set_links.find(bar1.get_key()), tessera::npos);
+    CHECK_EQUAL(set_mixeds.find(bar1.get_link()), tessera::npos);
 
     auto bar2_key = bar2.get_key();
     auto bar2_link = bar2.get_link();
@@ -314,12 +314,12 @@ TEST(Set_Links)
     CHECK_EQUAL(lnkset_links->size(), 2); // Unresolved link was hidden from LnkSet
     CHECK_EQUAL(set_mixeds.size(), 3);
 
-    CHECK_EQUAL(set_links.find(bar2_key), realm::npos);               // The original bar2 key is no longer in the set
-    CHECK_NOT_EQUAL(set_links.find(bar2.get_key()), realm::npos);     // The unresolved bar2 key is in the set
-    CHECK_EQUAL(lnkset_links->find_any(bar2.get_key()), realm::npos); // The unresolved bar2 key is hidden by LnkSet
+    CHECK_EQUAL(set_links.find(bar2_key), tessera::npos);               // The original bar2 key is no longer in the set
+    CHECK_NOT_EQUAL(set_links.find(bar2.get_key()), tessera::npos);     // The unresolved bar2 key is in the set
+    CHECK_EQUAL(lnkset_links->find_any(bar2.get_key()), tessera::npos); // The unresolved bar2 key is hidden by LnkSet
     CHECK_EQUAL(lnkset_links->find_any(bar3.get_key()), 0);
     CHECK_EQUAL(lnkset_links->find_any(bar4.get_key()), 1);
-    CHECK_EQUAL(set_mixeds.find(bar2_link), realm::npos);
+    CHECK_EQUAL(set_mixeds.find(bar2_link), tessera::npos);
 
     // g.to_json(std::cout);
     foos->clear();
@@ -364,7 +364,7 @@ TEST_TYPES(Set_Types, Prop<Int>, Prop<String>, Prop<Float>, Prop<Double>, Prop<T
     CHECK(s.set_equals(l));
     for (auto v : values) {
         auto ndx = s.find(v);
-        CHECK_NOT_EQUAL(ndx, realm::npos);
+        CHECK_NOT_EQUAL(ndx, tessera::npos);
     }
 
     auto [erased_ndx, erased] = s.erase(values[0]);
@@ -398,11 +398,11 @@ TEST_TYPES(Set_Types, Prop<Int>, Prop<String>, Prop<Float>, Prop<Double>, Prop<T
         auto null_value = TEST_TYPE::default_value();
         CHECK(value_is_null(null_value));
         auto ndx = s.find(null_value);
-        CHECK_NOT_EQUAL(ndx, realm::npos);
+        CHECK_NOT_EQUAL(ndx, tessera::npos);
         s.erase_null();
         CHECK_EQUAL(s.size(), 0);
         ndx = s.find(null_value);
-        CHECK_EQUAL(ndx, realm::npos);
+        CHECK_EQUAL(ndx, tessera::npos);
     }
 }
 
@@ -879,14 +879,14 @@ TEST(Set_SymmetricDifferenceString)
     CHECK_EQUAL(set1.get(3), "World");
 }
 
-namespace realm {
+namespace tessera {
 template <typename T>
 static std::ostream& operator<<(std::ostream& os, const Set<T>& set)
 {
     os << "Set(" << set.get_table()->get_key() << ", " << set.get_obj().get_key() << ", " << set.get_col_key() << ")";
     return os;
 }
-} // namespace realm
+} // namespace tessera
 
 TEST(Set_Equality)
 {

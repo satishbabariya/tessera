@@ -22,18 +22,18 @@
 #include <algorithm>
 #include <memory>
 
-#include <realm.hpp>
-#include <realm/util/features.h>
-#include <realm/util/file.hpp>
-#include <realm/util/overload.hpp>
-#include <realm/replication.hpp>
+#include <tessera.hpp>
+#include <tessera/util/features.h>
+#include <tessera/util/file.hpp>
+#include <tessera/util/overload.hpp>
+#include <tessera/replication.hpp>
 
 #include "test.hpp"
 #include "test_table_helper.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 using unit_test::TestContext;
 
 

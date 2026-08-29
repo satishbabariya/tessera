@@ -3,11 +3,11 @@
 
 #include <charconv>
 
-#include <realm/util/from_chars.hpp>
+#include <tessera/util/from_chars.hpp>
 
 #include "test.hpp"
 
-using namespace realm::util;
+using namespace tessera::util;
 
 TEST(Util_FromChars_Base10)
 {

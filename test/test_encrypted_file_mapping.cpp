@@ -20,10 +20,10 @@
 
 #if defined(TEST_ENCRYPTED_FILE_MAPPING)
 
-#include <realm.hpp>
-#include <realm/util/aes_cryptor.hpp>
-#include <realm/util/encrypted_file_mapping.hpp>
-#include <realm/util/file.hpp>
+#include <tessera.hpp>
+#include <tessera/util/aes_cryptor.hpp>
+#include <tessera/util/encrypted_file_mapping.hpp>
+#include <tessera/util/file.hpp>
 
 #include "test.hpp"
 
@@ -56,11 +56,11 @@
 // `experiments/testcase.cpp` and then run `sh build.sh
 // check-testcase` (or one of its friends) from the command line.
 
-#if REALM_ENABLE_ENCRYPTION
+#if TESSERA_ENABLE_ENCRYPTION
 
-using namespace realm;
-using namespace realm::util;
-using realm::FileDesc;
+using namespace tessera;
+using namespace tessera::util;
+using tessera::FileDesc;
 
 namespace {
 const char test_key[] = "1234567890123456789012345678901123456789012345678901234567890123";
@@ -75,7 +75,7 @@ TEST(EncryptedFile_CryptorBasic)
     const char data[4096] = "test data";
     char buffer[4096];
 
-    File file(path, realm::util::File::mode_Write);
+    File file(path, tessera::util::File::mode_Write);
     cryptor.write(file.get_descriptor(), 0, data);
     cryptor.read(file.get_descriptor(), 0, buffer);
     CHECK(memcmp(buffer, data, strlen(data)) == 0);
@@ -89,7 +89,7 @@ TEST(EncryptedFile_CryptorRepeatedWrites)
 
     const char data[4096] = "test data";
     char raw_buffer_1[8192] = {0}, raw_buffer_2[8192] = {0};
-    File file(path, realm::util::File::mode_Write);
+    File file(path, tessera::util::File::mode_Write);
 
     cryptor.write(file.get_descriptor(), 0, data);
     ssize_t actual_read_1 = file.read(0, raw_buffer_1, sizeof(raw_buffer_1));
@@ -109,7 +109,7 @@ TEST(EncryptedFile_SeparateCryptors)
     const char data[4096] = "test data";
     char buffer[4096];
 
-    File file(path, realm::util::File::mode_Write);
+    File file(path, tessera::util::File::mode_Write);
     {
         AESCryptor cryptor(test_key);
         cryptor.set_data_size(16);
@@ -130,7 +130,7 @@ TEST(EncryptedFile_InterruptedWrite)
 
     const char data[4096] = "test data";
 
-    File file(path, realm::util::File::mode_Write);
+    File file(path, tessera::util::File::mode_Write);
     {
         AESCryptor cryptor(test_key);
         cryptor.set_data_size(16);
@@ -166,7 +166,7 @@ TEST(EncryptedFile_IVRefreshing)
     std::iota(std::begin(data), std::end(data), 0);
 
     TEST_PATH(path);
-    File file(path, realm::util::File::mode_Write);
+    File file(path, tessera::util::File::mode_Write);
     const FileDesc fd = file.get_descriptor();
 
     AESCryptor cryptor(test_key);
@@ -340,7 +340,7 @@ TEST(EncryptedFile_MultipleWriterMappings)
         for (size_t i = 0; i < count; i += increments) {
             util::encryption_read_barrier(map1, i);
             map1.get_addr()[i] = 1;
-            realm::util::encryption_write_barrier(map1, i);
+            tessera::util::encryption_write_barrier(map1, i);
         }
 
         // Since these are multiple mappings from one File, they should see
@@ -348,10 +348,10 @@ TEST(EncryptedFile_MultipleWriterMappings)
         for (size_t i = 0; i < count; i += increments) {
             util::encryption_read_barrier(map1, i, 1);
             ++map1.get_addr()[i];
-            realm::util::encryption_write_barrier(map1, i);
+            tessera::util::encryption_write_barrier(map1, i);
             util::encryption_read_barrier(map2, i, 1);
             ++map2.get_addr()[i];
-            realm::util::encryption_write_barrier(map2, i);
+            tessera::util::encryption_write_barrier(map2, i);
         }
     }
 
@@ -385,20 +385,20 @@ TEST(EncryptedFile_MultipleWriterFiles)
         for (size_t i = 0; i < count; i += increments) {
             util::encryption_read_barrier(map1, i);
             map1.get_addr()[i] = 1;
-            realm::util::encryption_write_barrier(map1, i);
+            tessera::util::encryption_write_barrier(map1, i);
         }
         map1.flush();
 
         for (size_t i = 0; i < count; i += increments) {
             util::encryption_read_barrier(map1, i, 1);
             ++map1.get_addr()[i];
-            realm::util::encryption_write_barrier(map1, i);
+            tessera::util::encryption_write_barrier(map1, i);
             map1.flush();
             w2.get_encryption()->mark_data_as_possibly_stale();
 
             util::encryption_read_barrier(map2, i, 1);
             ++map2.get_addr()[i];
-            realm::util::encryption_write_barrier(map2, i);
+            tessera::util::encryption_write_barrier(map2, i);
             map2.flush();
             w1.get_encryption()->mark_data_as_possibly_stale();
         }
@@ -434,7 +434,7 @@ TEST(EncryptedFile_MultipleReaders)
     for (size_t i = 0; i < count; i += increments) {
         util::encryption_read_barrier(map1, i);
         map1.get_addr()[i] = 1;
-        realm::util::encryption_write_barrier(map1, i);
+        tessera::util::encryption_write_barrier(map1, i);
     }
     map1.flush();
 
@@ -445,7 +445,7 @@ TEST(EncryptedFile_MultipleReaders)
     for (size_t i = 0; i < count; i += increments) {
         util::encryption_read_barrier(map1, i, 1);
         ++map1.get_addr()[i];
-        realm::util::encryption_write_barrier(map1, i);
+        tessera::util::encryption_write_barrier(map1, i);
 
         // map1 sees the new value because the write was performed via it
         // map2 was updated in the write barrier since it's the same File
@@ -631,5 +631,5 @@ TEST(EncryptedFile_RacingReadAndWrite)
     }
 }
 
-#endif // REALM_ENABLE_ENCRYPTION
+#endif // TESSERA_ENABLE_ENCRYPTION
 #endif // TEST_ENCRYPTED_FILE_MAPPING

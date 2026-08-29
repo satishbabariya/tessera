@@ -25,19 +25,19 @@
 #include <vector>
 #include <chrono>
 
-#include <realm.hpp>
-#include <realm/column_integer.hpp>
-#include <realm/array_bool.hpp>
-#include <realm/query_expression.hpp>
-#include <realm/index_string.hpp>
-#include <realm/query_expression.hpp>
+#include <tessera.hpp>
+#include <tessera/column_integer.hpp>
+#include <tessera/array_bool.hpp>
+#include <tessera/query_expression.hpp>
+#include <tessera/index_string.hpp>
+#include <tessera/query_expression.hpp>
 #include "test.hpp"
 #include "test_table_helper.hpp"
 #include "test_types_helper.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 
 // Test independence and thread-safety
@@ -1020,7 +1020,7 @@ TEST(Query_OfByOne)
     Table t;
     auto col_int = t.add_column(type_Int, "1");
     t.add_column(type_String, "2");
-    size_t cluster_size = (REALM_MAX_BPNODE_SIZE > 256) ? 256 : 4;
+    size_t cluster_size = (TESSERA_MAX_BPNODE_SIZE > 256) ? 256 : 4;
     for (size_t i = 0; i < cluster_size * 2; ++i) {
         t.create_object().set_all(1, "a");
     }
@@ -1134,7 +1134,7 @@ TEST(Query_AggregateSortedView)
     Table table;
     auto col = table.add_column(type_Double, "col");
 
-    const int count = REALM_MAX_BPNODE_SIZE * 2;
+    const int count = TESSERA_MAX_BPNODE_SIZE * 2;
     for (int i = 0; i < count; ++i)
         table.create_object().set(col, double(i + 1)); // no 0s to reduce chance of passing by coincidence
 
@@ -1367,21 +1367,21 @@ TEST(Query_NullStrings)
 
     // Short strings
     auto k0 = table.create_object().set<String>(col, "Albertslund").get_key(); // Normal non-empty string
-    auto k1 = table.create_object().set<String>(col, realm::null()).get_key(); // NULL string
+    auto k1 = table.create_object().set<String>(col, tessera::null()).get_key(); // NULL string
     auto k2 = table.create_object().set<String>(col, "").get_key();            // Empty string
 
-    q = table.column<StringData>(col) == realm::null();
+    q = table.column<StringData>(col) == tessera::null();
     v = q.find_all();
     CHECK_EQUAL(1, v.size());
     CHECK_EQUAL(k1, v.get_key(0));
 
-    q = table.column<StringData>(col) != realm::null();
+    q = table.column<StringData>(col) != tessera::null();
     v = q.find_all();
     CHECK_EQUAL(2, v.size());
     CHECK_EQUAL(k0, v.get_key(0));
     CHECK_EQUAL(k2, v.get_key(1));
 
-    // contrary to SQL, comparisons with realm::null() can be true in Realm (todo, discuss if we want this behaviour)
+    // contrary to SQL, comparisons with tessera::null() can be true in Realm (todo, discuss if we want this behaviour)
     q = table.column<StringData>(col) != StringData("Albertslund");
     v = q.find_all();
     CHECK_EQUAL(2, v.size());
@@ -1396,7 +1396,7 @@ TEST(Query_NullStrings)
     // Medium strings (16+)
     table.get_object(k0).set<String>(col, "AlbertslundAlbertslundAlbert");
 
-    q = table.column<StringData>(col) == realm::null();
+    q = table.column<StringData>(col) == tessera::null();
     v = q.find_all();
     CHECK_EQUAL(1, v.size());
     CHECK_EQUAL(k1, v.get_key(0));
@@ -1409,7 +1409,7 @@ TEST(Query_NullStrings)
     // Long strings (64+)
     table.get_object(k0).set<String>(col,
                                      "AlbertslundAlbertslundAlbertslundAlbertslundAlbertslundAlbertslundAlbertslund");
-    q = table.column<StringData>(col) == realm::null();
+    q = table.column<StringData>(col) == tessera::null();
     v = q.find_all();
     CHECK_EQUAL(1, v.size());
     CHECK_EQUAL(k1, v.get_key(0));
@@ -1470,7 +1470,7 @@ TEST(Query_Nulls_Fuzzy)
 
                     if (fastrand(1) == 0) {
                         // null string
-                        sd = realm::null();
+                        sd = tessera::null();
                         st = "null";
                     }
                     else {
@@ -2056,7 +2056,7 @@ TEST(Query_NullShowcase)
     // IEEE just began specifying signaling vs. non-signaling NaNs in 2008. Also note that all this seems
     // to work fine on ARM in both 32 and 64 bit mode.
 
-#if !defined(_WIN32) && !REALM_ARCHITECTURE_X86_32
+#if !defined(_WIN32) && !TESSERA_ARCHITECTURE_X86_32
     CHECK(null::is_signaling(obj0.get<Float>(col_shipping)));
 #endif
 
@@ -2073,7 +2073,7 @@ TEST(Query_NullShowcase)
     CHECK(std::isnan(obj1.get<Double>(col_rating)));
 
 // signaling_NaN() broken in VS2015, and broken in 32bit intel
-#if !defined(_WIN32) && !REALM_ARCHITECTURE_X86_32
+#if !defined(_WIN32) && !TESSERA_ARCHITECTURE_X86_32
     CHECK(null::is_signaling(obj0.get<Double>(col_rating)));
     CHECK(!null::is_signaling(obj1.get<Double>(col_rating)));
 #endif
@@ -2362,11 +2362,11 @@ TEST(Query_Null_BetweenMinMax_Nullable)
         // int
         match = ObjKey(123);
         tv.max(col_price, &match);
-        CHECK_EQUAL(match, realm::null_key);
+        CHECK_EQUAL(match, tessera::null_key);
 
         match = ObjKey(123);
         tv.min(col_price, &match);
-        CHECK_EQUAL(match, realm::null_key);
+        CHECK_EQUAL(match, tessera::null_key);
 
         CHECK_EQUAL(tv.sum(col_price), 0);
         count = 123;
@@ -2376,11 +2376,11 @@ TEST(Query_Null_BetweenMinMax_Nullable)
         // float
         match = ObjKey(123);
         CHECK(tv.max(col_shipping, &match)->is_null());
-        CHECK_EQUAL(match, realm::null_key);
+        CHECK_EQUAL(match, tessera::null_key);
 
         match = ObjKey(123);
         CHECK(tv.min(col_shipping, &match)->is_null());
-        CHECK_EQUAL(match, realm::null_key);
+        CHECK_EQUAL(match, tessera::null_key);
 
         CHECK_EQUAL(tv.sum(col_shipping), 0.);
         count = 123;
@@ -2390,11 +2390,11 @@ TEST(Query_Null_BetweenMinMax_Nullable)
         // double
         match = ObjKey(123);
         CHECK(tv.max(col_rating, &match)->is_null());
-        CHECK_EQUAL(match, realm::null_key);
+        CHECK_EQUAL(match, tessera::null_key);
 
         match = ObjKey(123);
         CHECK(tv.min(col_rating, &match)->is_null());
-        CHECK_EQUAL(match, realm::null_key);
+        CHECK_EQUAL(match, tessera::null_key);
 
         CHECK_EQUAL(tv.sum(col_rating), 0.);
         count = 123;
@@ -2404,11 +2404,11 @@ TEST(Query_Null_BetweenMinMax_Nullable)
         // date
         match = ObjKey(123);
         tv.max(col_date, &match);
-        CHECK_EQUAL(match, realm::null_key);
+        CHECK_EQUAL(match, tessera::null_key);
 
         match = ObjKey(123);
         tv.min(col_date, &match);
-        CHECK_EQUAL(match, realm::null_key);
+        CHECK_EQUAL(match, tessera::null_key);
     };
 
     // There are rows in TableView but they all point to null
@@ -3410,7 +3410,7 @@ TEST_TYPES(Query_EqualityInts, int64_t, util::Optional<int64_t>)
 
     int64_t id = -1;
     int64_t sum = 0;
-    constexpr static size_t num_rows = REALM_MAX_BPNODE_SIZE + 10;
+    constexpr static size_t num_rows = TESSERA_MAX_BPNODE_SIZE + 10;
     for (size_t i = 0; i < num_rows; ++i) {
         sum += id;
         table->create_object().set<Int>(col_ndx, id++);
@@ -4379,7 +4379,7 @@ TEST(Query_ArrayLeafRelocate)
         contact->add_column(type_Float, "extra");
         contact_type->add_column(type_Float, "extra");
 
-        for (size_t t = 0; t < REALM_MAX_BPNODE_SIZE + 1; t++) {
+        for (size_t t = 0; t < TESSERA_MAX_BPNODE_SIZE + 1; t++) {
             Obj contact_obj = contact->create_object();
             Obj contact_type_obj = contact_type->create_object();
             //  contact_type.get()->set_string(1, t, "hejsa");
@@ -4387,7 +4387,7 @@ TEST(Query_ArrayLeafRelocate)
             auto ll = contact_obj.get_linklist(col_link);
             ll.add(contact_type_obj.get_key());
 
-            if (t == 0 || t == REALM_MAX_BPNODE_SIZE) {
+            if (t == 0 || t == TESSERA_MAX_BPNODE_SIZE) {
                 tv.sync_if_needed();
                 tv2.sync_if_needed();
                 tv3.sync_if_needed();
@@ -4875,7 +4875,7 @@ TEST(Query_Group_bug)
     person_table->create_object().set(col_person_id, "person_4").get_linklist(col_person_link).add(sk0);
     person_table->create_object().set(col_person_id, "person_5").get_linklist(col_person_link).add(sk0);
 
-    realm::Query q0 =
+    tessera::Query q0 =
         person_table->where()
             .group()
 
@@ -4996,7 +4996,7 @@ TEST_IF(Query_IntOrQueryPerformance, TEST_DURATION > 0)
         // std::cout << "num_matches: " << num_matches << std::endl;
         Query q_ints = table->column<Int>(ints_col_key) == -1;
         Query q_nullables =
-            (table->column<Int>(nullable_ints_col_key) == -1).Or().equal(nullable_ints_col_key, realm::null());
+            (table->column<Int>(nullable_ints_col_key) == -1).Or().equal(nullable_ints_col_key, tessera::null());
         for (int i = 0; i < num_matches; ++i) {
             q_ints = q_ints.Or().equal(ints_col_key, i);
             q_nullables = q_nullables.Or().equal(nullable_ints_col_key, i);
@@ -5189,7 +5189,7 @@ TEST(Query_LinkListIntPastOneIsNull)
         list.add(obj.get_key());
     }
 
-    Query q = table_bar->link(col_list).column<Int>(col_int) == realm::null();
+    Query q = table_bar->link(col_list).column<Int>(col_int) == tessera::null();
 
     CHECK_EQUAL(q.count(), 1);
 }
@@ -5930,14 +5930,14 @@ TEST(Query_TypeOfValue)
 TEST(Query_links_to_with_bpnode_split)
 {
     // The bug here is that LinksToNode would read a LinkList as a simple Array
-    // instead of a BPTree. So this only worked when the number of items < REALM_MAX_BPNODE_SIZE
+    // instead of a BPTree. So this only worked when the number of items < TESSERA_MAX_BPNODE_SIZE
     Group g;
     auto table = g.add_table("Foo");
     auto origin = g.add_table("Origin");
     auto col_int = table->add_column(type_Int, "int");
     auto col_link = origin->add_column(*table, "link");
     auto col_links = origin->add_column_list(*table, "links");
-    constexpr size_t num_items = REALM_MAX_BPNODE_SIZE + 1;
+    constexpr size_t num_items = TESSERA_MAX_BPNODE_SIZE + 1;
     for (size_t i = 0; i < num_items; ++i) {
         table->create_object().set(col_int, int64_t(i));
     }
