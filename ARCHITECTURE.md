@@ -168,6 +168,7 @@ to confirm it can actually fail:
 | `tools/check-header-tiers.sh` | the public API does not leak private headers |
 | `tools/check-repo-hygiene.sh` | no runtime artefacts, stray keys or dead references in the tree |
 | `tools/check-rename-residue.sh` | no pre-rename identifiers, and nothing still names the project `realm` to the outside |
+| `tools/check-tests-compiled.sh` | every test source is in a `CMakeLists`, so no test file is silently absent from the build |
 | `tools/check-cert-expiry.sh` | the test certificates are neither near expiry nor over Apple's 825-day ceiling |
 | `tools/verify/consumer-smoke-test.sh` | the installed package is consumable and exports exactly the documented target set |
 | `tools/verify/clean-clone-test.sh` | a fresh clone configures and builds |
