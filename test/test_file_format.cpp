@@ -41,6 +41,7 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <cstddef>
 #include <cstring>
 #include <vector>
 
@@ -64,6 +65,23 @@ struct FileHeader {
     uint8_t m_flags;
 };
 static_assert(sizeof(FileHeader) == 24, "the on-disk header is 24 bytes");
+
+// A duplicated struct drifts silently. Size alone does not catch a reordering,
+// and every offset below is depended on elsewhere: tools/verify/consumer-smoke-
+// test.sh reads the mnemonic at 16 with dd, and the tests here patch the format
+// slots and the flags byte directly.
+//
+// These assertions only establish that this copy is self-consistent. What binds
+// it to SlabAlloc::Header, which is private and cannot be asserted against, is
+// FileFormat_WritesItsOwnIdentity below: it reads a real file through this
+// struct and finds TESS in m_mnemonic and the format version in the live slot.
+// If the original were reordered, that test would fail rather than these
+// assertions.
+static_assert(offsetof(FileHeader, m_top_ref) == 0, "top refs are first");
+static_assert(offsetof(FileHeader, m_mnemonic) == 16, "the mnemonic is at offset 16");
+static_assert(offsetof(FileHeader, m_file_format) == 20, "the format slots follow the mnemonic");
+static_assert(offsetof(FileHeader, m_reserved) == 22, "reserved byte");
+static_assert(offsetof(FileHeader, m_flags) == 23, "flags are last; bit 0 selects the slot");
 
 // Writes a database with one table, closes it, and returns its header.
 FileHeader make_database(const std::string& path)
