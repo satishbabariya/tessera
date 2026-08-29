@@ -201,12 +201,16 @@ set(TESSERA_INSTALL_HEADERS
     version.hpp
     version_id.hpp
     
+    # impl/ is not private despite the name: these six are reachable from public
+    # headers because group.hpp, db.hpp, replication.hpp and array_key.hpp require
+    # them. They carry no stability promise. impl/simulated_failure.hpp is NOT
+    # installed -- it is fault injection for tests, used only from .cpp files.
+    # See docs/findings/0b-header-tiers.md.
     impl/array_writer.hpp
     impl/changeset_input_stream.hpp
     impl/cont_transact_hist.hpp
     impl/destroy_guard.hpp
     impl/output_stream.hpp
-    impl/simulated_failure.hpp
     impl/transact_log.hpp
 
     util/aes_cryptor.hpp

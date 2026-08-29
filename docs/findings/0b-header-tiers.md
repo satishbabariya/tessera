@@ -72,10 +72,28 @@ private by name and, unlike `impl/`, private in fact.
 Canary-tested: adding an `impl/simulated_failure.hpp` include to `table.hpp` is
 detected and rejected.
 
-## Follow-up for a later phase
+## The install set: what was culled, and what was deliberately not
 
-Curate the install set from 236 headers down to the measured 147. The analysis
-exists; the work is editing install lists in five CMakeLists files and verifying
-with `tools/verify/consumer-smoke-test.sh`. Shipping 89 unreachable headers is
-not harmful, but it misrepresents the API surface and makes the tiers harder to
-explain than they need to be.
+**Culled:** `impl/simulated_failure.hpp`, a fault-injection facility used only
+from `.cpp` files and never reachable from a public header. It was the only
+test-only header being shipped. `noinst/` headers -- "no install", private by
+name -- were already correctly excluded.
+
+**Not culled:** the remaining gap between 236 installed and 147 measured as
+reachable.
+
+The 147 figure is the transitive closure from *the tier entry points this project
+chose*. That is the right measure for "what does the documented API need", and
+the wrong measure for "what may a consumer legitimately include". Someone with an
+unusual requirement might reasonably include `<tessera/util/file.hpp>` or another
+utility that no tier-1 or tier-2 header happens to reach. Culling to exactly 147
+would break them for a cosmetic gain.
+
+So the honest position, stated rather than quietly shipped: **Tessera installs
+more headers than its documented API requires.** Anything not reachable from
+`<tessera/api.hpp>` or `<tessera/engine.hpp>` carries no stability promise, which
+is enforced by tier documentation rather than by withholding the file.
+
+Revisiting this needs evidence about what consumers actually include, which does
+not exist yet because there are no consumers. A decision that requires data we do
+not have is better deferred than guessed.
