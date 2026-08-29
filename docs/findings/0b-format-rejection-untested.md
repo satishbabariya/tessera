@@ -107,16 +107,52 @@ So the strongest claim the project makes about durability -- crash safety by
 construction, no log to replay -- is verified nowhere, and has not been for the
 life of the fork or, on this evidence, for some time before it.
 
+## It could not have run
+
+Building with `-DTESSERA_ENABLE_ENCRYPTION=OFF` compiles the test in. It then
+reports:
+
+    Success: All 1 tests passed (0 checks). Test time: 20us
+
+Twenty microseconds and no checks. Its first statement is
+
+    if (!RobustMutex::is_robust_on_this_platform)
+        return;
+
+and on macOS that constant is `false`. Measured from the built library rather
+than inferred from the preprocessor:
+
+    is_robust_on_this_platform = false
+    _POSIX_THREADS = 200112L      (thread.cpp requires >= 200809L)
+    __GNU_LIBRARY__ not defined   (so the glibc branch does not apply either)
+
+So the two guards are not merely restrictive, they are mutually exclusive with
+the test doing any work. The compile-time guard admits Apple platforms only. The
+runtime guard requires robust POSIX mutexes, which Apple platforms do not have.
+Linux has them, and the compile-time guard excludes Linux.
+
+**The test cannot execute its body on any platform.** Satisfying the encryption
+guard, as done above, does not help: it merely promotes the test from
+uncompiled to compiled-and-immediately-returning. Both states report success.
+
 ## How this one hid
 
-Two guards, one inside the other, each individually plausible. The inner one
-names a platform and reads like a platform exclusion, which is a familiar and
-unalarming thing for a test to have. The outer one names a macro that is defined
-in the same file, which reads like a feature toggle that is on.
+Three conditions, each individually plausible and none of them alarming.
 
-Nothing in a test report distinguishes a test that passes from a test that was
-never compiled. `1662 tests passed` is the same sentence either way. The suite
-had 1652 before today's additions and no one had reason to ask which 1652.
+A macro guard naming a feature toggle, where the macro is defined thirty lines
+above and reads as satisfied. A platform guard naming Apple, which is an
+ordinary thing for a test to have. And a runtime capability check that returns
+early, which is the correct and conventional way to write a test that needs a
+platform feature.
+
+Each is defensible. The conjunction is a test that can never fail, and every
+report of it is the word "passed".
+
+Nothing in a test report distinguishes a test that passed, a test that returned
+before checking anything, and a test that was never compiled. `1662 tests
+passed` is the same sentence in all three cases. A zero-check test is visible
+in the count, but only if someone reads per-test check counts, and no gate here
+does.
 
 ## Canary-tested, in both directions
 
