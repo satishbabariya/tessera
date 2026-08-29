@@ -89,6 +89,28 @@ from the build graph. That gap is stated here rather than papered over -- an
 writing one check and claiming it covers both is the mistake this directory
 exists to record.
 
+## A second one, in the verification directory
+
+`tools/verify/clean-clone-test.sh` was in the same state, for the same length of
+time, and nobody had noticed either.
+
+It was written after the first genuine clean clone of this project failed to
+configure -- the README did not mention that a submodule was needed -- and its
+own header comment says why it exists: *"the tests you write from inside a
+project cannot see the conditions of arriving at it from outside."* It was then
+never referenced by any workflow. It has never run in CI.
+
+That is a sharper version of the same failure than the uncompiled test file. A
+test file at least sits among other test files, where a build system might
+plausibly be expected to find it. A shell script in a directory called `verify`
+is only ever run because something names it, and nothing did.
+
+It now runs in the nightly rather than per-pull-request: it clones from the
+published URL rather than reusing the checkout, because the property under test
+is what a stranger encounters, which means it tests `main` and takes several
+minutes. Verified against the published repository before wiring it in -- a plain
+clone builds the library, a recursive clone enables the tests.
+
 ## The shape of it
 
 Every other finding here is about a check that inspected the wrong thing, or a
