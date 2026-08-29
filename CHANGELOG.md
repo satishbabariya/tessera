@@ -2,7 +2,21 @@
 
 ## Unreleased
 
-Nothing yet.
+### Added
+
+* Build-and-test CI on Linux (gcc-13, clang-18) and macOS, in Debug and
+  Release. Until now only a changelog bot had ever run, so every claim the
+  project made about itself was macOS/arm64 only.
+
+### Fixed
+
+* The installed CMake package no longer exports `-fuse-ld=lld` (or `gold`).
+  Tessera selects a faster linker for its own build, and that flag was applied
+  as a plain `PUBLIC` link option, so it was baked into the exported target: a
+  consumer inherited whichever linker happened to exist on the machine that
+  built Tessera. Building Tessera with clang and consuming it with gcc failed
+  with `collect2: fatal error: cannot find 'ld'`. Affects v0.1.0 when built on
+  a system where lld or gold is available, which does not include macOS.
 
 ## 0.1.0 — 2026-08-29
 
@@ -70,5 +84,6 @@ it.
   removal.
 * The `Realm` class name is unchanged inside `namespace tessera`; renaming it is
   an API decision deferred to a later release.
-* Verified on macOS/arm64 only. Linux and Windows are expected to work but are
-  not yet covered by CI.
+* Verified by CI on macOS (Apple clang, arm64) and Linux x86-64 (gcc-13 and
+  clang-18), in Debug and Release. Windows, Linux on ARM, iOS, Android and WASM
+  are not verified.

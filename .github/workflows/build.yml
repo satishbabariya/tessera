@@ -1,0 +1,90 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.os }} ${{ matrix.compiler }} ${{ matrix.build_type }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, compiler: gcc,   cc: gcc-13,   cxx: g++-13,     build_type: Debug }
+          - { os: ubuntu-latest, compiler: clang, cc: clang-18, cxx: clang++-18, build_type: Debug }
+          - { os: ubuntu-latest, compiler: gcc,   cc: gcc-13,   cxx: g++-13,     build_type: Release }
+          - { os: macos-latest,  compiler: clang, cc: clang,    cxx: clang++,    build_type: Debug }
+          - { os: macos-latest,  compiler: clang, cc: clang,    cxx: clang++,    build_type: Release }
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive   # the test suites need Catch2
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libssl-dev zlib1g-dev libcurl4-openssl-dev
+
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      # These encode structural decisions. They are cheap, so they run first:
+      # a layering violation should not wait on a full build to be reported.
+      - name: Invariant checks
+        run: |
+          tools/check-copyright-notices.sh 560
+          tools/check-no-vendor-hosts.sh
+          tools/check-layering.sh
+          tools/check-merge-deps.sh
+          tools/check-header-tiers.sh
+
+      - name: Configure
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      # No target argument, deliberately. The test suites do not compile the
+      # command-line tools, so a target-limited build silently excludes code
+      # from verification. That has caused breakage twice in this project.
+      - name: Build everything
+        run: cmake --build build
+
+      # A fresh TMPDIR per run: the suites leak temporary directories, and a
+      # large temp directory degrades some tests by four orders of magnitude.
+      - name: CoreTests
+        run: |
+          export TMPDIR="$(mktemp -d)/"
+          "$(tools/verify/test-binary.sh build tessera-tests)"
+        env:
+          UNITTEST_THREADS: 2
+
+      - name: ObjectStoreTests
+        run: |
+          export TMPDIR="$(mktemp -d)/"
+          "$(tools/verify/test-binary.sh build tessera-object-store-tests)"
+
+      # Excluded from the merge gate: 'reports DNS error' resolves a bogus
+      # hostname and depends on the runner's resolver. Four runs of one binary
+      # locally gave 4.2s, 680.6s (failing), 13.7s and 0.011s. A merge gate that
+      # fails on DNS conditions trains everyone to ignore red builds.
+      - name: SyncTests
+        run: |
+          export TMPDIR="$(mktemp -d)/"
+          "$(tools/verify/test-binary.sh build tessera-sync-tests)"
+        env:
+          UNITTEST_THREADS: 1
+
+      - name: Consumer smoke test
+        run: tools/verify/consumer-smoke-test.sh build

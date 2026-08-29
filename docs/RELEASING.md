@@ -41,6 +41,22 @@ reports 1652 — five tests are compiled out of Release builds by `#ifdef
 TESSERA_DEBUG` and `TEST_IF(..., SimulatedFailure::is_enabled())`. Compare like
 with like.
 
+## Read the run's conclusion, not the count of green jobs
+
+A CI matrix can show four of five jobs green while the run itself is
+`cancelled`. `concurrency: cancel-in-progress` stops superseded runs when a new
+commit is pushed, which is the behaviour you want -- but the jobs that had
+already finished keep their `success` status, so counting them reports a pass
+that never happened.
+
+```sh
+gh api repos/<owner>/<repo>/actions/runs/<id> --jq .conclusion
+```
+
+That is the authoritative answer. It is the same mistake as counting passing
+tests without checking the binary was rebuilt: the individual signals look
+right, and the aggregate says otherwise.
+
 ## Both configurations, not one
 
 Debug and Release compile different code. `#ifdef TESSERA_DEBUG`,
@@ -110,8 +126,9 @@ git push origin v0.1.0
 
 State this plainly in the release notes rather than letting people discover it:
 
-- Verified on macOS/arm64 only. Linux and Windows are expected to work and are
-  unmeasured.
+- Verified by CI on macOS (Apple clang, arm64) and Linux x86-64 (gcc-13 and
+  clang-18), in Debug and Release. Windows, Linux on ARM, iOS, Android and WASM
+  are not verified.
 - The API is stable in shape but not yet frozen; breaking changes are allowed in
   0.x minors.
 - The file format is new. There is no migration from Realm files, and none is

@@ -155,8 +155,17 @@ installed to `share/cmake/Realm/` where `find_package(Tessera)` would never look
 
 **Known limitations, documented rather than hidden:**
 
-- Verified on macOS/arm64 only. Linux and Windows are unmeasured; the transport
-  layer is the most platform-sensitive code in the tree.
+- Verified by CI on macOS (Apple clang, arm64) and Linux x86-64 (gcc-13 and
+  clang-18), in Debug and Release. Windows, Linux on ARM, iOS, Android and WASM
+  remain unverified.
+
+  The Linux result contradicted a prediction made in this report's first draft.
+  Three of Phase 0a's build failures were transitive includes that only libc++
+  exposed, so libstdc++ was expected to surface its own set. It did not: both
+  Linux compilers built the tree clean on the first attempt. The likely reason
+  is the C++20 migration, which forced explicit includes that would otherwise
+  have failed here -- a benefit claimed at the time without evidence, and this
+  is the evidence.
 - One write transaction at a time, across all threads and processes.
 - `reports DNS error` is network-flaky and must not gate merges.
 - The test suite leaks temporary directories; a large `TMPDIR` degrades some

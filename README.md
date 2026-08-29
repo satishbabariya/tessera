@@ -34,6 +34,10 @@ database. [ARCHITECTURE.md](ARCHITECTURE.md) explains why.
 Requires CMake 3.25+, a C++20 compiler (GCC 13+ or Clang 18+), OpenSSL and zlib
 from your system package manager.
 
+Continuous integration builds and tests on **macOS (Apple clang, arm64)** and
+**Linux x86-64 (gcc-13 and clang-18)**, in Debug and Release. Windows, Linux on
+ARM, iOS, Android and WASM are expected to work but are not verified.
+
 ```sh
 git clone --recursive https://github.com/satishbabariya/tessera
 cd tessera
