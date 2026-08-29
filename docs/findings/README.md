@@ -32,7 +32,6 @@ Read these before changing the area they describe.
 | [0b-test-resource-race.md](0b-test-resource-race.md) | Three test targets share one resources directory and copied into it concurrently. Invisible until a resource actually changed, because `copy_if_different` writes nothing when nothing differs |
 | [0b-header-macro-visibility.md](0b-header-macro-visibility.md) | `RobustMutex::is_robust_on_this_platform` was false in every translation unit, including its own, while the implementation below it compiled full robust-mutex support. Five tests gated on it and none ran |
 | [0a-toolchain-rot.md](0a-toolchain-rot.md) | The upstream tree did not compile on a 2026 toolchain. Also why Bison 3.8.2 is not a prerequisite |
-| [0b-format-rejection-untested.md](0b-format-rejection-untested.md) | The fork's central promise -- that Tessera opens no other format -- was asserted in two documents and tested nowhere. A missing test that something fails looks exactly like a passing suite |
 | [0b-file-format.md](0b-file-format.md) | A format version is a position in a lineage, not a number. Four constants encoded it, each failing differently |
 | [0b-header-tiers.md](0b-header-tiers.md) | The public API is 147 headers; 236 were installed. Why `impl/` is not private, and why the install set was not culled |
 
@@ -40,6 +39,7 @@ Read these before changing the area they describe.
 
 | | |
 |---|---|
+| [0b-format-rejection-untested.md](0b-format-rejection-untested.md) | The fork's central promise -- that Tessera opens no other format -- was asserted in two documents and tested nowhere. A missing test that something fails looks exactly like a passing suite |
 | [0b-uncompiled-test-file.md](0b-uncompiled-test-file.md) | `test_util_enum.cpp` was in no CMakeLists and had never run. A test file left out of the build does not fail, does not show as skipped, and does not break anything |
 | [0a-flaky-and-slow-tests.md](0a-flaky-and-slow-tests.md) | `reports DNS error` is network-flaky (0.011s to 680s across four runs). The suites leak temp directories, and a large `TMPDIR` degrades some tests 40,000x |
 | [0b-certificate-expiry.md](0b-certificate-expiry.md) | The SSL tests' certificates were 57 days from expiry, and had lapsed five times before. The failure would have shown as a cluster of socket tests failing on every platform with no commit to blame |
@@ -50,8 +50,8 @@ Read these before changing the area they describe.
 
 ## The pattern these share
 
-Two failure modes recur across almost every document here, and they are worth
-stating on their own because they are not specific to this codebase.
+Three failure modes recur across almost every document here, and they are worth
+stating on their own because none of them is specific to this codebase.
 
 **An inherited name describes history, not structure.** Six times, a label did
 not match the code beneath it: the `REALM_APP_SERVICES` guard contained core sync
@@ -67,7 +67,12 @@ vendor-owned CI action, then missed a git remote. The test gate covered one
 suite, then one target, then one configuration, then ran against a stale binary.
 The merge dependency check read `#include` directives while claiming build
 independence. The consumer smoke test installed from a local build tree while
-claiming a stranger could use the package. In every case the property being
+claiming a stranger could use the package. The rename check scanned code
+identifiers and reported clean while the product name, the sync `User-Agent` and
+a WebSocket subprotocol still said `realm`. And a check added *in response to all
+of this* was first called `check-tests-compiled.sh`, which greps for a filename
+in a `CMakeLists` -- it establishes that a file is visible to the build, not that
+anything compiles it, and it was renamed before it merged. In every case the property being
 asserted was *adjacent to* the property being inspected, and the defect lived in
 the gap.
 
@@ -75,3 +80,36 @@ The practical consequence: **the checks you can run where you are cannot see the
 conditions of somewhere else.** What found real defects was a foreign toolchain,
 a fresh clone, and an unusual build configuration -- not better reasoning about
 the tree from inside it.
+
+**A stale result is indistinguishable from a fresh one.** This one cost more
+time in a single day than the other two combined, in four different disguises.
+
+`make` treats a source file that is not *newer* than its object as up to date,
+and its timestamps have one-second granularity. An edit-build-test cycle fast
+enough to land inside one second silently runs the previous binary. Four
+measurements in this project were taken that way, including one that was written
+into a pull request as evidence. Reproducible in eight lines:
+
+    cmake -S . -B b -G "Unix Makefiles" && cmake --build b   # main returns 1
+    python3 -c "open('src/main.cpp','w').write('int main(){return 7;}')"
+    cmake --build b && ./b/app                               # still returns 1
+
+`test/CMakeLists.txt` copies the certificate fixtures into the test bundle at
+*build* time. Regenerating them and running the suite without rebuilding tests
+the old certificates. That produced "SSL suite 21/21, sync suite 461/461" for
+certificates that in fact broke five tests -- real numbers, measured against the
+files the bundle already held.
+
+GitHub does not create workflow runs for a pull request that cannot be merged,
+and goes on displaying the checks from before the conflict. Two commits were
+pushed to a branch and neither was ever built, while `gh pr checks` reported
+everything green.
+
+And a test that was never compiled reports exactly what a passing test reports:
+nothing. `1662 tests passed` is the same sentence whether the 1663rd ran, was
+switched off, or never existed.
+
+The common shape is that freshness is not part of the result. A number, a green
+tick and a passing suite all look the same regardless of what produced them, so
+the question "is this measuring the thing I just changed?" has to be asked
+separately every time -- and answered by evidence, not by having intended it.
