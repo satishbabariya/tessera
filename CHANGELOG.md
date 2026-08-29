@@ -73,6 +73,9 @@
   because its `#ifdef` appears after the defines. A class whose implementation
   supported robust mutexes and whose public constant denied it. The detection now
   lives in the header that declares the constant. Five tests gate on it.
+* `tools/check-header-macros.sh`, run in CI, fails when a header decides
+  something on a `TESSERA_` macro that only a `.cpp` defines. It checks 287
+  macros and found exactly one instance, the robust-mutex constant above.
 * The test framework computed `num_disabled_tests` and never printed it, so a
   test switched off by its `TEST_IF` condition was invisible: absent from the
   pass count and absent from every other number reported. There are 32 of them on

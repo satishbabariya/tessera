@@ -30,6 +30,7 @@ Read these before changing the area they describe.
 |---|---|
 | [0a-supply-chain.md](0a-supply-chain.md) | The vendor dependency ran four levels deep and reached downstream consumers. Also records the Android OpenSSL decision and how it resolved |
 | [0b-test-resource-race.md](0b-test-resource-race.md) | Three test targets share one resources directory and copied into it concurrently. Invisible until a resource actually changed, because `copy_if_different` writes nothing when nothing differs |
+| [0b-header-macro-visibility.md](0b-header-macro-visibility.md) | `RobustMutex::is_robust_on_this_platform` was false in every translation unit, including its own, while the implementation below it compiled full robust-mutex support. Five tests gated on it and none ran |
 | [0a-toolchain-rot.md](0a-toolchain-rot.md) | The upstream tree did not compile on a 2026 toolchain. Also why Bison 3.8.2 is not a prerequisite |
 | [0b-format-rejection-untested.md](0b-format-rejection-untested.md) | The fork's central promise -- that Tessera opens no other format -- was asserted in two documents and tested nowhere. A missing test that something fails looks exactly like a passing suite |
 | [0b-file-format.md](0b-file-format.md) | A format version is a position in a lineage, not a number. Four constants encoded it, each failing differently |
