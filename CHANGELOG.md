@@ -53,6 +53,23 @@
 
 ### Fixed
 
+* `Shared_RobustAgainstDeathDuringWrite`, the only test of the crash-safety
+  claim, had never executed its body. Three guards made that impossible:
+  `!TESSERA_ENABLE_ENCRYPTION` excluded every configuration built or tested here,
+  `TESSERA_PLATFORM_APPLE` admitted Apple only, and the runtime check requires
+  robust POSIX mutexes, which Apple does not provide. Compiled in with encryption
+  off it reported "All 1 tests passed (0 checks)" in 20 microseconds. It now
+  compiles wherever `fork()` exists and is gated on the runtime capability check
+  alone.
+* That test now uses `TEST_IF` rather than returning early, so the framework
+  reports it as excluded where it does not apply instead of as a pass over zero
+  checks, and is `NONCONCURRENT`, because it calls `fork()` from a runner full of
+  worker threads and then does real work in the child.
+* The CI build job had no `timeout-minutes`. A dead-locking test would have held
+  a runner for GitHub's six-hour default.
+
+### Fixed
+
 * The library called itself `realm-core`. `TESSERA_PRODUCT_NAME` still held the
   old name, so crash reports and the sync client and server startup logs all
   identified the process as `[realm-core-<version>]`.
