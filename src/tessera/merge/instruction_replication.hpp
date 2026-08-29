@@ -20,8 +20,8 @@
 #define TESSERA_SYNC_IMPL_INSTRUCTION_REPLICATION_HPP
 
 #include <tessera/replication.hpp>
-#include <tessera/sync/instructions.hpp>
-#include <tessera/sync/changeset_encoder.hpp>
+#include <tessera/merge/instructions.hpp>
+#include <tessera/merge/changeset_encoder.hpp>
 
 namespace tessera {
 namespace sync {

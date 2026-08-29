@@ -1,4 +1,4 @@
-#include <tessera/sync/changeset.hpp>
+#include <tessera/merge/changeset.hpp>
 
 #if TESSERA_DEBUG
 #include <iostream>

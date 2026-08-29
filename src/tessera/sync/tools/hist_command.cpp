@@ -21,7 +21,7 @@
 #include <tessera/util/load_file.hpp>
 #include <tessera/group.hpp>
 #include <tessera/version.hpp>
-#include <tessera/sync/changeset_parser.hpp>
+#include <tessera/merge/changeset_parser.hpp>
 #include <tessera/sync/noinst/server/server_history.hpp>
 #include <tessera/sync/protocol.hpp>
 
@@ -2105,7 +2105,7 @@ int main(int argc, char* argv[])
                 "  -I, --instruction-type <type>\n"
                 "                       Only include history entries whose changeset contains an\n"
                 "                       instruction of the specified type. See header file\n"
-                "                       `<tessera/sync/instructions.hpp>` for the list of\n"
+                "                       `<tessera/merge/instructions.hpp>` for the list of\n"
                 "                       instruction types. This acts as an additional\n"
                 "                       instruction condition. See `--modifies-object` for more\n"
                 "                       on instruction conditions.\n"

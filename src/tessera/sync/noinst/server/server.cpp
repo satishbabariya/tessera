@@ -4,7 +4,7 @@
 #include <tessera/impl/simulated_failure.hpp>
 #include <tessera/object_id.hpp>
 #include <tessera/string_data.hpp>
-#include <tessera/sync/changeset.hpp>
+#include <tessera/merge/changeset.hpp>
 #include <tessera/sync/trigger.hpp>
 #include <tessera/sync/impl/clamped_hex_dump.hpp>
 #include <tessera/sync/impl/clock.hpp>
@@ -17,7 +17,7 @@
 #include <tessera/sync/noinst/server/server_dir.hpp>
 #include <tessera/sync/noinst/server/server_file_access_cache.hpp>
 #include <tessera/sync/noinst/server/server_impl_base.hpp>
-#include <tessera/sync/transform.hpp>
+#include <tessera/merge/transform.hpp>
 #include <tessera/util/base64.hpp>
 #include <tessera/util/bind_ptr.hpp>
 #include <tessera/util/buffer_stream.hpp>

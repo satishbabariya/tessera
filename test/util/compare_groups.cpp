@@ -7,7 +7,7 @@
 #include <iostream>
 
 #include <tessera/table.hpp>
-#include <tessera/sync/object_id.hpp>
+#include <tessera/merge/object_id.hpp>
 #include <tessera/list.hpp>
 #include <tessera/dictionary.hpp>
 #include <tessera/set.hpp>

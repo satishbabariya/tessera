@@ -30,7 +30,7 @@
 #include <tessera/util/scope_exit.hpp>
 
 #if TESSERA_ENABLE_SYNC
-#include <tessera/sync/instruction_replication.hpp>
+#include <tessera/merge/instruction_replication.hpp>
 #endif // TESSERA_ENABLE_SYNC
 
 #include <string.h>

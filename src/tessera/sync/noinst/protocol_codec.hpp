@@ -15,12 +15,12 @@
 #include <tessera/util/optional.hpp>
 #include <tessera/binary_data.hpp>
 #include <tessera/chunked_binary.hpp>
-#include <tessera/sync/changeset_parser.hpp>
+#include <tessera/merge/changeset_parser.hpp>
 #include <tessera/sync/history.hpp>
 #include <tessera/sync/impl/clamped_hex_dump.hpp>
-#include <tessera/sync/noinst/integer_codec.hpp>
+#include <tessera/merge/integer_codec.hpp>
 #include <tessera/sync/protocol.hpp>
-#include <tessera/sync/transform.hpp>
+#include <tessera/merge/transform.hpp>
 
 #include <external/json/json.hpp>
 

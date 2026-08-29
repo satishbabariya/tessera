@@ -1,5 +1,5 @@
 #include <tessera/impl/transact_log.hpp>
-#include <tessera/sync/instructions.hpp>
+#include <tessera/merge/instructions.hpp>
 
 using namespace tessera;
 using namespace tessera::_impl;

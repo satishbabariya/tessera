@@ -2,7 +2,7 @@
 #ifndef TESSERA_SYNC_CHANGESET_ENCODER_HPP
 #define TESSERA_SYNC_CHANGESET_ENCODER_HPP
 
-#include <tessera/sync/changeset.hpp>
+#include <tessera/merge/changeset.hpp>
 
 namespace tessera {
 namespace sync {

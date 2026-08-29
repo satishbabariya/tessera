@@ -1,4 +1,4 @@
-#include <tessera/sync/instruction_applier.hpp>
+#include <tessera/merge/instruction_applier.hpp>
 #include <tessera/set.hpp>
 #include <tessera/util/scope_exit.hpp>
 

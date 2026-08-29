@@ -3,7 +3,7 @@
 #define TESSERA_SYNC_CHANGESET_PARSER_HPP
 
 #include <tessera/mixed.hpp>
-#include <tessera/sync/changeset.hpp>
+#include <tessera/merge/changeset.hpp>
 #include <tessera/util/input_stream.hpp>
 
 namespace tessera::sync {

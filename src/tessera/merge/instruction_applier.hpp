@@ -19,8 +19,8 @@
 #ifndef TESSERA_SYNC_IMPL_INSTRUCTION_APPLIER_HPP
 #define TESSERA_SYNC_IMPL_INSTRUCTION_APPLIER_HPP
 
-#include <tessera/sync/instructions.hpp>
-#include <tessera/sync/changeset.hpp>
+#include <tessera/merge/instructions.hpp>
+#include <tessera/merge/changeset.hpp>
 #include <tessera/util/logger.hpp>
 #include <tessera/list.hpp>
 #include <tessera/dictionary.hpp>

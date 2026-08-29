@@ -1,6 +1,5 @@
 set(SYNC_SOURCES
     config.cpp
-    noinst/changeset_index.cpp
     noinst/client_history_impl.cpp
     noinst/client_impl_base.cpp
     noinst/client_reset.cpp
@@ -12,18 +11,10 @@ set(SYNC_SOURCES
     noinst/protocol_codec.cpp
     noinst/sync_metadata_schema.cpp
     noinst/sync_schema_migration.cpp
-    changeset_encoder.cpp
-    changeset_parser.cpp
-    changeset.cpp
     client.cpp
     history.cpp
-    instruction_applier.cpp
-    instruction_replication.cpp
-    instructions.cpp
-    object_id.cpp
     protocol.cpp
     subscriptions.cpp
-    transform.cpp
     network/default_socket.cpp
     network/http.cpp
     network/network.cpp
@@ -39,20 +30,12 @@ set(IMPL_INSTALL_HEADERS
 set(SYNC_INSTALL_HEADERS
     binding_callback_thread_observer.hpp
     config.hpp
-    changeset_encoder.hpp
-    changeset_parser.hpp
-    changeset.hpp
     client.hpp
     client_base.hpp
     socket_provider.hpp
     history.hpp
-    instruction_applier.hpp
-    instruction_replication.hpp
-    instructions.hpp
-    object_id.hpp
     protocol.hpp
     subscriptions.hpp
-    transform.hpp
 )
 
 set(SYNC_NETWORK_INSTALL_HEADERS
@@ -67,13 +50,11 @@ set(SYNC_NETWORK_INSTALL_HEADERS
 set(NOINST_HEADERS
     trigger.hpp
 
-    noinst/changeset_index.hpp
     noinst/client_history_impl.hpp
     noinst/client_impl_base.hpp
     noinst/client_reset.hpp
     noinst/client_reset_operation.hpp
     noinst/client_reset_recovery.hpp
-    noinst/integer_codec.hpp
     noinst/migration_store.hpp
     noinst/pending_bootstrap_store.hpp
     noinst/pending_reset_store.hpp
@@ -99,7 +80,7 @@ if(NOT TESSERA_SYNC_MULTIPLEXING)
     target_compile_definitions(Sync PUBLIC TESSERA_DISABLE_SYNC_MULTIPLEXING=1)
 endif()
 
-target_link_libraries(Sync PUBLIC Storage)
+target_link_libraries(Sync PUBLIC Merge Storage)
 
 if(APPLE AND NOT TESSERA_FORCE_OPENSSL)
     target_link_options(Sync INTERFACE "SHELL:-framework Security")
@@ -114,7 +95,7 @@ if(WIN32)
     target_link_libraries(Sync INTERFACE Crypt32.lib)
 endif()
 
-install(TARGETS Sync EXPORT realm
+install(TARGETS Sync EXPORT tessera
     ARCHIVE COMPONENT devel
     PUBLIC_HEADER COMPONENT devel)
 

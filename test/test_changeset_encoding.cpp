@@ -1,10 +1,10 @@
 #include "test.hpp"
 
-#include <tessera/sync/changeset.hpp>
-#include <tessera/sync/changeset_encoder.hpp>
-#include <tessera/sync/changeset_parser.hpp>
-#include <tessera/sync/instructions.hpp>
-#include <tessera/sync/noinst/integer_codec.hpp>
+#include <tessera/merge/changeset.hpp>
+#include <tessera/merge/changeset_encoder.hpp>
+#include <tessera/merge/changeset_parser.hpp>
+#include <tessera/merge/instructions.hpp>
+#include <tessera/merge/integer_codec.hpp>
 
 using namespace tessera;
 using namespace tessera::sync::instr;

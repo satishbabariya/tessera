@@ -3,11 +3,20 @@
 #define TESSERA_SYNC_TRANSFORM_HPP
 
 #include <tessera/chunked_binary.hpp>
-#include <tessera/sync/instructions.hpp>
-#include <tessera/sync/protocol.hpp>
+#include <tessera/replication.hpp>
+#include <tessera/merge/instructions.hpp>
 
 namespace tessera {
 namespace sync {
+
+// Tessera: this header previously reached for <tessera/sync/protocol.hpp> to
+// obtain sync::version_type. protocol.hpp defines it as an alias for
+// Replication::version_type -- a core storage type, not a protocol one -- and
+// supplied nothing else here. Declaring the alias against its real source frees
+// the merge engine from depending on the wire protocol, which is what allows
+// tessera-merge to be carved out as a standalone library. Redeclaring an
+// identical alias is well-formed, so including protocol.hpp as well is harmless.
+using version_type = Replication::version_type;
 
 struct Changeset;
 

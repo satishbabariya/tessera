@@ -1,5 +1,5 @@
-#include <tessera/sync/noinst/integer_codec.hpp>
-#include <tessera/sync/changeset_encoder.hpp>
+#include <tessera/merge/integer_codec.hpp>
+#include <tessera/merge/changeset_encoder.hpp>
 
 using namespace tessera;
 using namespace tessera::sync;

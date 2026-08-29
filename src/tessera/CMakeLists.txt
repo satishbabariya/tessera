@@ -409,7 +409,7 @@ if(APPLE)
     target_link_libraries(Storage PUBLIC "-lcompression")
 endif()
 
-install(TARGETS Storage EXPORT realm
+install(TARGETS Storage EXPORT tessera
         ARCHIVE DESTINATION lib
         COMPONENT devel)
 
@@ -429,6 +429,7 @@ install(FILES ${PROJECT_BINARY_DIR}/src/tessera/util/config.h
 add_subdirectory(parser)
 add_subdirectory(object-store)
 if (TESSERA_ENABLE_SYNC)
+    add_subdirectory(merge)
     add_subdirectory(sync)
 endif()
 if(NOT TESSERA_BUILD_LIB_ONLY AND NOT WINDOWS_STORE)

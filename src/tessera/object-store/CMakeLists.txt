@@ -183,6 +183,6 @@ foreach(FILE ${HEADERS})
             DESTINATION include/tessera/object-store/${DIR}
             COMPONENT devel)
 endforeach()
-install(TARGETS ObjectStore EXPORT realm
+install(TARGETS ObjectStore EXPORT tessera
         ARCHIVE DESTINATION lib
         COMPONENT devel)

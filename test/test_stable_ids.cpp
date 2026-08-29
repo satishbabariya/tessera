@@ -6,8 +6,8 @@
 #include <tessera/db.hpp>
 
 #include <tessera/util/base64.hpp>
-#include <tessera/sync/changeset_parser.hpp>
-#include <tessera/sync/instruction_applier.hpp>
+#include <tessera/merge/changeset_parser.hpp>
+#include <tessera/merge/instruction_applier.hpp>
 
 using namespace tessera;
 using namespace tessera::sync;

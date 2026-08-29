@@ -22,8 +22,8 @@
 #include <tessera/array_integer.hpp>
 #include <tessera/sync/client_base.hpp>
 #include <tessera/sync/history.hpp>
-#include <tessera/sync/instruction_replication.hpp>
-#include <tessera/sync/transform.hpp>
+#include <tessera/merge/instruction_replication.hpp>
+#include <tessera/merge/transform.hpp>
 #include <tessera/util/functional.hpp>
 #include <tessera/util/optional.hpp>
 

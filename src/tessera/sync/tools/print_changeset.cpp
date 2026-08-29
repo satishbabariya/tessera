@@ -7,8 +7,8 @@
 #include <tessera/util/cli_args.hpp>
 #include <tessera/util/compression.hpp>
 #include <tessera/util/base64.hpp>
-#include <tessera/sync/changeset.hpp>
-#include <tessera/sync/changeset_parser.hpp>
+#include <tessera/merge/changeset.hpp>
+#include <tessera/merge/changeset_parser.hpp>
 
 using namespace tessera;
 #if TESSERA_DEBUG

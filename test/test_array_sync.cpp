@@ -16,7 +16,7 @@
 #include <tessera/db.hpp>
 #include <tessera/replication.hpp>
 #include <tessera/list.hpp>
-#include <tessera/sync/transform.hpp>
+#include <tessera/merge/transform.hpp>
 
 #include "test.hpp"
 #include "util/quote.hpp"

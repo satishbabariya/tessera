@@ -2,10 +2,10 @@
 #include <cstring>
 #include <stack>
 
-#include <tessera/sync/changeset_encoder.hpp>
-#include <tessera/sync/changeset_parser.hpp>
+#include <tessera/merge/changeset_encoder.hpp>
+#include <tessera/merge/changeset_parser.hpp>
 #include <tessera/sync/impl/clamped_hex_dump.hpp>
-#include <tessera/sync/instruction_applier.hpp>
+#include <tessera/merge/instruction_applier.hpp>
 #include <tessera/sync/noinst/server/server_history.hpp>
 #include <tessera/table_view.hpp>
 #include <tessera/util/hex_dump.hpp>

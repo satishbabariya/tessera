@@ -1,11 +1,11 @@
 
-#include <tessera/sync/changeset_parser.hpp>
+#include <tessera/merge/changeset_parser.hpp>
 
 #include <tessera/global_key.hpp>
 #include <tessera/mixed.hpp>
-#include <tessera/sync/changeset.hpp>
-#include <tessera/sync/instructions.hpp>
-#include <tessera/sync/noinst/integer_codec.hpp>
+#include <tessera/merge/changeset.hpp>
+#include <tessera/merge/instructions.hpp>
+#include <tessera/merge/integer_codec.hpp>
 #include <tessera/table.hpp>
 #include <tessera/util/base64.hpp>
 

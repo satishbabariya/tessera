@@ -370,6 +370,7 @@ set(TESSERA_EXPORTED_TARGETS
         Storage
         QueryParser
         ObjectStore
+        Merge
         )
 if(TESSERA_ENABLE_SYNC)
     list(APPEND TESSERA_EXPORTED_TARGETS Sync)
@@ -378,7 +379,7 @@ export(TARGETS ${TESSERA_EXPORTED_TARGETS} NAMESPACE Tessera:: FILE TesseraTarge
 configure_file(tools/cmake/TesseraConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/TesseraConfig.cmake @ONLY)
 
 # Make the project importable from the install directory
-install(EXPORT realm
+install(EXPORT tessera
         NAMESPACE Tessera::
         FILE TesseraTargets.cmake
         DESTINATION share/cmake/Realm

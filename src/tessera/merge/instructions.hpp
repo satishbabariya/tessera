@@ -2,6 +2,7 @@
 #ifndef TESSERA_IMPL_INSTRUCTIONS_HPP
 #define TESSERA_IMPL_INSTRUCTIONS_HPP
 
+#include <cstdint>
 #include <iosfwd> // string conversion, debug prints
 #include <memory> // shared_ptr
 #include <type_traits>
@@ -12,7 +13,7 @@
 #include <tessera/binary_data.hpp>
 #include <tessera/data_type.hpp>
 #include <tessera/string_data.hpp>
-#include <tessera/sync/object_id.hpp>
+#include <tessera/merge/object_id.hpp>
 #include <tessera/table_ref.hpp>
 #include <tessera/timestamp.hpp>
 #include <tessera/util/input_stream.hpp>
@@ -21,6 +22,16 @@
 namespace tessera {
 
 namespace sync {
+
+// Tessera: scalar aliases the merge engine needs. These previously lived only in
+// sync/protocol.hpp, so every consumer of the merge engine pulled in the wire
+// protocol to obtain three integer typedefs. They are not protocol types:
+// file_ident_type and timestamp_type are plain integers, and version_type aliases
+// the storage engine's Replication::version_type. Declaring them in the merge
+// engine's own base header is what lets tessera-merge stand alone. protocol.hpp
+// still declares them identically, which is well-formed.
+using file_ident_type = std::uint_fast64_t;
+using timestamp_type = std::uint_fast64_t;
 
 #define TESSERA_FOR_EACH_INSTRUCTION_TYPE(X)                                                                           \
     X(AddTable)                                                                                                      \

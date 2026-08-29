@@ -13,7 +13,7 @@
 #include <tessera/list.hpp>
 #include <tessera/replication.hpp>
 #include <tessera/set.hpp>
-#include <tessera/sync/transform.hpp>
+#include <tessera/merge/transform.hpp>
 #include <tessera/util/features.h>
 
 #include <algorithm>

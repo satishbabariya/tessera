@@ -75,7 +75,7 @@ add_library(Tessera::QueryParser ALIAS QueryParser)
 target_link_libraries(QueryParser PUBLIC Storage)
 set_target_properties(QueryParser PROPERTIES OUTPUT_NAME "tessera-parser")
 
-install(TARGETS QueryParser EXPORT realm
+install(TARGETS QueryParser EXPORT tessera
         ARCHIVE DESTINATION lib
         COMPONENT devel)
 

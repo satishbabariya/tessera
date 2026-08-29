@@ -18,10 +18,10 @@
 
 #include <tessera/sync/noinst/client_history_impl.hpp>
 
-#include <tessera/sync/changeset.hpp>
-#include <tessera/sync/changeset_parser.hpp>
-#include <tessera/sync/instruction_applier.hpp>
-#include <tessera/sync/instruction_replication.hpp>
+#include <tessera/merge/changeset.hpp>
+#include <tessera/merge/changeset_parser.hpp>
+#include <tessera/merge/instruction_applier.hpp>
+#include <tessera/merge/instruction_replication.hpp>
 #include <tessera/sync/noinst/client_reset.hpp>
 #include <tessera/sync/noinst/client_reset_recovery.hpp>
 #include <tessera/transaction.hpp>

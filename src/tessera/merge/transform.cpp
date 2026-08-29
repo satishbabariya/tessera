@@ -1,8 +1,10 @@
-#include <tessera/sync/transform.hpp>
+#include <tessera/merge/transform.hpp>
+#include <tessera/merge/changeset_parser.hpp>
+#include <tessera/util/compression.hpp>
+#include <iomanip>
 
-#include <tessera/sync/changeset_encoder.hpp>
-#include <tessera/sync/noinst/changeset_index.hpp>
-#include <tessera/sync/noinst/protocol_codec.hpp>
+#include <tessera/merge/changeset_encoder.hpp>
+#include <tessera/merge/changeset_index.hpp>
 
 #if TESSERA_DEBUG
 #include <sstream>

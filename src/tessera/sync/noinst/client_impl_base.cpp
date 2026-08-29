@@ -1,7 +1,7 @@
 #include <tessera/sync/noinst/client_impl_base.hpp>
 
 #include <tessera/impl/simulated_failure.hpp>
-#include <tessera/sync/changeset_parser.hpp>
+#include <tessera/merge/changeset_parser.hpp>
 #include <tessera/sync/impl/clock.hpp>
 #include <tessera/sync/network/http.hpp>
 #include <tessera/sync/network/websocket.hpp>

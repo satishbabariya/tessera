@@ -1,5 +1,5 @@
-#include <tessera/sync/noinst/changeset_index.hpp>
-#include <tessera/sync/object_id.hpp>
+#include <tessera/merge/changeset_index.hpp>
+#include <tessera/merge/object_id.hpp>
 
 #include <iterator> // std::distance, std::advance
 

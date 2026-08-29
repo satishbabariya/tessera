@@ -2,7 +2,7 @@
 #ifndef TESSERA_SYNC_CHANGESET_HPP
 #define TESSERA_SYNC_CHANGESET_HPP
 
-#include <tessera/sync/instructions.hpp>
+#include <tessera/merge/instructions.hpp>
 #include <tessera/util/optional.hpp>
 
 #include <type_traits>

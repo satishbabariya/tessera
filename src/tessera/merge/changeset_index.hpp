@@ -6,7 +6,7 @@
 #include <list>
 #include <map>
 
-#include <tessera/sync/changeset.hpp>
+#include <tessera/merge/changeset.hpp>
 
 namespace tessera {
 namespace _impl {

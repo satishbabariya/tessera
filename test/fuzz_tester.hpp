@@ -21,7 +21,7 @@
 
 #include <tessera/util/features.h>
 #include <tessera/list.hpp>
-#include <tessera/sync/transform.hpp>
+#include <tessera/merge/transform.hpp>
 
 #include "util/unit_test.hpp"
 #include "util/quote.hpp"

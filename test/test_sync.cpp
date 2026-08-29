@@ -20,11 +20,11 @@
 #include <tessera/impl/simulated_failure.hpp>
 #include <tessera/list.hpp>
 #include <tessera/sync/binding_callback_thread_observer.hpp>
-#include <tessera/sync/changeset.hpp>
-#include <tessera/sync/changeset_encoder.hpp>
+#include <tessera/merge/changeset.hpp>
+#include <tessera/merge/changeset_encoder.hpp>
 #include <tessera/sync/client.hpp>
 #include <tessera/sync/history.hpp>
-#include <tessera/sync/instructions.hpp>
+#include <tessera/merge/instructions.hpp>
 #include <tessera/sync/network/default_socket.hpp>
 #include <tessera/sync/network/http.hpp>
 #include <tessera/sync/network/network.hpp>
@@ -33,9 +33,9 @@
 #include <tessera/sync/noinst/server/server.hpp>
 #include <tessera/sync/noinst/server/server_dir.hpp>
 #include <tessera/sync/noinst/server/server_history.hpp>
-#include <tessera/sync/object_id.hpp>
+#include <tessera/merge/object_id.hpp>
 #include <tessera/sync/protocol.hpp>
-#include <tessera/sync/transform.hpp>
+#include <tessera/merge/transform.hpp>
 #include <tessera/util/buffer.hpp>
 #include <tessera/util/features.h>
 #include <tessera/util/logger.hpp>

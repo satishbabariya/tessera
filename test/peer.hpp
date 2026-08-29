@@ -26,11 +26,11 @@
 
 #include <tessera/sync/history.hpp>
 #include <tessera/sync/protocol.hpp>
-#include <tessera/sync/transform.hpp>
-#include <tessera/sync/instruction_replication.hpp>
-#include <tessera/sync/instruction_applier.hpp>
-#include <tessera/sync/changeset.hpp>
-#include <tessera/sync/changeset_parser.hpp>
+#include <tessera/merge/transform.hpp>
+#include <tessera/merge/instruction_replication.hpp>
+#include <tessera/merge/instruction_applier.hpp>
+#include <tessera/merge/changeset.hpp>
+#include <tessera/merge/changeset_parser.hpp>
 #include <tessera/sync/noinst/protocol_codec.hpp>
 #include <tessera/util/file.hpp>
 

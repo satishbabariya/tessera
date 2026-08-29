@@ -1,6 +1,6 @@
-#include <tessera/sync/instruction_replication.hpp>
+#include <tessera/merge/instruction_replication.hpp>
 #include <tessera/transaction.hpp>
-#include <tessera/sync/transform.hpp> // TransformError
+#include <tessera/merge/transform.hpp> // TransformError
 #include <tessera/list.hpp>
 
 namespace tessera {

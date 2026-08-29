@@ -22,9 +22,9 @@
 #include <tessera/dictionary.hpp>
 #include <tessera/object_converter.hpp>
 #include <tessera/set.hpp>
-#include <tessera/sync/changeset_parser.hpp>
+#include <tessera/merge/changeset_parser.hpp>
 #include <tessera/sync/history.hpp>
-#include <tessera/sync/instruction_applier.hpp>
+#include <tessera/merge/instruction_applier.hpp>
 #include <tessera/sync/noinst/client_reset.hpp>
 #include <tessera/sync/protocol.hpp>
 #include <tessera/sync/subscriptions.hpp>
