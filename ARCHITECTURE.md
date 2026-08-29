@@ -126,10 +126,16 @@ that applying them in any order reaches the same state. The formal argument is i
 between peers. The wire protocol is specified in
 [docs/protocol.md](docs/protocol.md) -- 1,126 lines, message by message.
 
-The bundled server is self-hostable and has no cloud dependency. 461 sync tests
-run against it, including randomised concurrent-edit convergence
-(`Transform_Randomized`) and multi-client convergence
-(`ClientReset_ThreeClients`).
+The server has no cloud dependency, and 461 sync tests run against it, including
+randomised concurrent-edit convergence (`Transform_Randomized`) and multi-client
+convergence (`ClientReset_ThreeClients`).
+
+It is not in the installed package. `SyncServer` is built as a static library
+from `src/tessera/sync/noinst/server/`, has no `install()` rule and is not in the
+export set, so `find_package(Tessera)` offers no `Tessera::SyncServer` and there
+is no server executable anywhere in the project. Running one means building from
+source and linking the in-tree target. See the Self-hosting section of
+[README.md](README.md) for what changing that requires.
 
 ## The public API
 
@@ -160,7 +166,17 @@ to confirm it can actually fail:
 | `tools/check-layering.sh` | no upward includes between layers |
 | `tools/check-merge-deps.sh` | `tessera-merge` depends only on storage |
 | `tools/check-header-tiers.sh` | the public API does not leak private headers |
-| `tools/verify/consumer-smoke-test.sh` | the installed package is actually consumable |
+| `tools/check-repo-hygiene.sh` | no runtime artefacts, stray keys or dead references in the tree |
+| `tools/check-rename-residue.sh` | no pre-rename identifiers, and nothing still names the project `realm` to the outside |
+| `tools/check-cert-expiry.sh` | the test certificates are neither near expiry nor over Apple's 825-day ceiling |
+| `tools/verify/consumer-smoke-test.sh` | the installed package is consumable and exports exactly the documented target set |
+| `tools/verify/clean-clone-test.sh` | a fresh clone configures and builds |
+
+Two claims this file makes are checked by tests rather than by scripts. That
+Tessera opens no other file format, and that an encrypted file does not contain
+its plaintext, are both in `test/test_file_format.cpp` -- each one canary-tested
+against a deliberately broken engine, because a test that cannot fail is worth as
+little as a check that cannot fail.
 
 ## Further reading
 
