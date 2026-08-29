@@ -20,6 +20,28 @@ cmake --install "$BUILD" --prefix "$PREFIX" > /dev/null
 test -f "$PREFIX/share/cmake/Tessera/TesseraConfig.cmake" \
   || { echo "FAIL: TesseraConfig.cmake not where find_package looks"; exit 1; }
 
+# The exported target set is the package's advertised surface, and the README
+# names it. They drifted once already: the README promised "a self-hostable sync
+# server, included" while the package exported no server target, installed no
+# server header and shipped no server executable. Building the tree does not
+# reveal that, because the tests link the in-tree target directly.
+#
+# Listing the targets here rather than deriving them is the point. A derived
+# list agrees with whatever the package happens to export, which is exactly the
+# thing under test.
+EXPECTED_TARGETS="Merge ObjectStore QueryParser Storage Sync"
+ACTUAL_TARGETS=$(grep -ohE 'add_library\(Tessera::[A-Za-z0-9_]+' \
+    "$PREFIX"/share/cmake/Tessera/*.cmake \
+  | sed 's/.*Tessera:://' | sort -u | tr '\n' ' ' | sed 's/ $//')
+if [ "$ACTUAL_TARGETS" != "$EXPECTED_TARGETS" ]; then
+    echo "FAIL: exported targets changed"
+    echo "  expected: $EXPECTED_TARGETS"
+    echo "  actual:   $ACTUAL_TARGETS"
+    echo "If this is intended, update EXPECTED_TARGETS here and the Self-hosting"
+    echo "section of README.md, which names the same list."
+    exit 1
+fi
+
 mkdir -p "$WORK"
 cat > "$WORK/CMakeLists.txt" <<'CM'
 cmake_minimum_required(VERSION 3.25)
@@ -30,7 +52,18 @@ add_executable(consumer main.cpp)
 target_link_libraries(consumer PRIVATE Tessera::Storage)
 add_executable(readme_example readme_example.cpp)
 target_link_libraries(readme_example PRIVATE Tessera::Storage)
+add_executable(tiers tiers.cpp)
+target_link_libraries(tiers PRIVATE Tessera::Storage Tessera::ObjectStore)
 CM
+
+# README: "Anything not reachable from these two headers carries no stability
+# promise." That makes them the public API, so they must be installed and each
+# must be self-contained -- includable first, with nothing included before it.
+cat > "$WORK/tiers.cpp" <<'CPP'
+#include <tessera/api.hpp>
+#include <tessera/engine.hpp>
+int main() { return 0; }
+CPP
 
 cat > "$WORK/main.cpp" <<'CPP'
 #include <tessera/db.hpp>
@@ -77,4 +110,6 @@ case "$README_OUT" in
   *) echo "FAIL: the README example no longer works: $README_OUT"; exit 1 ;;
 esac
 
-echo "PASS: installed package is consumable, file magic is TESS, README example works"
+echo "PASS: installed package is consumable, exports $EXPECTED_TARGETS,"
+echo "      api.hpp and engine.hpp are self-contained, file magic is TESS,"
+echo "      and the README example works"

@@ -21,7 +21,9 @@ yet recommended for production data you cannot regenerate.
 - **Reactive queries.** Results stay live and tell you which rows and fields
   changed, not merely that something did.
 - **Convergent sync.** A production-tested operational-transform engine and a
-  self-hostable sync server, both included. No cloud account, no vendor.
+  sync client, both installable today, with no cloud account and no vendor. A
+  sync server is in the tree and exercised by 461 tests, but it is not yet part
+  of the installed package -- see [Self-hosting](#self-hosting).
 - **Encryption at rest.** Optional AES-256, applied per page below the engine.
 
 The trade-off worth knowing up front: **one write transaction at a time**, across
@@ -87,6 +89,31 @@ auto rt = db->start_read();
 auto table = rt->get_table("Person");
 auto results = table->where().greater(table->get_column_key("age"), 30).find_all();
 ```
+
+## Self-hosting
+
+Sync needs a server, and Tessera's is the one Realm shipped: it lives in
+`src/tessera/sync/noinst/server/`, is built as a static library, and runs inside
+461 passing tests including an in-process client-server round trip.
+
+It is not installable. `find_package(Tessera)` exports `Tessera::Storage`,
+`Tessera::Sync`, `Tessera::Merge`, `Tessera::ObjectStore` and
+`Tessera::QueryParser` -- there is no `Tessera::SyncServer`, no server header is
+installed, and there is no server executable. To run one today you must build
+Tessera from source and link the in-tree target.
+
+Two things stand in the way, and both are decisions rather than oversights. The
+headers sit under a path named `noinst`, which cannot become a public include
+path without a rename, and that rename fixes an interface. And the server still
+expects the client to present an App Services access token: it requires a
+parseable signed JWT on every bind, and when no public key is configured it
+parses the token without verifying the signature -- a mode the source describes
+as being for testing. Giving Tessera an authentication model it actually owns is
+the substance of the next milestone.
+
+Until then, read "self-hostable" as a property of the licence and the
+architecture -- nothing here phones home, and the code is yours -- rather than
+as a package you can install today.
 
 ## The two API tiers
 
