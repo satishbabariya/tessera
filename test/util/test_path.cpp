@@ -156,6 +156,28 @@ bool initialize_test_path(int argc, const char* argv[])
     }
 
     if (argc > 1) {
+        // The only positional argument is a path prefix for the files the tests
+        // create. Anything beginning with a dash is a mistake, and treating it
+        // as a path is a destructive one: `tessera-tests --help` wrote twenty-one
+        // temporary databases into the repository root, named
+        // "--helpCompaction_Large<std::integral_constant<bool,+true>>..." and so
+        // on. Angle brackets are not legal in Windows filenames, so once those
+        // were committed the repository could no longer be cloned there. See
+        // docs/findings/0b-windows-invalid-filenames.md.
+        if (argv[1][0] == '-') {
+            fprintf(stderr,
+                    "%s: unrecognised option '%s'\n"
+                    "\n"
+                    "This binary takes at most one argument, a path prefix for the files the\n"
+                    "tests create. There are no flags. Everything else is configured through\n"
+                    "UNITTEST_* environment variables, documented in how-to-build.md:\n"
+                    "\n"
+                    "  UNITTEST_FILTER=\"Foo Bar*\"   run a subset\n"
+                    "  UNITTEST_THREADS=1           serialise\n"
+                    "  UNITTEST_XML=<file>          write a JUnit report\n",
+                    argv[0], argv[1]);
+            return false;
+        }
         g_path_prefix = argv[1];
     }
 
