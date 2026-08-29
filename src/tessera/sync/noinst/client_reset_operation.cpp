@@ -83,7 +83,7 @@ bool perform_client_reset(util::Logger& logger, DB& db, sync::ClientReset&& rese
     bool local_realm_exists = latest_version.version > 1;
     if (!local_realm_exists) {
         logger.debug(util::LogCategory::reset,
-                     "Local Realm file has never been written to, so skipping client reset.");
+                     "Local database file has never been written to, so skipping client reset.");
         return false;
     }
 

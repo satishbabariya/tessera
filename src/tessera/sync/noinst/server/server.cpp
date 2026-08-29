@@ -107,7 +107,9 @@ enum class SchedStatus { done = 0, pending, in_progress };
 // Only used by the Sync Server to support older pbs sync clients (prior to protocol v8)
 constexpr std::string_view get_old_pbs_websocket_protocol_prefix() noexcept
 {
-    return "com.mongodb.tess-sync/";
+    // Tessera: the pre-websocket-subprotocol form, kept for the URL-path
+    // compatibility route below. Renamed with the rest; no deployed peer uses it.
+    return "io.tessera.sync/";
 }
 
 std::string short_token_fmt(const std::string& str, size_t cutoff = 30)
@@ -1670,11 +1672,12 @@ private:
         m_last_activity_at = steady_clock_now();
 
         // FIXME: When thinking of this function as a switching device, it seem
-        // wrong that it requires a `%2F` after `/realm-sync/`. If `%2F` is
+        // wrong that it requires a `%2F` after `/tessera-sync/`. If `%2F` is
         // supposed to be mandatory, then that check ought to be delegated to
         // handle_request_for_sync(), as that will yield a sharper separation of
         // concerns.
-        if (path == "/realm-sync" || path.begins_with("/realm-sync?") || path.begins_with("/realm-sync/%2F")) {
+        if (path == "/tessera-sync" || path.begins_with("/tessera-sync?") ||
+            path.begins_with("/tessera-sync/%2F")) {
             handle_request_for_sync(request); // Throws
         }
         else {
@@ -1928,7 +1931,7 @@ private:
     {
         logger.detail("404 Not Found"); // Throws
         handle_text_response(HTTPStatus::NotFound,
-                             "Realm sync server\n\nPage not found\n"); // Throws
+                             "database sync server\n\nPage not found\n"); // Throws
     }
 
     void handle_503_service_unavailable(const HTTPRequest&, std::string_view message)
@@ -3812,7 +3815,7 @@ ServerImpl::~ServerImpl() noexcept
 
 void ServerImpl::start()
 {
-    logger.info("Realm sync server started (%1)", TESSERA_VER_CHUNK); // Throws
+    logger.info("database sync server started (%1)", TESSERA_VER_CHUNK); // Throws
     logger.info("Supported protocol versions: %1-%2 (%3-%4 configured)",
                 ServerImplBase::get_oldest_supported_protocol_version(), get_current_protocol_version(),
                 m_protocol_version_range.first,
@@ -3899,7 +3902,7 @@ void ServerImpl::run()
         worker_thread.stop_and_rethrow(); // Throws
     }
 
-    logger.info("Realm sync server stopped");
+    logger.info("database sync server stopped");
 }
 
 

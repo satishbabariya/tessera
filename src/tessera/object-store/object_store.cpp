@@ -1023,7 +1023,7 @@ void ObjectStore::rename_property(Group& group, Schema& target_schema, StringDat
     if (target_object_schema == target_schema.end()) {
         throw LogicError(
             ErrorCodes::NoSuchTable,
-            util::format("Cannot rename properties for type '%1' because it has been removed from the Realm.",
+            util::format("Cannot rename properties for type '%1' because it has been removed from the database.",
                          object_type));
     }
 

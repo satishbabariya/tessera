@@ -33,7 +33,10 @@ std::shared_ptr<util::Logger> s_default_logger;
 size_t LogCategory::s_next_index = 0;
 static std::map<std::string_view, LogCategory*> log_category_map;
 
-LogCategory LogCategory::realm("Realm", nullptr);
+// Tessera: the root log category. Every category path is rooted here, so
+// users filtering logs write "Tessera.Storage.Transaction" and so on. This
+// is user-facing API and the rename is deliberate.
+LogCategory LogCategory::realm("Tessera", nullptr);
 LogCategory LogCategory::storage("Storage", &realm);
 LogCategory LogCategory::transaction("Transaction", &storage);
 LogCategory LogCategory::query("Query", &storage);

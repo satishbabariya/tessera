@@ -224,14 +224,14 @@ void print_usage(std::string_view program_name)
                  "                       available options.\n"
                  "  -e, --encryption-key  The file-system path of a file containing a 64-byte\n"
                  "                       encryption key to be used for accessing the specified\n"
-                 "                       Realm file.\n"
+                 "                       database file.\n"
                  "  -r, --realm          The file-system path to the realm to be created and/or have\n"
                  "                       state applied to.\n"
                  "  -i, --input          The file-system path a file containing UPLOAD, DOWNLOAD,\n"
                  "                       and IDENT messages to apply to the realm state\n"
                  "  -f, --flx-sync       Flexible sync session\n"
                  "  --verbose            Print all messages including trace messages to stderr\n"
-                 "  -v, --version        Show the version of the Realm Sync release that this\n"
+                 "  -v, --version        Show the version of the Tessera Sync release that this\n"
                  "                       command belongs to."
               << std::endl;
 }

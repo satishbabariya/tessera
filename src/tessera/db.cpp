@@ -1222,7 +1222,7 @@ void DB::open(const std::string& path, const DBOptions& options)
                         good_history_type = (stored_hist_type == Replication::hist_None);
                         if (!good_history_type)
                             throw IncompatibleHistories(
-                                util::format("Realm file at path '%1' has history type '%2', but is being opened "
+                                util::format("database file at path '%1' has history type '%2', but is being opened "
                                              "with replication disabled.",
                                              path, Replication::history_type_name(stored_hist_type)),
                                 path);
@@ -1235,7 +1235,7 @@ void DB::open(const std::string& path, const DBOptions& options)
                                              stored_hist_type == Replication::hist_None);
                         if (!good_history_type)
                             throw IncompatibleHistories(
-                                util::format("Realm file at path '%1' has history type '%2', but is being opened in "
+                                util::format("database file at path '%1' has history type '%2', but is being opened in "
                                              "local history mode.",
                                              path, Replication::history_type_name(stored_hist_type)),
                                 path);
@@ -1244,7 +1244,7 @@ void DB::open(const std::string& path, const DBOptions& options)
                         good_history_type = ((stored_hist_type == Replication::hist_SyncClient) || (top_ref == 0));
                         if (!good_history_type)
                             throw IncompatibleHistories(
-                                util::format("Realm file at path '%1' has history type '%2', but is being opened in "
+                                util::format("database file at path '%1' has history type '%2', but is being opened in "
                                              "synchronized history mode.",
                                              path, Replication::history_type_name(stored_hist_type)),
                                 path);
@@ -1253,7 +1253,7 @@ void DB::open(const std::string& path, const DBOptions& options)
                         good_history_type = ((stored_hist_type == Replication::hist_SyncServer) || (top_ref == 0));
                         if (!good_history_type)
                             throw IncompatibleHistories(
-                                util::format("Realm file at path '%1' has history type '%2', but is being opened in "
+                                util::format("database file at path '%1' has history type '%2', but is being opened in "
                                              "server history mode.",
                                              path, Replication::history_type_name(stored_hist_type)),
                                 path);

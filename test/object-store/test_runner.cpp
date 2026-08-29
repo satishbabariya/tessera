@@ -63,43 +63,43 @@
 static std::vector<std::pair<std::string_view, tessera::util::Logger::Level>> default_log_levels = {
     {"Realm", tessera::util::Logger::Level::TEST_LOGGING_LEVEL},
 #ifdef TEST_LOGGING_LEVEL_STORAGE
-    {"Realm.Storage", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_STORAGE},
+    {"Tessera.Storage", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_STORAGE},
 #endif
 #ifdef TEST_LOGGING_LEVEL_TRANSACTION
-    {"Realm.Storage.Transaction", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_TRANSACTION},
+    {"Tessera.Storage.Transaction", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_TRANSACTION},
 #endif
 #ifdef TEST_LOGGING_LEVEL_QUERY
-    {"Realm.Storage.Query", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_QUERY},
+    {"Tessera.Storage.Query", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_QUERY},
 #endif
 #ifdef TEST_LOGGING_LEVEL_OBJECT
-    {"Realm.Storage.Object", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_OBJECT},
+    {"Tessera.Storage.Object", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_OBJECT},
 #endif
 #ifdef TEST_LOGGING_LEVEL_NOTIFICATION
-    {"Realm.Storage.Notification", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_NOTIFICATION},
+    {"Tessera.Storage.Notification", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_NOTIFICATION},
 #endif
 #ifdef TEST_LOGGING_LEVEL_SYNC
-    {"Realm.Sync", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_SYNC},
+    {"Tessera.Sync", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_SYNC},
 #endif
 #ifdef TEST_LOGGING_LEVEL_CLIENT
-    {"Realm.Sync.Client", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_CLIENT},
+    {"Tessera.Sync.Client", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_CLIENT},
 #endif
 #ifdef TEST_LOGGING_LEVEL_SESSION
-    {"Realm.Sync.Client.Session", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_SESSION},
+    {"Tessera.Sync.Client.Session", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_SESSION},
 #endif
 #ifdef TEST_LOGGING_LEVEL_CHANGESET
-    {"Realm.Sync.Client.Changeset", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_CHANGESET},
+    {"Tessera.Sync.Client.Changeset", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_CHANGESET},
 #endif
 #ifdef TEST_LOGGING_LEVEL_NETWORK
-    {"Realm.Sync.Client.Network", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_NETWORK},
+    {"Tessera.Sync.Client.Network", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_NETWORK},
 #endif
 #ifdef TEST_LOGGING_LEVEL_RESET
-    {"Realm.Sync.Client.Reset", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_RESET},
+    {"Tessera.Sync.Client.Reset", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_RESET},
 #endif
 #ifdef TEST_LOGGING_LEVEL_SERVER
-    {"Realm.Sync.Server", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_SERVER},
+    {"Tessera.Sync.Server", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_SERVER},
 #endif
 #ifdef TEST_LOGGING_LEVEL_APP
-    {"Realm.App", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_APP},
+    {"Tessera.App", tessera::util::Logger::Level::TEST_LOGGING_LEVEL_APP},
 #endif
 };
 

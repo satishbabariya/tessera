@@ -3,7 +3,7 @@
 #include <iostream>
 
 const char* legend =
-    "Simple tool to output the JSON representation of a Realm:\n"
+    "Simple tool to output the JSON representation of a database:\n"
     "  realm2json [--output-mode N] [--filter <filterexpr>] <.tess file>\n"
     "\n"
     "Options:\n"

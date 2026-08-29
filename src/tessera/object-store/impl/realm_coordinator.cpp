@@ -134,7 +134,7 @@ void RealmCoordinator::set_config(const Realm::Config& config)
         }
         if (!config.sync_config->user) {
             throw InvalidArgument(ErrorCodes::IllegalCombination,
-                                  "A user must be provided to open a synchronized Realm.");
+                                  "A user must be provided to open a synchronized database.");
         }
     }
 #endif
@@ -151,36 +151,36 @@ void RealmCoordinator::set_config(const Realm::Config& config)
         if (m_config.immutable() != config.immutable()) {
             throw LogicError(
                 ErrorCodes::MismatchedConfig,
-                util::format("Realm at path '%1' already opened with different read permissions.", config.path));
+                util::format("database at path '%1' already opened with different read permissions.", config.path));
         }
         if (m_config.in_memory != config.in_memory) {
             throw LogicError(
                 ErrorCodes::MismatchedConfig,
-                util::format("Realm at path '%1' already opened with different inMemory settings.", config.path));
+                util::format("database at path '%1' already opened with different inMemory settings.", config.path));
         }
         if (m_config.encryption_key != config.encryption_key) {
             throw LogicError(
                 ErrorCodes::MismatchedConfig,
-                util::format("Realm at path '%1' already opened with a different encryption key.", config.path));
+                util::format("database at path '%1' already opened with a different encryption key.", config.path));
         }
         if (m_config.schema_mode != config.schema_mode) {
             throw LogicError(
                 ErrorCodes::MismatchedConfig,
-                util::format("Realm at path '%1' already opened with a different schema mode.", config.path));
+                util::format("database at path '%1' already opened with a different schema mode.", config.path));
         }
         util::CheckedLockGuard lock(m_schema_cache_mutex);
         if (config.schema && m_schema_version != ObjectStore::NotVersioned &&
             m_schema_version != config.schema_version) {
             throw LogicError(
                 ErrorCodes::MismatchedConfig,
-                util::format("Realm at path '%1' already opened with different schema version.", config.path));
+                util::format("database at path '%1' already opened with different schema version.", config.path));
         }
 
 #if TESSERA_ENABLE_SYNC
         if (bool(m_config.sync_config) != bool(config.sync_config)) {
             throw LogicError(
                 ErrorCodes::MismatchedConfig,
-                util::format("Realm at path '%1' already opened with different sync configurations.", config.path));
+                util::format("database at path '%1' already opened with different sync configurations.", config.path));
         }
 
         if (config.sync_config) {
@@ -189,16 +189,16 @@ void RealmCoordinator::set_config(const Realm::Config& config)
             if (old_user != new_user) {
                 throw LogicError(
                     ErrorCodes::MismatchedConfig,
-                    util::format("Realm at path '%1' already opened with different sync user.", config.path));
+                    util::format("database at path '%1' already opened with different sync user.", config.path));
             }
             if (m_config.sync_config->partition_value != config.sync_config->partition_value) {
                 throw LogicError(
                     ErrorCodes::MismatchedConfig,
-                    util::format("Realm at path '%1' already opened with different partition value.", config.path));
+                    util::format("database at path '%1' already opened with different partition value.", config.path));
             }
             if (m_config.sync_config->flx_sync_requested != config.sync_config->flx_sync_requested) {
                 throw LogicError(ErrorCodes::MismatchedConfig,
-                                 util::format("Realm at path '%1' already opened in a different synchronization mode",
+                                 util::format("database at path '%1' already opened in a different synchronization mode",
                                               config.path));
             }
         }
@@ -249,7 +249,7 @@ std::shared_ptr<Realm> RealmCoordinator::do_get_cached_realm(Realm::Config const
             if (config.schema && realm->schema() != *config.schema)
                 throw LogicError(
                     ErrorCodes::MismatchedConfig,
-                    util::format("Realm at path '%1' already opened on current thread with different schema.",
+                    util::format("database at path '%1' already opened on current thread with different schema.",
                                  config.path));
 
             return realm;
@@ -358,7 +358,7 @@ void RealmCoordinator::do_get_realm(RealmConfig&& config, std::shared_ptr<Realm>
     }
 #else
     if (realm->config().audit_config)
-        TESSERA_TERMINATE("Cannot use Audit interface if Realm Core is built without Sync");
+        TESSERA_TERMINATE("Cannot use Audit interface if Tessera is built without Sync");
 #endif
 
     // Cached frozen Realms need to initialize their schema before releasing
@@ -409,7 +409,7 @@ void RealmCoordinator::bind_to_context(Realm& realm)
         cached_realm.bind_to_scheduler();
         return;
     }
-    TESSERA_TERMINATE("Invalid Realm passed to bind_to_context()");
+    TESSERA_TERMINATE("Invalid database passed to bind_to_context()");
 }
 
 #if TESSERA_ENABLE_SYNC
@@ -417,7 +417,7 @@ std::shared_ptr<AsyncOpenTask> RealmCoordinator::get_synchronized_realm(Realm::C
 {
     if (!config.sync_config)
         throw LogicError(ErrorCodes::IllegalOperation,
-                         "This method is only available for fully synchronized Realms.");
+                         "This method is only available for fully synchronized databases.");
 
     util::CheckedLockGuard lock(m_realm_mutex);
     set_config(config);
@@ -464,7 +464,7 @@ bool RealmCoordinator::open_db()
             bool apply_server_changes = !m_config.sync_config || m_config.sync_config->apply_server_changes;
             history = std::make_unique<sync::ClientReplication>(apply_server_changes);
 #else
-            TESSERA_TERMINATE("Realm was not built with sync enabled");
+            TESSERA_TERMINATE("database was not built with sync enabled");
 #endif
         }
         else if (!m_config.immutable()) {

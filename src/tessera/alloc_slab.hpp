@@ -743,7 +743,7 @@ struct InvalidDatabase : FileAccessError {
     InvalidDatabase(const std::string& msg, const std::string& path)
         : FileAccessError(ErrorCodes::InvalidDatabase,
                           path.empty() ? "Failed to memory buffer:" + msg
-                                       : util::format("Failed to open Realm file at path '%1': %2", path, msg),
+                                       : util::format("Failed to open database file at path '%1': %2", path, msg),
                           path)
     {
     }

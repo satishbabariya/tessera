@@ -622,14 +622,14 @@ static void check_can_create_write_transaction(const Realm* realm)
     realm->verify_thread();
     realm->verify_open();
     if (realm->config().immutable() || realm->config().read_only()) {
-        throw WrongTransactionState("Can't perform transactions on read-only Realms.");
+        throw WrongTransactionState("Can't perform transactions on read-only databases.");
     }
     if (realm->is_frozen()) {
-        throw WrongTransactionState("Can't perform transactions on a frozen Realm");
+        throw WrongTransactionState("Can't perform transactions on a frozen database");
     }
     if (!realm->is_closed() && realm->get_number_of_versions() > realm->config().max_number_of_active_versions) {
         throw WrongTransactionState(
-            util::format("Number of active versions (%1) in the Realm exceeded the limit of %2",
+            util::format("Number of active versions (%1) in the database exceeded the limit of %2",
                          realm->get_number_of_versions(), realm->config().max_number_of_active_versions));
     }
 }
@@ -637,7 +637,7 @@ static void check_can_create_write_transaction(const Realm* realm)
 void Realm::verify_thread() const
 {
     if (m_scheduler && !m_scheduler->is_on_thread())
-        throw LogicError(ErrorCodes::WrongThread, "Realm accessed from incorrect thread.");
+        throw LogicError(ErrorCodes::WrongThread, "database accessed from incorrect thread.");
 }
 
 void Realm::verify_in_write() const
@@ -1027,7 +1027,7 @@ void Realm::begin_transaction()
     check_can_create_write_transaction(this);
 
     if (is_in_transaction()) {
-        throw WrongTransactionState("The Realm is already in a write transaction");
+        throw WrongTransactionState("The database is already in a write transaction");
     }
 
     // Any of the callbacks to user code below could drop the last remaining
@@ -1145,10 +1145,10 @@ bool Realm::compact()
     verify_open();
 
     if (m_config.immutable() || m_config.read_only()) {
-        throw WrongTransactionState("Can't compact a read-only Realm");
+        throw WrongTransactionState("Can't compact a read-only database");
     }
     if (is_in_transaction()) {
-        throw WrongTransactionState("Can't compact a Realm within a write transaction");
+        throw WrongTransactionState("Can't compact a database within a write transaction");
     }
 
     verify_open();
@@ -1168,11 +1168,11 @@ void Realm::convert(const Config& config, bool merge_into_existing)
 
     if (dst_is_flx_sync && !src_is_flx_sync) {
         throw IllegalOperation(
-            "Realm cannot be converted to a flexible sync realm unless flexible sync is already enabled");
+            "database cannot be converted to a flexible sync realm unless flexible sync is already enabled");
     }
     if (dst_is_pbs_sync && src_is_flx_sync) {
         throw IllegalOperation(
-            "Realm cannot be converted from a flexible sync realm to a partition based sync realm");
+            "database cannot be converted from a flexible sync realm to a partition based sync realm");
     }
 
 #endif
@@ -1294,7 +1294,7 @@ bool Realm::do_refresh()
     }
 
     if (m_config.immutable()) {
-        throw WrongTransactionState("Can't refresh an immutable Realm.");
+        throw WrongTransactionState("Can't refresh an immutable database.");
     }
 
     // can't be any new changes if we're in a write transaction
@@ -1337,7 +1337,7 @@ bool Realm::do_refresh()
 void Realm::set_auto_refresh(bool auto_refresh)
 {
     if (is_frozen() && auto_refresh) {
-        throw WrongTransactionState("Auto-refresh cannot be enabled for frozen Realms.");
+        throw WrongTransactionState("Auto-refresh cannot be enabled for frozen databases.");
     }
     m_auto_refresh = auto_refresh;
 }
@@ -1428,7 +1428,7 @@ void Realm::delete_files(const std::string& realm_file_path, bool* did_delete_re
     if (!lock_successful) {
         throw FileAccessError(
             ErrorCodes::DeleteOnOpenRealm,
-            util::format("Cannot delete files of an open Realm: '%1' is still in use.", realm_file_path),
+            util::format("Cannot delete files of an open database: '%1' is still in use.", realm_file_path),
             realm_file_path);
     }
 }

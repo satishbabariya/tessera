@@ -573,7 +573,7 @@ namespace _impl {
 
 UnsupportedSchemaChange::UnsupportedSchemaChange()
     : std::logic_error(
-          "Schema mismatch detected: another process has modified the Realm file's schema in an incompatible way")
+          "Schema mismatch detected: another process has modified the database file's schema in an incompatible way")
 {
 }
 

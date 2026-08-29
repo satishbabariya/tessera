@@ -694,9 +694,9 @@ public:
     Session make_session(int client_index, int server_index, DBRef db, std::string realm_identifier,
                          Session::Config config = {})
     {
-        //  *ClientServerFixture uses the service identifier "/realm-sync" to distinguish Sync
+        //  *ClientServerFixture uses the service identifier "/tessera-sync" to distinguish Sync
         //  connections, while BaaS does not.
-        config.service_identifier = "/realm-sync";
+        config.service_identifier = "/tessera-sync";
         config.realm_identifier = std::move(realm_identifier);
         config.server_port = m_server_ports[server_index];
         config.server_address = "localhost";

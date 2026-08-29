@@ -1575,7 +1575,7 @@ File::UniqueID File::get_unique_id(FileDesc file, const std::string& debug_path)
             throw FileAccessError(
                 ErrorCodes::FileOperationFailed,
                 util::format("Attempt to get unique id on an empty file. This could be due to an external "
-                             "process modifying Realm files. '%1'",
+                             "process modifying database files. '%1'",
                              debug_path),
                 debug_path);
         }

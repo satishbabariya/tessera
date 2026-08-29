@@ -32,9 +32,9 @@ const char* Replication::history_type_name(int type)
         case hist_None:
             return "None";
         case hist_OutOfRealm:
-            return "Local out of Realm";
+            return "Local out of file";
         case hist_InRealm:
-            return "Local in-Realm";
+            return "Local in-file";
         case hist_SyncClient:
             return "SyncClient";
         case hist_SyncServer:

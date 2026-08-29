@@ -161,7 +161,7 @@ void delete_key(CFStringRef account, CFStringRef service, CFStringRef group)
 CFPtr<CFStringRef> bundle_service()
 {
     if (CFStringRef bundle_id = CFBundleGetIdentifier(CFBundleGetMainBundle())) {
-        return adoptCF(CFStringCreateWithFormat(nullptr, nullptr, CFSTR("%@ - Realm Sync Metadata Key"), bundle_id));
+        return adoptCF(CFStringCreateWithFormat(nullptr, nullptr, CFSTR("%@ - Tessera Sync Metadata Key"), bundle_id));
     }
     return CFPtr<CFStringRef>{};
 }
@@ -189,11 +189,18 @@ std::optional<std::vector<char>> get_existing_metadata_realm_key(std::string_vie
     // If we find a key stored in a non-preferred way we copy it to the preferred
     // location before returning it.
     //
-    // The original location was (account: "metadata", service: "io.tessera.sync.keychain").
+    // Tessera note: the chain below is inherited from Realm, which stored these
+    // keys several ways over the years. Realm's locations used the service name
+    // "io.realm.sync.keychain"; Tessera uses "io.tessera.sync.keychain", so no
+    // Realm-era entry is reachable from here and the legacy lookups can only
+    // ever find entries Tessera itself wrote. They are retained because the
+    // account-name migration (metadata -> appId) is still meaningful.
+    //
+    // The original location was (account: "metadata", service: s_service).
     // For processes with a bundle ID, we then switched to (account: "metadata",
-    // service: "$bundleId - Realm Sync Metadata Key")
-    // The current preferred location on non-macOS (account: appId, service: "io.tessera.sync.keychain"),
-    // and on macOS is (account: appId, service: "$bundleId - Realm Sync Metadata Key").
+    // service: "$bundleId - Tessera Sync Metadata Key")
+    // The current preferred location on non-macOS is (account: appId, service: s_service),
+    // and on macOS is (account: appId, service: "$bundleId - Tessera Sync Metadata Key").
     //
     // On everything but macOS the keychain is scoped to the app, so there's no
     // need to include the bundle ID. On macOS it's user-wide, and we want each

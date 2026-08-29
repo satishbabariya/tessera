@@ -104,7 +104,7 @@ TEST(Util_Logger_LevelThreshold)
     PrefixLogger storage_logger(LogCategory::storage, "test", threadsafe_logger);
     PrefixLogger query_logger(LogCategory::query, "test", threadsafe_logger);
     PrefixLogger sync_logger(LogCategory::sync, "test", threadsafe_logger);
-    base_logger->set_level_threshold("Realm.Storage", Logger::Level::debug);
+    base_logger->set_level_threshold("Tessera.Storage", Logger::Level::debug);
     CHECK(storage_logger.get_level_threshold() == Logger::Level::debug);
     CHECK(query_logger.get_level_threshold() == Logger::Level::debug);
     CHECK(sync_logger.get_level_threshold() == default_log_level);
@@ -211,11 +211,11 @@ TEST(Util_Logger_Categories)
 
     logger.log(util::LogCategory::query, util::Logger::Level::debug, "Query");
     CHECK(logger().empty());
-    logger.set_level_threshold("Realm.Storage.Query", util::Logger::Level::debug);
+    logger.set_level_threshold("Tessera.Storage.Query", util::Logger::Level::debug);
     logger.log(util::LogCategory::object, util::Logger::Level::debug, "Object");
     logger.log(util::LogCategory::query, util::Logger::Level::debug, "Query");
     CHECK_EQUAL(logger(), "Query");
-    logger.set_level_threshold("Realm.Storage.Object", util::Logger::Level::debug);
+    logger.set_level_threshold("Tessera.Storage.Object", util::Logger::Level::debug);
     logger.log(util::LogCategory::object, util::Logger::Level::debug, "Object");
     logger.log(util::LogCategory::query, util::Logger::Level::debug, "Query");
     CHECK_EQUAL(logger(), "ObjectQuery");

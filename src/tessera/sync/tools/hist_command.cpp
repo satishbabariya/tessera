@@ -2055,7 +2055,7 @@ int main(int argc, char* argv[])
                 "          "<<prog<<" <realm file> (-c | --client-files) <file ident>\n"
                 "\n"
                 "The first three forms are for inspecting a specific range of the\n"
-                "synchronization history of the specified Realm file. In the first form, the\n"
+                "synchronization history of the specified database file. In the first form, the\n"
                 "range is the entire history. In the second form, the range is the one history\n"
                 "entry whose changeset produced the specifed synchronization version. In the\n"
                 "third form, the range is as specified.\n"
@@ -2203,10 +2203,10 @@ int main(int argc, char* argv[])
                 "                       --max-locked-version <version>`, where `<timestamp>` is\n"
                 "                       now minus `<time to live>`.\n"
                 "  -e, --encryption-key <path>\n"
-                "                       Access the Realm file using an encryption key. The\n"
+                "                       Access the database file using an encryption key. The\n"
                 "                       64-byte encryption key is assumed to be stored in the\n"
                 "                       file system at the specified path.\n"
-                "  -v, --version        Show the version of the Realm Sync release that this\n"
+                "  -v, --version        Show the version of the Tessera Sync release that this\n"
                 "                       command belongs to.\n";
             // clang-format on
             return EXIT_SUCCESS;

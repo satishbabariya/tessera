@@ -56,7 +56,7 @@ class InvalidFreeSpace : std::exception {
 public:
     const char* what() const noexcept override
     {
-        return "Free space tracking was lost due to out-of-memory. The Realm file must be closed and reopened before "
+        return "Free space tracking was lost due to out-of-memory. The database file must be closed and reopened before "
                "further writes can be performed.";
     }
 };
@@ -786,7 +786,7 @@ ref_type SlabAlloc::attach_file(const std::string& path, Config& cfg, util::Writ
         m_file.open(path.c_str(), access, create, 0); // Throws
     }
     catch (const FileAccessError& ex) {
-        auto msg = util::format_errno("Failed to open Realm file at path '%2': %1", ex.get_errno(), path);
+        auto msg = util::format_errno("Failed to open database file at path '%2': %1", ex.get_errno(), path);
         if (ex.code() == ErrorCodes::PermissionDenied) {
             msg += util::format(". Please use a path where your app has %1 permissions.",
                                 cfg.read_only ? "read" : "read-write");
@@ -803,7 +803,7 @@ ref_type SlabAlloc::attach_file(const std::string& path, Config& cfg, util::Writ
     // The size of a database file must not exceed what can be encoded in
     // size_t.
     if (TESSERA_UNLIKELY(int_cast_with_overflow_detect(m_file.get_size(), size)))
-        throw InvalidDatabase("Realm file too large", path);
+        throw InvalidDatabase("database file too large", path);
     if (cfg.clear_file_on_error && cfg.session_initiator) {
         if (size == 0 && physical_file_size != 0) {
             cfg.clear_file = true;
@@ -829,7 +829,7 @@ ref_type SlabAlloc::attach_file(const std::string& path, Config& cfg, util::Writ
     }
     if (size == 0) {
         if (TESSERA_UNLIKELY(cfg.read_only))
-            throw InvalidDatabase("Read-only access to empty Realm file", path);
+            throw InvalidDatabase("Read-only access to empty database file", path);
         // We want all non-streaming files to be a multiple of the page size
         // to simplify memory mapping, so just pre-reserve the required space now
         m_file.prealloc(page_size()); // Throws
@@ -1003,7 +1003,7 @@ ref_type SlabAlloc::read_and_validate_header(util::File& file, const std::string
         throw;
     }
     catch (const DecryptionFailed& e) {
-        throw InvalidDatabase(util::format("Realm file decryption failed (%1)", e.what()), path);
+        throw InvalidDatabase(util::format("database file decryption failed (%1)", e.what()), path);
     }
     catch (const std::exception& e) {
         throw InvalidDatabase(e.what(), path);
@@ -1040,7 +1040,7 @@ ref_type SlabAlloc::validate_header(const Header* header, const StreamingFooter*
 {
     // Verify that size is sane and 8-byte aligned
     if (TESSERA_UNLIKELY(size < sizeof(Header)))
-        throw InvalidDatabase(util::format("file is non-empty but too small (%1 bytes) to be a valid Realm.", size),
+        throw InvalidDatabase(util::format("file is non-empty but too small (%1 bytes) to be a valid database.", size),
                               path);
     if (TESSERA_UNLIKELY(size % 8 != 0))
         throw InvalidDatabase(util::format("file has an invalid size (%1).", size), path);
@@ -1051,12 +1051,12 @@ ref_type SlabAlloc::validate_header(const Header* header, const StreamingFooter*
         if (is_encrypted) {
             // Encrypted files check the hmac on read, so there's a lot less
             // which could go wrong and have us still reach this point
-            throw_header_exception("header has invalid mnemonic. The file does not appear to be Realm file.", *header,
+            throw_header_exception("header has invalid mnemonic. The file does not appear to be database file.", *header,
                                    path);
         }
         else {
-            throw_header_exception("header has invalid mnemonic. The file is either not a Realm file, is an "
-                                   "encrypted Realm file but no encryption key was supplied, or is corrupted.",
+            throw_header_exception("header has invalid mnemonic. The file is either not a database file, is an "
+                                   "encrypted database file but no encryption key was supplied, or is corrupted.",
                                    *header, path);
         }
     }
@@ -1069,7 +1069,7 @@ ref_type SlabAlloc::validate_header(const Header* header, const StreamingFooter*
     if (slot_selector == 0 && top_ref == 0xFFFFFFFFFFFFFFFFULL) {
         if (TESSERA_UNLIKELY(size < sizeof(Header) + sizeof(StreamingFooter))) {
             throw InvalidDatabase(
-                util::format("file is in streaming format but too small (%1 bytes) to be a valid Realm.", size),
+                util::format("file is in streaming format but too small (%1 bytes) to be a valid database.", size),
                 path);
         }
         TESSERA_ASSERT(footer);

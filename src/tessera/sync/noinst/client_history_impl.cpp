@@ -401,7 +401,7 @@ void ClientHistory::find_uploadable_changesets(UploadCursor& upload_progress, ve
         auto ec = util::compression::decompress_nonportable(is_2, decompressed);
         if (ec == util::compression::error::decompress_unsupported) {
             TESSERA_TERMINATE(
-                "Synchronized Realm files with unuploaded local changes cannot be copied between platforms.");
+                "Synchronized database files with unuploaded local changes cannot be copied between platforms.");
         }
         TESSERA_ASSERT_3(ec, ==, std::error_code{});
 

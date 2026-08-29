@@ -261,7 +261,7 @@ PendingBootstrapStore::PendingBatch PendingBootstrapStore::peek_pending(Transact
         auto ec = util::compression::decompress_nonportable(changeset_is, uncompressed_buffer);
         if (ec == util::compression::error::decompress_unsupported) {
             TESSERA_TERMINATE(
-                "Synchronized Realm files with unprocessed pending bootstraps cannot be copied between platforms.");
+                "Synchronized database files with unprocessed pending bootstraps cannot be copied between platforms.");
         }
         TESSERA_ASSERT_3(ec, ==, std::error_code{});
 

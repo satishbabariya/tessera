@@ -413,18 +413,18 @@ void ObjectSchema::validate(Schema const& schema, std::vector<ObjectSchemaValida
     if (for_sync && table_type != ObjectSchema::ObjectType::Embedded) {
         if (primary_key.empty()) {
             exceptions.emplace_back(util::format("There must be a primary key property named '_id' on a synchronized "
-                                                 "Realm but none was found for type '%1'",
+                                                 "database but none was found for type '%1'",
                                                  name));
         }
         else if (primary_key != "_id") {
             exceptions.emplace_back(util::format(
-                "The primary key property on a synchronized Realm must be named '_id' but found '%1' for type '%2'",
+                "The primary key property on a synchronized database must be named '_id' but found '%1' for type '%2'",
                 primary_key, name));
         }
     }
 
     if (!for_sync && table_type == ObjectSchema::ObjectType::TopLevelAsymmetric) {
-        exceptions.emplace_back(util::format("Asymmetric table '%1' not allowed in a local Realm", name));
+        exceptions.emplace_back(util::format("Asymmetric table '%1' not allowed in a local database", name));
     }
 
     auto pbs_sync =

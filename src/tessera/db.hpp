@@ -50,10 +50,10 @@ struct IncompatibleLockFile : FileAccessError {
         : FileAccessError(
               ErrorCodes::IncompatibleLockFile,
               util::format(
-                  "Realm file '%1' is currently open in another process which cannot share access with this process. "
+                  "database file '%1' is currently open in another process which cannot share access with this process. "
                   "This could either be due to the existing process being a different architecture or due to the "
-                  "existing process using an incompatible version of Realm. "
-                  "If the other process is Realm Studio, you may need to update it (or update Realm if your Studio "
+                  "existing process using an incompatible version of database. "
+                  "If the other process is another tool, you may need to update it (or update Tessera if that tool "
                   "version is too new), and if using an iOS simulator, make sure that you are using a 64-bit "
                   "simulator. Underlying problem: %2",
                   path, msg),

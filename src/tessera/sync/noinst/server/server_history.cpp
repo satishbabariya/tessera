@@ -884,7 +884,7 @@ void ServerHistory::add_upstream_sync_status()
     // cluster, all file identifiers must be allocated by the root node.
     static_assert(g_root_node_file_ident == 1, "");
     if (TESSERA_UNLIKELY(m_num_client_files > 2)) {
-        throw util::runtime_error("Realm file has registered client file identifiers, "
+        throw util::runtime_error("database file has registered client file identifiers, "
                                   "so can no longer be associated with upstream server "
                                   "(star topology server cluster)");
     }

@@ -422,7 +422,7 @@ std::string SyncFileManager::realm_file_path(const std::string& user_id,
             // hashed test path also failed, give up and report error to user.
             throw LogicError(ErrorCodes::InvalidArgument,
                              util::format("A valid realm path cannot be created for the "
-                                          "Realm identity '%1' at neither '%2' nor '%3'. %4",
+                                          "database identity '%1' at neither '%2' nor '%3'. %4",
                                           realm_file_name, preferred_name_with_suffix, hashed_path, e_hashed.what()));
         }
     }

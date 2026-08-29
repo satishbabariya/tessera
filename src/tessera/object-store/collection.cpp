@@ -126,7 +126,7 @@ void Collection::verify_attached() const
 
     throw LogicError(ErrorCodes::InvalidatedObject,
                      util::format("%1 is no longer valid. Either the parent object was deleted or the containing "
-                                  "Realm has been invalidated or closed.",
+                                  "database has been invalidated or closed.",
                                   type_name()));
 }
 

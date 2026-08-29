@@ -18,7 +18,7 @@ namespace sync {
 
 // Protocol versions:
 //
-//   1 Initial version, matching io.tessera.sync-30, but not including query-based
+//   1 Initial version, matching io.realm.sync-30, but not including query-based
 //     sync, serialized transactions, and state realms (async open).
 //
 //   2 Restored erase-always-wins OT behavior.
@@ -75,12 +75,18 @@ constexpr int get_current_protocol_version() noexcept
 
 constexpr std::string_view get_pbs_websocket_protocol_prefix() noexcept
 {
-    return "com.mongodb.tess-sync#";
+    // Tessera: upstream used "com.mongodb.realm-sync#". This is a wire
+    // identifier -- client and server must agree on it -- so changing it is a
+    // deliberate protocol break, which a clean-break fork with no deployed
+    // peers can make freely. A project that is not MongoDB's should not
+    // advertise com.mongodb on the wire.
+    return "io.tessera.sync#";
 }
 
 constexpr std::string_view get_flx_websocket_protocol_prefix() noexcept
 {
-    return "com.mongodb.tess-query-sync#";
+    // Tessera: was "com.mongodb.realm-query-sync#". See above.
+    return "io.tessera.query-sync#";
 }
 
 enum class SyncServerMode { PBS, FLX };

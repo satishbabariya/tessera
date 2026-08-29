@@ -156,7 +156,7 @@ ClientImpl::ClientImpl(ClientConfig config)
     // FIXME: Would be better if seeding was up to the application.
     util::seed_prng_nondeterministically(m_random); // Throws
 
-    logger.info("Realm sync client (%1)", TESSERA_VER_CHUNK); // Throws
+    logger.info("database sync client (%1)", TESSERA_VER_CHUNK); // Throws
     logger.debug("Supported protocol versions: %1-%2", get_oldest_supported_protocol_version(),
                  get_current_protocol_version()); // Throws
     logger.info("Platform: %1", util::get_platform_info());
@@ -1683,7 +1683,7 @@ void Session::activate()
     if (TESSERA_LIKELY(!get_client().is_dry_run())) {
         bool file_exists = util::File::exists(get_realm_path());
 
-        logger.info("client_reset_config = %1, Realm exists = %2, upload messages allowed = %3",
+        logger.info("client_reset_config = %1, database exists = %2, upload messages allowed = %3",
                     get_client_reset_config().has_value(), file_exists, upload_messages_allowed() ? "yes" : "no");
         get_history().get_status(m_last_version_available, m_client_file_ident, m_progress); // Throws
     }

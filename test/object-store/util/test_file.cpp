@@ -301,7 +301,7 @@ TestSyncManager::TestSyncManager(const Config& config, const SyncServer::Config&
 {
     util::try_make_dir(m_base_file_path);
 
-    m_sync_manager->set_sync_route(m_sync_server.base_url() + "/realm-sync", true);
+    m_sync_manager->set_sync_route(m_sync_server.base_url() + "/tessera-sync", true);
     if (config.start_sync_client) {
         m_sync_manager->get_sync_client();
     }

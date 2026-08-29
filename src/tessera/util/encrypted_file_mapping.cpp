@@ -154,7 +154,7 @@ constexpr uint16_t encryption_page_size = 4096;
 constexpr uint8_t metadata_size = sizeof(IVTable);
 constexpr uint8_t pages_per_block = encryption_page_size / metadata_size;
 static_assert(metadata_size == 64,
-              "changing the size of the metadata breaks compatibility with existing Realm files");
+              "changing the size of the metadata breaks compatibility with existing database files");
 
 using SizeType = File::SizeType;
 

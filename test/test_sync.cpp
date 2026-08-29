@@ -3280,7 +3280,7 @@ TEST(Sync_UploadDownloadProgress_3)
     uint_fast64_t snapshot_version_1 = 0;
 
     Session::Config config;
-    config.service_identifier = "/realm-sync";
+    config.service_identifier = "/tessera-sync";
     config.server_address = server_address;
     config.signed_user_token = g_signed_test_user_token;
     config.server_port = server_port;
@@ -3545,7 +3545,7 @@ TEST(Sync_UploadDownloadProgress_6)
     session_config.server_address = "localhost";
     session_config.server_port = server_port;
     session_config.realm_identifier = "/test";
-    session_config.service_identifier = "/realm-sync";
+    session_config.service_identifier = "/tessera-sync";
     session_config.signed_user_token = g_signed_test_user_token;
     session_config.progress_handler = [&](uint_fast64_t downloaded_bytes, uint_fast64_t downloadable_bytes,
                                           uint_fast64_t uploaded_bytes, uint_fast64_t uploadable_bytes,

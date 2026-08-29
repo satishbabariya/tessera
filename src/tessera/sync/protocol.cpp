@@ -52,9 +52,9 @@ const char* get_protocol_error_message(int error_code) noexcept
         case ProtocolError::bad_authentication:
             return "Bad user authentication (BIND)";
         case ProtocolError::illegal_realm_path:
-            return "Illegal Realm path (BIND)";
+            return "Illegal database path (BIND)";
         case ProtocolError::no_such_realm:
-            return "No such Realm (BIND)";
+            return "No such database (BIND)";
         case ProtocolError::permission_denied:
             return "Permission denied (BIND)";
         case ProtocolError::bad_server_file_ident:
