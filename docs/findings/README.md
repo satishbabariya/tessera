@@ -39,6 +39,7 @@ Read these before changing the area they describe.
 
 | | |
 |---|---|
+| [0b-uncompiled-test-file.md](0b-uncompiled-test-file.md) | `test_util_enum.cpp` was in no CMakeLists and had never run. A test file left out of the build does not fail, does not show as skipped, and does not break anything |
 | [0a-flaky-and-slow-tests.md](0a-flaky-and-slow-tests.md) | `reports DNS error` is network-flaky (0.011s to 680s across four runs). The suites leak temp directories, and a large `TMPDIR` degrades some tests 40,000x |
 | [0b-certificate-expiry.md](0b-certificate-expiry.md) | The SSL tests' certificates were 57 days from expiry, and had lapsed five times before. The failure would have shown as a cluster of socket tests failing on every platform with no commit to blame |
 | [0a-include-hygiene.md](0a-include-hygiene.md) | An include can be unused by its host file and load-bearing for its consumers. Seven such dependencies have had to be made explicit |

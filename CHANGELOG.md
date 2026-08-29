@@ -4,6 +4,19 @@
 
 ### Added
 
+* `test/test_util_enum.cpp` is now in the build. It was in no `CMakeLists.txt`,
+  compiled into no target and had never run, though it covers
+  `tessera/util/enum.hpp`, which is installed as public API. It compiled and
+  passed unchanged.
+* `tools/check-tests-compiled.sh`, run in CI, fails if any test source is not
+  referenced by the `CMakeLists.txt` that should compile it. A test file left out
+  of the build does not fail, does not appear as skipped and does not break
+  anything, and the suite total is no help because nobody knows what it should
+  be.
+* `tools/analyse-zero-check-tests.sh` reports tests that run and execute no
+  checks. Analysis rather than a gate: of 106 such tests, 105 are regression
+  tests that assert by not crashing.
+
 * `test/test_file_format.cpp`. README.md and ARCHITECTURE.md both state that
   Tessera rejects any file whose format is not its own, which is the fork's
   central promise, and nothing tested it. Five tests write a real database, patch

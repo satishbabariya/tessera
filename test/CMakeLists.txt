@@ -91,6 +91,7 @@ set(CORE_TEST_SOURCES
     test_util_cli_args.cpp
     test_util_compression.cpp
     test_util_error.cpp
+    test_util_enum.cpp
     test_util_file.cpp
     test_util_fixed_size_buffer.cpp
     test_util_flat_map.cpp

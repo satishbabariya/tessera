@@ -1,0 +1,62 @@
+# A test file that was never in the build
+
+`test/test_util_enum.cpp` -- sixty-five lines, one test -- was not referenced by
+`test/CMakeLists.txt`. It compiled into no target and had never run.
+
+It covers `tessera/util/enum.hpp`, which this project installs as public API and
+whose implementation is compiled into the library. Adding the file to the build
+required no other change: it compiled and passed on the first attempt, with two
+checks. It was not broken, and it was not obsolete. It had simply never been
+listed.
+
+## Why nothing noticed
+
+A test file left out of the build is invisible in every direction at once.
+
+It does not fail, because it does not run. It does not appear as skipped, because
+the framework never learns it exists -- `TEST()` registers a test by running a
+static initialiser in the translation unit, and there is no translation unit. It
+does not break the build, because nothing references it. `git` shows it as a
+tracked file in the test directory, which is exactly where it belongs.
+
+And the suite's own total offers nothing. It reports 1,662 tests, and 1,662 is
+correct for what was compiled. Nobody knows which number to expect, so no number
+looks wrong.
+
+## How it was found
+
+Not by looking for it. The crash-safety test in
+[0b-format-rejection-untested.md](0b-format-rejection-untested.md) prompted a
+scan of every test name in `test/*.cpp`, run one process at a time, to see which
+ones executed zero checks. That scan reported 512 names as absent from the
+`CoreTests` binary, which was expected: most belong to the sync and object-store
+suites.
+
+Checking that assumption -- running the 512 against the sync binary as well --
+left 74 in neither. Most of those are `TEST_IF` with a false condition, which is
+the visible and correct way to disable a test, or are guarded by `#if` for a
+platform or a feature. Sorting the remainder by preprocessor depth left a small
+group at depth zero: no guard above them at all, and still in no binary.
+
+Three of those turned out to be an artefact of scanning a binary built from a
+different branch. One did not.
+
+## The check
+
+`tools/check-tests-compiled.sh` fails if any `test/*.cpp` is not named by the
+`CMakeLists.txt` that should compile it. It covers 133 files today.
+
+Canary-tested twice: an unreferenced file fails it, and an empty tree fails it
+rather than passing over nothing -- the same guard every check in this project
+carries, for the same reason.
+
+## The shape of it
+
+Every other finding here is about a check that inspected the wrong thing, or a
+claim nobody tested. This one is about a file that was never in any of those
+conversations, because the build never mentioned it and the test report never
+counted it.
+
+The general form: **a total is not a coverage measure unless something
+independently determines what the total should be.** 1,662 passing tests says
+nothing about the 1,663rd that was never compiled.
