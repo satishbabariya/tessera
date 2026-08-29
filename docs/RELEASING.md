@@ -77,15 +77,27 @@ the entry sat behind an `#ifdef`.
 
 Expected counts, which differ legitimately between configurations:
 
-| Suite | Debug | Release | measured |
-|---|---|---|---|
-| CoreTests | 1664 | — | 2026-08-29, after #16 |
-| SyncTests | 461 | — | 2026-08-29 |
-| ObjectStoreTests | 343 | — | 2026-08-29 |
+| Suite | Debug | Release |
+|---|---|---|
+| CoreTests | 1664 | 1659 |
+| SyncTests | 461 | 460 |
+| ObjectStoreTests | 343 | 343 |
+| Tests disabled by `TEST_IF` | 32 | 36 |
 
-The Release column is deliberately empty. It held 1647, 460 and 343, measured
-before roughly a dozen tests were added, and a stale number in a column headed
-"expected" is worse than no number: it invites someone to match it.
+Measured on macOS, 2026-08-29, at `feea4f54b`. Linux Debug agrees on 1664 and
+reports 31 disabled rather than 32, because `Shared_RobustAgainstDeathDuringWrite`
+runs there and not on Apple platforms.
+
+The five-test difference between Debug and Release is `#ifdef TESSERA_DEBUG`; the
+four-test difference in the disabled count is `SimulatedFailure::is_enabled()`,
+which is false in Release. A discrepancy that does not decompose into those two
+is worth investigating rather than accepting.
+
+The disabled row is new and matters more than it looks. Until #6 the framework
+computed that number and printed nothing, so a test switched off by its condition
+was invisible: absent from the total and from every other figure. If it moves
+without a test being added or removed, something changed platform or
+configuration underneath you.
 
 **Check the assertion counts too, not just the test counts.** A suite reporting
 the same number of tests with a wildly different number of assertions is usually
