@@ -127,3 +127,21 @@ pr-body.txt
 # Doxygen output
 docs/html/*
 !docs/html/.gitkeep
+
+# Databases the test suite leaves behind. The suites are normally run with a
+# TMPDIR set, but a run from the repository root writes here, and `git add -A`
+# will then sweep them in -- which is how twenty-one of them reached main and
+# made the repository uncloneable on Windows. See
+# docs/findings/0b-windows-invalid-filenames.md.
+#
+# tools/check-repo-hygiene.sh catches them if they are staged anyway. This is
+# the cheaper half: they never become candidates in the first place.
+*.realm
+*.realm.lock
+*.realm.management/
+*.tess
+*.tess.lock
+*.tess.management/
+*.mx
+.note
+*.cv
