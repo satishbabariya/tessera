@@ -21,8 +21,19 @@
   prefix.
 * The symbol planted in crash backtraces to direct users where to report pointed
   at `github/realm/realm-core`.
+* The README claimed "a self-hostable sync server, included". The installed
+  package exports no `Tessera::SyncServer` target, installs no server header, and
+  the project contains no server executable. The server is real and 461 tests run
+  against it, but it exists only inside the build tree. The README now says so,
+  and a new `Self-hosting` section explains what making it installable requires.
 
-Nothing yet.
+### Added
+
+* `consumer-smoke-test.sh` asserts the package's exported target set against a
+  literal list, which the README names as well, and compiles `<tessera/api.hpp>`
+  and `<tessera/engine.hpp>` on their own. The README calls those two the public
+  API, but the smoke test had only ever included `db.hpp` and friends, so nothing
+  verified they were installed or self-contained.
 
 ## 0.1.1 — 2026-08-29
 
