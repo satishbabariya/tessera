@@ -2,23 +2,12 @@
 
 ## Unreleased
 
-### Added
+### Fixed
 
 * `test/test_util_enum.cpp` is now in the build. It was in no `CMakeLists.txt`,
   compiled into no target and had never run, though it covers
   `tessera/util/enum.hpp`, which is installed as public API. It compiled and
   passed unchanged.
-* `tools/check-test-sources-listed.sh`, run in CI, fails if any test source is
-  not named by the `CMakeLists.txt` that should compile it. It establishes that a
-  file is visible to the build, not that any particular configuration compiles it
-  -- 26 test files here are correctly conditional on `TESSERA_ENABLE_SYNC`. A test file left out
-  of the build does not fail, does not appear as skipped and does not break
-  anything, and the suite total is no help because nobody knows what it should
-  be.
-* `tools/analyse-zero-check-tests.sh` reports tests that run and execute no
-  checks. Analysis rather than a gate: of 106 such tests, 105 are regression
-  tests that assert by not crashing.
-
 * `test/test_file_format.cpp`. README.md and ARCHITECTURE.md both state that
   Tessera rejects any file whose format is not its own, which is the fork's
   central promise, and nothing tested it. Five tests write a real database, patch
@@ -26,18 +15,6 @@
   other, format versions 2, 10, 24 and 255 are refused, and the error names the
   version it rejected. Each was confirmed to fail against a deliberately broken
   engine.
-* Four more in the same file for README's other claim about the bytes on disk,
-  "Encryption at rest. Optional AES-256, applied per page below the engine".
-  `test_encrypted_file_mapping.cpp` covers the cryptor, page IVs and concurrent
-  mappings in thirteen tests, none of which answers whether the data is on the
-  disk in the clear. These write a distinctive string, confirm it is findable in
-  an unencrypted file and absent from an encrypted one -- along with the table
-  name, since "below the engine" means the engine's own structures too -- and
-  check that an encrypted file is refused without the key and with a key that is
-  one byte wrong.
-
-### Fixed
-
 * `DB::upgrade_history_schema` calls `start_write()`, which is annotated
   `REQUIRES(!m_mutex)`, and carried no annotation of its own. Clang's
   thread-safety analysis could not prove the caller does not hold the lock and
@@ -50,9 +27,6 @@
   the 23 `-Wthread-safety-analysis` warnings in a full build, and that noise is
   why the one real warning was not visible. Both are annotated
   `NO_THREAD_SAFETY_ANALYSIS` with the reason.
-
-### Fixed
-
 * `Shared_RobustAgainstDeathDuringWrite`, the only test of the crash-safety
   claim, had never executed its body. Three guards made that impossible:
   `!TESSERA_ENABLE_ENCRYPTION` excluded every configuration built or tested here,
@@ -73,18 +47,12 @@
   because its `#ifdef` appears after the defines. A class whose implementation
   supported robust mutexes and whose public constant denied it. The detection now
   lives in the header that declares the constant. Five tests gate on it.
-* `tools/check-header-macros.sh`, run in CI, fails when a header decides
-  something on a `TESSERA_` macro that only a `.cpp` defines. It checks 287
-  macros and found exactly one instance, the robust-mutex constant above.
 * The test framework computed `num_disabled_tests` and never printed it, so a
   test switched off by its `TEST_IF` condition was invisible: absent from the
   pass count and absent from every other number reported. There are 32 of them on
   macOS.
 * The CI build job had no `timeout-minutes`. A dead-locking test would have held
   a runner for GitHub's six-hour default.
-
-### Fixed
-
 * The library called itself `realm-core`. `TESSERA_PRODUCT_NAME` still held the
   old name, so crash reports and the sync client and server startup logs all
   identified the process as `[realm-core-<version>]`.
@@ -123,14 +91,36 @@
   failed the build. It was unreachable until a test resource actually changed,
   because the copy writes nothing when nothing differs. One target now copies the
   union and the executables depend on it.
-
-### Added
-
 * `consumer-smoke-test.sh` asserts the package's exported target set against a
   literal list, which the README names as well, and compiles `<tessera/api.hpp>`
   and `<tessera/engine.hpp>` on their own. The README calls those two the public
   API, but the smoke test had only ever included `db.hpp` and friends, so nothing
   verified they were installed or self-contained.
+
+### Added
+
+* `tools/check-test-sources-listed.sh`, run in CI, fails if any test source is
+  not named by the `CMakeLists.txt` that should compile it. It establishes that a
+  file is visible to the build, not that any particular configuration compiles it
+  -- 26 test files here are correctly conditional on `TESSERA_ENABLE_SYNC`. A test file left out
+  of the build does not fail, does not appear as skipped and does not break
+  anything, and the suite total is no help because nobody knows what it should
+  be.
+* `tools/analyse-zero-check-tests.sh` reports tests that run and execute no
+  checks. Analysis rather than a gate: of 106 such tests, 105 are regression
+  tests that assert by not crashing.
+* Four more in the same file for README's other claim about the bytes on disk,
+  "Encryption at rest. Optional AES-256, applied per page below the engine".
+  `test_encrypted_file_mapping.cpp` covers the cryptor, page IVs and concurrent
+  mappings in thirteen tests, none of which answers whether the data is on the
+  disk in the clear. These write a distinctive string, confirm it is findable in
+  an unencrypted file and absent from an encrypted one -- along with the table
+  name, since "below the engine" means the engine's own structures too -- and
+  check that an encrypted file is refused without the key and with a key that is
+  one byte wrong.
+* `tools/check-header-macros.sh`, run in CI, fails when a header decides
+  something on a `TESSERA_` macro that only a `.cpp` defines. It checks 287
+  macros and found exactly one instance, the robust-mutex constant above.
 * `tools/check-cert-expiry.sh`, run in CI, fails when any test certificate is
   within 180 days of expiry, and when any leaf certificate is issued for more
   than 825 days. The signing CA's issuance database shows the certificates lapsed
