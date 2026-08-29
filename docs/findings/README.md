@@ -29,6 +29,7 @@ Read these before changing the area they describe.
 
 | | |
 |---|---|
+| [0b-windows-invalid-filenames.md](0b-windows-invalid-filenames.md) | Twenty-one files with `<>` in their names made the repository uncloneable on Windows. The hygiene check looked for `.tess` artifacts; the test suite writes `.realm` ones |
 | [0a-supply-chain.md](0a-supply-chain.md) | The vendor dependency ran four levels deep and reached downstream consumers. Also records the Android OpenSSL decision and how it resolved |
 | [0b-test-resource-race.md](0b-test-resource-race.md) | Three test targets share one resources directory and copied into it concurrently. Invisible until a resource actually changed, because `copy_if_different` writes nothing when nothing differs |
 | [0b-header-macro-visibility.md](0b-header-macro-visibility.md) | `RobustMutex::is_robust_on_this_platform` was false in every translation unit, including its own, while the implementation below it compiled full robust-mutex support. Five tests gated on it and none ran |
