@@ -35,6 +35,21 @@ if [ -n "$ACTIONS" ]; then
     HITS="${HITS:-}${HITS:+$'\n'}$ACTIONS"
 fi
 
+# Git remotes pointing at the upstream project are a live hazard, not just
+# clutter. `gh` resolves the target repository from the remotes, so with an
+# `upstream` remote present `gh release create` targeted realm/realm-core rather
+# than this repository. It failed only because the account lacked permission.
+# Fetching upstream history is a deliberate, temporary act -- add the remote,
+# fetch, remove it again -- not a standing configuration.
+REMOTES=$(git remote -v 2>/dev/null | grep -iE 'realm|mongodb' || true)
+if [ -n "$REMOTES" ]; then
+    echo "FAIL: a git remote points at the upstream project:"
+    echo "$REMOTES"
+    echo "  gh resolves its target repository from the remotes, so this makes it"
+    echo "  possible to push or publish to someone else's repository by accident."
+    HITS="${HITS:-}${HITS:+$'\n'}$REMOTES"
+fi
+
 if [ -n "$HITS" ]; then
     echo "FAIL: the build references a host the project does not control:"
     echo "$HITS"

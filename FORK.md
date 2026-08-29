@@ -110,6 +110,29 @@ SDKs depended on were removed; a stable C ABI is planned for a later phase.
 The last commits were build fixes, the release notes template is empty, and the
 products it served are discontinued.
 
+## Fetching upstream history
+
+This repository has **no `upstream` remote, deliberately**. `gh` resolves its
+target repository from the git remotes, and with one configured
+`gh release create` targeted `realm/realm-core` rather than this repository. It
+failed only because the account lacked permission to write there.
+
+If you need upstream history, add the remote for the duration of the fetch and
+remove it again:
+
+```sh
+git remote add upstream https://github.com/realm/realm-core
+git fetch upstream
+git remote remove upstream
+```
+
+`tools/check-no-vendor-hosts.sh` fails if such a remote is left configured.
+
+Note that realm-core's tags (`v0.1.0` through `v14.14.0`) are not carried into
+this fork. They are another project's release history, they collide with
+Tessera's version scheme, and version tooling would otherwise read `v14.14.0` as
+the latest release of a project at 0.1.0. They remain in the upstream repository.
+
 ## Lineage
 
 - Upstream: https://github.com/realm/realm-core
