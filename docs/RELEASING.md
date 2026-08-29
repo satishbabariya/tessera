@@ -41,6 +41,22 @@ reports 1652 — five tests are compiled out of Release builds by `#ifdef
 TESSERA_DEBUG` and `TEST_IF(..., SimulatedFailure::is_enabled())`. Compare like
 with like.
 
+## Read the run's conclusion, not the count of green jobs
+
+A CI matrix can show four of five jobs green while the run itself is
+`cancelled`. `concurrency: cancel-in-progress` stops superseded runs when a new
+commit is pushed, which is the behaviour you want -- but the jobs that had
+already finished keep their `success` status, so counting them reports a pass
+that never happened.
+
+```sh
+gh api repos/<owner>/<repo>/actions/runs/<id> --jq .conclusion
+```
+
+That is the authoritative answer. It is the same mistake as counting passing
+tests without checking the binary was rebuilt: the individual signals look
+right, and the aggregate says otherwise.
+
 ## Both configurations, not one
 
 Debug and Release compile different code. `#ifdef TESSERA_DEBUG`,
