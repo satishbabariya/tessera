@@ -82,8 +82,8 @@ keep this commit to one concern:
 
 | Reference | Disposition | Task |
 |---|---|---|
-| `doc/development/how-to-use-remote-baas-host.md` | Delete — documents a service that no longer exists | 7 |
-| `doc/development/how-to-release.md` | Rewrite — describes the Evergreen release flow | 7 (stub) / 0b (full) |
+| `docs/development/how-to-use-remote-baas-host.md` | Delete — documents a service that no longer exists | 7 |
+| `docs/development/how-to-release.md` | Rewrite — describes the Evergreen release flow | 7 (stub) / 0b (full) |
 | `tools/release-init.sh` | Rewrite or delete with the release workflows | 7 |
 | `test/tessera-fuzzer/README.md` | Minor mention; correct in passing | 7 |
 | `CHANGELOG.md` | **Leave.** Historical entries are a record, not a reference | — |

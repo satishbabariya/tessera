@@ -23,7 +23,7 @@
 #include <system_error>
 #include <sstream>
 
-// NOTE: The protocol specification is in `/doc/protocol.md`
+// NOTE: The protocol specification is in `/docs/protocol.md`
 
 using namespace tessera;
 using namespace _impl;

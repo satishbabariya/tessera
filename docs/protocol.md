@@ -89,7 +89,7 @@ Param: `<websocket key>` is a WebSocket Key as described in RFC 6455.
 Param: `<realm access token>` is a signed user token as described in
 the BIND message.
 
-Param: `<realm path>` is the server path as described in doc/server_path.md
+Param: `<realm path>` is the server path as described in docs/server_path.md
 
 
 ### BIND
@@ -124,7 +124,7 @@ different session identifiers.
 
 Param: (`<server path size>`, `<server path>`) is a string specifying the
 virtual path by which the server identifies the Realm. The syntax of the
-server path is described in doc/server_path.md
+server path is described in docs/server_path.md
 
 Param: (`<signed user token size>`, `<signed user token>`) is a string that
 consists of two concatenated base64 strings, separated by `:`. The first part is

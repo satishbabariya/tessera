@@ -57,7 +57,7 @@ CPP
 
 cp "$(dirname "$0")/readme-example.cpp" "$WORK/readme_example.cpp"
 cmake -S "$WORK" -B "$WORK/build" -DCMAKE_PREFIX_PATH="$PREFIX" > /dev/null
-cmake --build "$WORK/build" -j4 > /dev/null
+cmake --build "$WORK/build" -j"$(getconf _NPROCESSORS_ONLN)" > /dev/null
 
 DBFILE="$WORK/smoke.tess"
 OUT=$("$WORK/build/consumer" "$DBFILE")

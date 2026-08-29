@@ -22,7 +22,7 @@ Pull requests are welcome. Before opening one:
 
 ```sh
 cmake -B build.debug -DCMAKE_BUILD_TYPE=Debug
-cmake --build build.debug                    # no target argument: build all
+cmake --build build.debug -j"$(getconf _NPROCESSORS_ONLN)"   # no target: build all
 TMPDIR=$(mktemp -d)/ ./build.debug/test/tessera-tests.app/Contents/MacOS/tessera-tests
 TMPDIR=$(mktemp -d)/ ./build.debug/test/tessera-sync-tests.app/Contents/MacOS/tessera-sync-tests
 TMPDIR=$(mktemp -d)/ ./build.debug/test/object-store/tessera-object-store-tests.app/Contents/MacOS/tessera-object-store-tests
@@ -71,7 +71,7 @@ is usable standalone, and that property is easy to lose by accident.
 
 Follow the surrounding code. `.clang-format` covers formatting; run
 `git clang-format` before committing. The prose style guide is
-[doc/development/coding_style_guide.cpp](doc/development/coding_style_guide.cpp).
+[docs/development/coding_style_guide.cpp](docs/development/coding_style_guide.cpp).
 
 ## Changelog
 

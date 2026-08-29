@@ -150,7 +150,7 @@ installed to `share/cmake/Realm/` where `find_package(Tessera)` would never look
   need not be rediscovered.
 - `object-store/sync/` lost the identity and configuration model it was built
   around. Phase 1 must supply a Tessera-native equivalent, not repoint a URL.
-- Verify `doc/protocol.md` still matches `sync/protocol.cpp` before publishing it
+- Verify `docs/protocol.md` still matches `sync/protocol.cpp` before publishing it
   as Tessera's protocol.
 
 **Known limitations, documented rather than hidden:**

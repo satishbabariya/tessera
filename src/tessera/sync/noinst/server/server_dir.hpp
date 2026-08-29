@@ -26,7 +26,7 @@ struct VirtualPathComponents {
 };
 
 // parse_virtual_path() validates and parses a virtual path. The format of a
-// virtual path, also called a server path, is described in doc/protocol.md.
+// virtual path, also called a server path, is described in docs/protocol.md.
 //
 // The return value is a VirtualPathComponents struct. If the member is_valid
 // is false, no other members must be used. reference_path and user_identity

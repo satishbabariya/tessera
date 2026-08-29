@@ -56,7 +56,7 @@
 #include <thread>
 #include <vector>
 
-// NOTE: The protocol specification is in `/doc/protocol.md`
+// NOTE: The protocol specification is in `/docs/protocol.md`
 
 
 // FIXME: Verify that session identifier spoofing cannot be used to get access

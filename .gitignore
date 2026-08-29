@@ -111,3 +111,19 @@ ssh_agent_commands.sh
 # release script artifacts
 extracted_changelog.md
 pr-body.txt
+
+# Runtime artifacts the engine and its tests create in the working directory.
+# A database's coordination files (.note is the notification FIFO, .cv the
+# condition-variable state) land next to the database file, and tests that open
+# a database in the repository root leave them behind.
+.note
+.new_commit.cv
+.pick_writer.cv
+*.tess
+*.tess.lock
+*.tess.management/
+*.tess.note
+
+# Doxygen output
+docs/html/*
+!docs/html/.gitkeep

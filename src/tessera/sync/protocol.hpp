@@ -10,7 +10,7 @@
 #include <tessera/util/tagged_bool.hpp>
 
 
-// NOTE: The protocol specification is in `/doc/protocol.md`
+// NOTE: The protocol specification is in `/docs/protocol.md`
 
 
 namespace tessera {
@@ -135,7 +135,7 @@ inline std::string_view to_string(ProtocolEnvelope protocol) noexcept
 
 
 // These integer types are selected so that they accomodate the requirements of
-// the protocol specification (`/doc/protocol.md`).
+// the protocol specification (`/docs/protocol.md`).
 //
 // clang-format off
 using file_ident_type    = std::uint_fast64_t;

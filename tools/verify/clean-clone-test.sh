@@ -19,7 +19,7 @@ git clone -q "$REPO" "$WORK/plain"
   || { echo "FAIL: a plain clone does not configure"; tail -20 "$WORK/plain.log"; exit 1; }
 grep -q "Tests are disabled" "$WORK/plain.log" \
   || echo "note: no submodule warning -- did the clone pick them up?"
-( cd "$WORK/plain" && cmake --build build --target Storage -j4 > "$WORK/plain-build.log" 2>&1 ) \
+( cd "$WORK/plain" && cmake --build build --target Storage -j"$(getconf _NPROCESSORS_ONLN)" > "$WORK/plain-build.log" 2>&1 ) \
   || { echo "FAIL: a plain clone does not build the library"; tail -20 "$WORK/plain-build.log"; exit 1; }
 test -f "$WORK/plain/build/src/tessera/libtessera.a" \
   || { echo "FAIL: libtessera.a was not produced by a plain clone"; exit 1; }

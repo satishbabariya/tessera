@@ -44,7 +44,7 @@ private:
 /// \brief Server of the Realm synchronization protocol.
 ///
 /// Instances of this class are servers of the WebSocket-based Realm
-/// synchronization protocol (`/doc/protocol.md`), and are generally referred to
+/// synchronization protocol (`/docs/protocol.md`), and are generally referred to
 /// simply as *sync servers*.
 ///
 /// No agent external to a sync server is allowed to open Realm files belonging

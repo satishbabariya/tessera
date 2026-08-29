@@ -42,7 +42,7 @@ ARM, iOS, Android and WASM are expected to work but are not verified.
 git clone --recursive https://github.com/satishbabariya/tessera
 cd tessera
 cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build
+cmake --build build -j"$(getconf _NPROCESSORS_ONLN)"
 ```
 
 `--recursive` fetches Catch2, which the test suites need. Without it the library
@@ -104,8 +104,8 @@ Anything not reachable from these two headers carries no stability promise.
 | [ARCHITECTURE.md](ARCHITECTURE.md) | How the engine works: storage layout, MVCC, sync |
 | [FORK.md](FORK.md) | Lineage, licensing, and what changed from Realm |
 | [how-to-build.md](how-to-build.md) | Platform-specific build instructions |
-| [doc/protocol.md](doc/protocol.md) | The sync wire protocol, message by message |
-| [doc/algebra_of_changesets.md](doc/algebra_of_changesets.md) | Why concurrent edits converge |
+| [docs/protocol.md](docs/protocol.md) | The sync wire protocol, message by message |
+| [docs/algebra_of_changesets.md](docs/algebra_of_changesets.md) | Why concurrent edits converge |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
 
 ## Licence

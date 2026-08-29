@@ -48,6 +48,7 @@ jobs:
           tools/check-layering.sh
           tools/check-merge-deps.sh
           tools/check-header-tiers.sh
+          tools/check-repo-hygiene.sh
 
       - name: Configure
         env:
@@ -59,7 +60,7 @@ jobs:
       # command-line tools, so a target-limited build silently excludes code
       # from verification. That has caused breakage twice in this project.
       - name: Build everything
-        run: cmake --build build
+        run: cmake --build build --parallel
 
       # A fresh TMPDIR per run: the suites leak temporary directories, and a
       # large temp directory degrades some tests by four orders of magnitude.

@@ -21,7 +21,7 @@ this project's history, and each time something shipped broken:
 ```sh
 rm -rf build.release
 cmake -B build.release -DCMAKE_BUILD_TYPE=Release
-cmake --build build.release                    # no target argument: build all
+cmake --build build.release -j"$(getconf _NPROCESSORS_ONLN)"   # no target: build all
 
 CLEAN=$(mktemp -d)
 TMPDIR="$CLEAN/" ./build.release/test/tessera-tests.app/Contents/MacOS/tessera-tests

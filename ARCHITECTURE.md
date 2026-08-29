@@ -120,11 +120,11 @@ Two halves, deliberately separable.
 edits become changesets of per-field instructions over stable object identifiers,
 and operational transform rewrites concurrent changesets against each other so
 that applying them in any order reaches the same state. The formal argument is in
-[doc/algebra_of_changesets.md](doc/algebra_of_changesets.md).
+[docs/algebra_of_changesets.md](docs/algebra_of_changesets.md).
 
 **The protocol and server** (`tessera-sync`, `tessera-server`) carry changesets
 between peers. The wire protocol is specified in
-[doc/protocol.md](doc/protocol.md) -- 1,126 lines, message by message.
+[docs/protocol.md](docs/protocol.md) -- 1,126 lines, message by message.
 
 The bundled server is self-hostable and has no cloud dependency. 461 sync tests
 run against it, including randomised concurrent-edit convergence
@@ -164,8 +164,8 @@ to confirm it can actually fail:
 
 ## Further reading
 
-- [doc/protocol.md](doc/protocol.md) -- the sync wire protocol
-- [doc/algebra_of_changesets.md](doc/algebra_of_changesets.md) -- merge correctness
-- [doc/changeset.md](doc/changeset.md) -- changeset wire format
-- [doc/primer/primer_architecture.md](doc/primer/primer_architecture.md) -- Realm-era architecture primer
+- [docs/protocol.md](docs/protocol.md) -- the sync wire protocol
+- [docs/algebra_of_changesets.md](docs/algebra_of_changesets.md) -- merge correctness
+- [docs/changeset.md](docs/changeset.md) -- changeset wire format
+- [docs/primer/primer_architecture.md](docs/primer/primer_architecture.md) -- Realm-era architecture primer
 - `docs/findings/` -- decisions made during the fork, with evidence

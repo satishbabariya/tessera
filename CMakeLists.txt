@@ -358,7 +358,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/src) # For generated files (like
 add_subdirectory(src)
 
 # Install the licence and changelog files
-install(FILES LICENSE CHANGELOG.md DESTINATION "doc/realm" COMPONENT devel)
+install(FILES LICENSE CHANGELOG.md DESTINATION "share/doc/tessera" COMPONENT devel)
 
 # Only prepare test/install/package targets if we're not a submodule
 if(TESSERA_CORE_SUBMODULE_BUILD)

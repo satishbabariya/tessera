@@ -153,7 +153,7 @@ back-compat obligations. It did not need a maximally tidy tree — that is Phase
   `docs/findings/0a-toolchain-rot.md`
 - Remove the now-unreachable file-format upgrade machinery alongside the format
   identity change.
-- `doc/protocol.md` (1,126 lines) and `doc/algebra_of_changesets.md` should be
+- `docs/protocol.md` (1,126 lines) and `docs/algebra_of_changesets.md` should be
   linked prominently from the new README. `docs/findings/0a-existing-documentation.md`
 
 **Carried into Phase 1:**
@@ -164,7 +164,7 @@ back-compat obligations. It did not need a maximally tidy tree — that is Phase
 - `object-store/sync/` lost the identity and configuration model it was built
   around. Phase 1 must supply a Tessera-native equivalent, not merely repoint a
   URL. `docs/findings/0a-app-services.md`
-- Verify `doc/protocol.md` still matches `sync/protocol.cpp` before publishing it.
+- Verify `docs/protocol.md` still matches `sync/protocol.cpp` before publishing it.
 
 **Test-suite health, needed before CI is trustworthy:**
 

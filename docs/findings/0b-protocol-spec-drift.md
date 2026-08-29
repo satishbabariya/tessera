@@ -6,7 +6,7 @@ Status: qualifies a Phase 0a claim
 
 ## The claim being corrected
 
-`docs/findings/0a-existing-documentation.md` reported `doc/protocol.md` as "a
+`docs/findings/0a-existing-documentation.md` reported `docs/protocol.md` as "a
 complete network protocol specification, 1,126 lines, message by message", and
 concluded that Phase 1's work was closer to *verifying and publishing* an
 existing spec than to writing one.
@@ -17,7 +17,7 @@ The first half is true. The conclusion needs qualifying.
 
 | | |
 |---|---|
-| `doc/protocol.md` title | **Network protocol (version 1)** |
+| `docs/protocol.md` title | **Network protocol (version 1)** |
 | `sync/protocol.hpp:73` | `get_current_protocol_version()` returns **14** |
 
 The header carries a changelog of all fourteen versions, so the drift is

@@ -11,17 +11,17 @@ documents that change what Phase 1 has to build:
 
 | Document | Lines | What it is |
 |---|---|---|
-| **`doc/protocol.md`** | **1,126** | **A complete network protocol specification.** Message-by-message: BIND, IDENT, UPLOAD, DOWNLOAD, with session-establishment sequence diagrams for both the "need client file ident" and "have client file ident" cases. Titled "Network protocol (version 1)" |
-| **`doc/algebra_of_changesets.md`** | 98 | The formal theory behind the merge engine: changesets as state transformers, concatenation, and the algebraic identities the OT implementation relies on |
-| `doc/changeset.md` | 263 | Changeset wire format |
-| `doc/permissions.md` | 206 | Permission model |
-| `doc/primer/primer_architecture.md` | 239 | Architecture primer |
-| `doc/server_path.md` | 37 | Server path conventions |
-| `doc/primer/primer_files.md` | 47 | File layout primer |
-| `doc/development/sanitizers.md` | 21 | Sanitizer usage |
+| **`docs/protocol.md`** | **1,126** | **A complete network protocol specification.** Message-by-message: BIND, IDENT, UPLOAD, DOWNLOAD, with session-establishment sequence diagrams for both the "need client file ident" and "have client file ident" cases. Titled "Network protocol (version 1)" |
+| **`docs/algebra_of_changesets.md`** | 98 | The formal theory behind the merge engine: changesets as state transformers, concatenation, and the algebraic identities the OT implementation relies on |
+| `docs/changeset.md` | 263 | Changeset wire format |
+| `docs/permissions.md` | 206 | Permission model |
+| `docs/primer/primer_architecture.md` | 239 | Architecture primer |
+| `docs/server_path.md` | 37 | Server path conventions |
+| `docs/primer/primer_files.md` | 47 | File layout primer |
+| `docs/development/sanitizers.md` | 21 | Sanitizer usage |
 
 Plus `design.pdf`, `design.docx`, `query_engine.pdf`, `query_engine.docx` under
-`doc/development/` — unexamined binary design documents worth reading before
+`docs/development/` — unexamined binary design documents worth reading before
 Phase 2 touches the query engine.
 
 ## Why this matters
@@ -35,7 +35,7 @@ halves are further along than assumed:
   who implemented it.
 
 What Phase 1 actually needs is therefore closer to *verifying that
-`doc/protocol.md` still matches `sync/protocol.cpp`, publishing it under a name
+`docs/protocol.md` still matches `sync/protocol.cpp`, publishing it under a name
 Tessera controls, and versioning it* than to writing a specification from
 scratch. Verification is real work — a decade-old document may have drifted from
 the implementation — but it is a fundamentally smaller and lower-risk job than
@@ -53,11 +53,11 @@ release flow; Phase 0b writes a replacement).
 
 ## Follow-ups
 
-1. **Phase 1:** diff `doc/protocol.md` against `sync/protocol.cpp` and
+1. **Phase 1:** diff `docs/protocol.md` against `sync/protocol.cpp` and
    `sync/noinst/protocol_codec.cpp` to find drift. Do this before publishing it
    as Tessera's protocol.
-2. **Phase 0b:** `doc/protocol.md` and `algebra_of_changesets.md` should be
+2. **Phase 0b:** `docs/protocol.md` and `algebra_of_changesets.md` should be
    linked prominently from the new README. They are among the strongest evidence
    that this is a serious engine and not an abandoned toy.
-3. **Phase 2:** read `doc/development/query_engine.pdf` before redesigning the
+3. **Phase 2:** read `docs/development/query_engine.pdf` before redesigning the
    query layer.
