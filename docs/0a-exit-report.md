@@ -109,8 +109,14 @@ back-compat obligations. It did not need a maximally tidy tree — that is Phase
 
 **Carried into Phase 0b:**
 
-- Bison 3.8.2 exactly is required to regenerate the parser, and this host has
-  2.3. Either relax the `EXACT` requirement and verify, or obtain 3.8.2.
+- ~~Bison 3.8.2~~ **Resolved 2026-08-29.** Bison 2.3 cannot process the grammar
+  at any version constraint (it uses 3.x-only `api.token.constructor`,
+  `api.value.type variant`, `api.symbol.prefix`). But regeneration is not needed
+  for the rename: the generated files contain only six `realm` references, all
+  includes and namespace qualifiers. Rename the grammar sources and the generated
+  output together -- which preserves the no-drift rationale of the
+  never-hand-edit rule -- and gate on the 73 tests in `test_parser.cpp`.
+  Bison 3.8.2 is now a nice-to-have, not a prerequisite.
   `docs/findings/0a-toolchain-rot.md`
 - Remove the now-unreachable file-format upgrade machinery alongside the format
   identity change.
