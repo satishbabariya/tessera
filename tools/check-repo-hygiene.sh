@@ -13,18 +13,44 @@ FAIL=0
 #    files next to a database, and tests run from the repository root leave
 #    them behind: .note is the notification FIFO, .cv files hold
 #    condition-variable state.
-STRAY=$(git ls-files | grep -E '(^|/)\.(note|new_commit\.cv|pick_writer\.cv)$|\.tess(\.lock|\.management)?$' || true)
+#
+#    This originally matched .tess artifacts only, because that is the format's
+#    extension. The test suite does not use it: test_path.hpp still names its
+#    files .realm, so twenty-one such files were committed and the check passed
+#    over every one. It now matches both, and .mx as well -- the management
+#    files that accompany them.
+STRAY=$(git ls-files \
+    | grep -E '(^|/)\.(note|new_commit\.cv|pick_writer\.cv)$|\.(tess|realm)(\.lock|\.management)?$|\.mx$' \
+    || true)
 if [ -n "$STRAY" ]; then
     echo "FAIL: runtime artifacts are committed:"; echo "$STRAY"; FAIL=1
 fi
 
-# 2. One documentation directory. "doc" and "docs" side by side is how a
+# 2. Every tracked path must be a legal filename on Windows. `git checkout`
+#    there fails outright on < > : " | ? * and on a trailing dot or space, so a
+#    single such file makes the repository uncloneable rather than merely
+#    untidy -- the nightly Windows job failed at actions/checkout, before it
+#    could configure.
+#
+#    The twenty-one files that caused it came from running the test binary with
+#    an unrecognised argument: the framework treats it as a path prefix, so
+#    `tessera-tests --help` wrote its temporary databases into the repository
+#    root as `--helpCompaction_Large<std::__1::integral_constant<bool,+true>>...`.
+ILLEGAL=$(git ls-files | grep -E '[<>:"|?*]|[ .]$' || true)
+if [ -n "$ILLEGAL" ]; then
+    echo "FAIL: tracked paths that are not legal filenames on Windows:"
+    echo "$ILLEGAL" | sed 's/^/    /'
+    echo "  git checkout fails on these, so the repository cannot be cloned there."
+    exit 1
+fi
+
+# 3. One documentation directory. "doc" and "docs" side by side is how a
 #    project looks unmaintained, and a reader cannot guess which is current.
 if [ -d doc ] && [ -d docs ]; then
     echo "FAIL: both doc/ and docs/ exist -- consolidate them"; FAIL=1
 fi
 
-# 3. Nothing may reference a target or module that no longer exists. src/swift
+# 4. Nothing may reference a target or module that no longer exists. src/swift
 #    imported RealmFFI for an entire phase after that module was deleted,
 #    because nothing built it and so nothing failed.
 for dead in RealmFFI RealmFFIStatic; do
@@ -39,7 +65,7 @@ for dead in RealmFFI RealmFFIStatic; do
     fi
 done
 
-# 4. Private keys do not belong in the repository root. The ones inherited here
+# 5. Private keys do not belong in the repository root. The ones inherited here
 #    were unused test keys, but a .pem in the root reads as a leak.
 ROOTPEM=$(git ls-files --full-name | grep -E '^[^/]+\.pem$' || true)
 if [ -n "$ROOTPEM" ]; then
