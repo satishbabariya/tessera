@@ -18,12 +18,12 @@
 
 #include <algorithm>
 
-#include <realm/util/assert.hpp>
+#include <tessera/util/assert.hpp>
 
 #include "wildcard.hpp"
 
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 
@@ -54,7 +54,7 @@ bool wildcard_pattern::match(const char* begin, const char* end) const noexcept
     const char* end_2 = end;
 
     size_t num_cards = m_cards.size();
-    REALM_ASSERT(num_cards >= 1);
+    TESSERA_ASSERT(num_cards >= 1);
 
     typedef std::string::const_iterator str_iter;
 
@@ -99,4 +99,4 @@ bool wildcard_pattern::match(const char* begin, const char* end) const noexcept
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera

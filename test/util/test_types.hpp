@@ -16,8 +16,8 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_TEST_TYPES_HPP
-#define REALM_TEST_UTIL_TEST_TYPES_HPP
+#ifndef TESSERA_TEST_UTIL_TEST_TYPES_HPP
+#define TESSERA_TEST_UTIL_TEST_TYPES_HPP
 
 #include "unit_test.hpp"
 #include "demangle.hpp"
@@ -26,33 +26,33 @@
 #define TEST_TYPES(name, ...) TEST_TYPES_IF(name, true, __VA_ARGS__)
 
 #define TEST_TYPES_IF(name, enabled, ...)                                                                            \
-    TEST_TYPES_EX(name, realm::test_util::unit_test::get_default_test_list(), enabled, true, __VA_ARGS__)
+    TEST_TYPES_EX(name, tessera::test_util::unit_test::get_default_test_list(), enabled, true, __VA_ARGS__)
 
 #define NONCONCURRENT_TEST_TYPES(name, ...) NONCONCURRENT_TEST_TYPES_IF(name, true, __VA_ARGS__)
 
 #define NONCONCURRENT_TEST_TYPES_IF(name, enabled, ...)                                                              \
-    TEST_TYPES_EX(name, realm::test_util::unit_test::get_default_test_list(), enabled, false, __VA_ARGS__)
+    TEST_TYPES_EX(name, tessera::test_util::unit_test::get_default_test_list(), enabled, false, __VA_ARGS__)
 
 #define TEST_TYPES_EX(name, list, enabled, allow_concur, ...)                                                        \
     template <class>                                                                                                 \
-    struct Realm_UnitTest__##name : realm::test_util::unit_test::TestBase {                                          \
+    struct Realm_UnitTest__##name : tessera::test_util::unit_test::TestBase {                                          \
         static bool test_enabled()                                                                                   \
         {                                                                                                            \
             return bool(enabled);                                                                                    \
         }                                                                                                            \
-        Realm_UnitTest__##name(realm::test_util::unit_test::TestContext& c)                                          \
+        Realm_UnitTest__##name(tessera::test_util::unit_test::TestContext& c)                                          \
             : TestBase(c)                                                                                            \
         {                                                                                                            \
         }                                                                                                            \
         void test_run();                                                                                             \
     };                                                                                                               \
-    realm::test_util::unit_test::RegisterTypeTests<Realm_UnitTest__##name, __VA_ARGS__> realm_unit_test_reg__##name( \
+    tessera::test_util::unit_test::RegisterTypeTests<Realm_UnitTest__##name, __VA_ARGS__> realm_unit_test_reg__##name( \
         (list), (allow_concur), "DefaultSuite", #name, __FILE__, __LINE__);                                          \
     template <class TEST_TYPE>                                                                                       \
     void Realm_UnitTest__##name<TEST_TYPE>::test_run()
 
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 namespace unit_test {
 
@@ -93,6 +93,6 @@ struct RegisterTypeTests<Test> {
 
 } // namespace unit_test
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_TEST_TYPES_HPP
+#endif // TESSERA_TEST_UTIL_TEST_TYPES_HPP

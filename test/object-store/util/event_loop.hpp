@@ -16,15 +16,15 @@
  *
  **************************************************************************/
 
-#ifndef REALM_OS_TESTS_UTIL_EVENT_LOOP_HPP
-#define REALM_OS_TESTS_UTIL_EVENT_LOOP_HPP
+#ifndef TESSERA_OS_TESTS_UTIL_EVENT_LOOP_HPP
+#define TESSERA_OS_TESTS_UTIL_EVENT_LOOP_HPP
 
-#include <realm/util/function_ref.hpp>
+#include <tessera/util/function_ref.hpp>
 
 #include <functional>
 #include <memory>
 
-namespace realm::util {
+namespace tessera::util {
 
 struct EventLoop {
     // Returns if the current platform has an event loop implementation
@@ -54,6 +54,6 @@ private:
     std::unique_ptr<Impl> m_impl;
 };
 
-} // namespace realm::util
+} // namespace tessera::util
 
-#endif // REALM_OS_TESTS_UTIL_EVENT_LOOP_HPP
+#endif // TESSERA_OS_TESTS_UTIL_EVENT_LOOP_HPP

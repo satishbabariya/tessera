@@ -16,18 +16,18 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_WILDCARD_HPP
-#define REALM_TEST_UTIL_WILDCARD_HPP
+#ifndef TESSERA_TEST_UTIL_WILDCARD_HPP
+#define TESSERA_TEST_UTIL_WILDCARD_HPP
 
 #include <cstddef>
 #include <cstring>
 #include <string>
 #include <vector>
 
-#include <realm/util/features.h>
+#include <tessera/util/features.h>
 
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 
@@ -74,6 +74,6 @@ inline wildcard_pattern::card::card(size_t begin, size_t end) noexcept
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_WILDCARD_HPP
+#endif // TESSERA_TEST_UTIL_WILDCARD_HPP

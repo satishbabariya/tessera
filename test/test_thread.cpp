@@ -31,21 +31,21 @@
 #ifndef _WIN32
 #include <unistd.h>
 #include <sys/time.h>
-#include <realm/utilities.hpp> // gettimeofday()
+#include <tessera/utilities.hpp> // gettimeofday()
 #endif
 
-#include <realm/db_options.hpp>
-#include <realm/utilities.hpp>
-#include <realm/util/features.h>
-#include <realm/util/thread.hpp>
-#include <realm/util/interprocess_condvar.hpp>
-#include <realm/util/interprocess_mutex.hpp>
+#include <tessera/db_options.hpp>
+#include <tessera/utilities.hpp>
+#include <tessera/util/features.h>
+#include <tessera/util/thread.hpp>
+#include <tessera/util/interprocess_condvar.hpp>
+#include <tessera/util/interprocess_mutex.hpp>
 
 #include <iostream>
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 
 // Test independence and thread-safety
@@ -258,7 +258,7 @@ TEST(Thread_MutexLock)
     }
 }
 
-#ifdef REALM_HAVE_PTHREAD_PROCESS_SHARED
+#ifdef TESSERA_HAVE_PTHREAD_PROCESS_SHARED
 TEST(Thread_ProcessSharedMutex)
 {
     Mutex mutex((Mutex::process_shared_tag()));

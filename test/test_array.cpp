@@ -25,15 +25,15 @@
 #include <vector>
 #include <map>
 
-#include <realm/array_with_find.hpp>
-#include <realm/array_unsigned.hpp>
-#include <realm/column_integer.hpp>
-#include <realm/query_conditions.hpp>
+#include <tessera/array_with_find.hpp>
+#include <tessera/array_unsigned.hpp>
+#include <tessera/column_integer.hpp>
+#include <tessera/query_conditions.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::test_util;
 using unit_test::TestContext;
 
 
@@ -591,7 +591,7 @@ TEST(Array_AddNeg1_1)
 TEST(Array_UpperLowerBound)
 {
     // Tests Array::upper_bound() and Array::lower_bound()
-    // This test is independent of REALM_MAX_BPNODE_SIZE
+    // This test is independent of TESSERA_MAX_BPNODE_SIZE
     Array a(Allocator::get_default());
     a.create(Array::type_Normal);
     std::vector<int> v;
@@ -1006,7 +1006,7 @@ TEST(Array_find_sse)
     for (size_t i = 0; i < 100; ++i) {
         a.set(i, 123);
         size_t t = a.find_first(123);
-        REALM_ASSERT(t == i);
+        TESSERA_ASSERT(t == i);
         a.set(i, 10000);
         static_cast<void>(t);
     }
@@ -1041,7 +1041,7 @@ TEST(Array_Greater)
             a.set(i, 1);
 
             size_t t = a.find_first<Greater>(0, 0, size_t(-1));
-            REALM_ASSERT(i == t);
+            TESSERA_ASSERT(i == t);
 
             CHECK_EQUAL(i, t);
             a.set(i, 0);
@@ -1438,7 +1438,7 @@ TEST(Array_get_sum)
     CHECK_EQUAL(c.get_sum(), 120);
     c.clear();
 
-    const auto size = realm::max_array_size / 4;
+    const auto size = tessera::max_array_size / 4;
 
     // test multiple chunks w=1
     for (uint64_t i = 0; i < size; ++i)
@@ -1511,7 +1511,7 @@ NONCONCURRENT_TEST(Array_count)
 
     TestArray c(Allocator::get_default());
     c.create(Array::type_Normal);
-    const size_t size = realm::max_array_size;
+    const size_t size = tessera::max_array_size;
 
     // test multiple chunks w=1
     c.clear();

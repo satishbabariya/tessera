@@ -19,14 +19,14 @@
 #include "testsettings.hpp"
 #ifdef TEST_COLUMN_TIMESTAMP
 
-#include <realm.hpp>
-#include <realm/bplustree.hpp>
-#include <realm/array_timestamp.hpp>
-#include <realm/array_key.hpp>
+#include <tessera.hpp>
+#include <tessera/bplustree.hpp>
+#include <tessera/array_timestamp.hpp>
+#include <tessera/array_key.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 
 // Test independence and thread-safety
@@ -154,93 +154,93 @@ bool compare(T&& a, T&& b, C&& condition)
 TEST(TimestampColumn_Operators)
 {
     // Note that the Timestamp::operator==, operator>, operator<, operator>=, etc, do not work
-    // if one of the Timestamps are null! Please use realm::Greater, realm::Equal, etc instead.
+    // if one of the Timestamps are null! Please use tessera::Greater, tessera::Equal, etc instead.
 
     // Test A. Note that Timestamp{} is null and Timestamp(0, 0) is non-null
     // -----------------------------------------------------------------------------------------
-    CHECK(compare(Timestamp{}, Timestamp{}, realm::Equal()));
-    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), realm::Equal()));
-    CHECK(compare(Timestamp(1, 2), Timestamp(1, 2), realm::Equal()));
-    CHECK(compare(Timestamp(-1, -2), Timestamp(-1, -2), realm::Equal()));
+    CHECK(compare(Timestamp{}, Timestamp{}, tessera::Equal()));
+    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), tessera::Equal()));
+    CHECK(compare(Timestamp(1, 2), Timestamp(1, 2), tessera::Equal()));
+    CHECK(compare(Timestamp(-1, -2), Timestamp(-1, -2), tessera::Equal()));
 
     // Test B
     // -----------------------------------------------------------------------------------------
-    CHECK(!compare(Timestamp{}, Timestamp(0, 0), realm::Equal()));
-    CHECK(!compare(Timestamp(0, 0), Timestamp{}, realm::Equal()));
-    CHECK(!compare(Timestamp(0, 0), Timestamp(0, 1), realm::Equal()));
-    CHECK(!compare(Timestamp(0, 1), Timestamp(0, 0), realm::Equal()));
-    CHECK(!compare(Timestamp(1, 0), Timestamp(0, 0), realm::Equal()));
-    CHECK(!compare(Timestamp(0, 0), Timestamp(1, 0), realm::Equal()));
+    CHECK(!compare(Timestamp{}, Timestamp(0, 0), tessera::Equal()));
+    CHECK(!compare(Timestamp(0, 0), Timestamp{}, tessera::Equal()));
+    CHECK(!compare(Timestamp(0, 0), Timestamp(0, 1), tessera::Equal()));
+    CHECK(!compare(Timestamp(0, 1), Timestamp(0, 0), tessera::Equal()));
+    CHECK(!compare(Timestamp(1, 0), Timestamp(0, 0), tessera::Equal()));
+    CHECK(!compare(Timestamp(0, 0), Timestamp(1, 0), tessera::Equal()));
 
     // Test C: !compare(..., Equal) == compare(..., NotEqual)
     // -----------------------------------------------------------------------------------------
-    CHECK(compare(Timestamp{}, Timestamp(0, 0), realm::NotEqual()));
-    CHECK(compare(Timestamp(0, 0), Timestamp{}, realm::NotEqual()));
-    CHECK(compare(Timestamp(0, 0), Timestamp(0, 1), realm::NotEqual()));
-    CHECK(compare(Timestamp(0, 1), Timestamp(0, 0), realm::NotEqual()));
-    CHECK(compare(Timestamp(1, 0), Timestamp(0, 0), realm::NotEqual()));
-    CHECK(compare(Timestamp(0, 0), Timestamp(1, 0), realm::NotEqual()));
+    CHECK(compare(Timestamp{}, Timestamp(0, 0), tessera::NotEqual()));
+    CHECK(compare(Timestamp(0, 0), Timestamp{}, tessera::NotEqual()));
+    CHECK(compare(Timestamp(0, 0), Timestamp(0, 1), tessera::NotEqual()));
+    CHECK(compare(Timestamp(0, 1), Timestamp(0, 0), tessera::NotEqual()));
+    CHECK(compare(Timestamp(1, 0), Timestamp(0, 0), tessera::NotEqual()));
+    CHECK(compare(Timestamp(0, 0), Timestamp(1, 0), tessera::NotEqual()));
 
     // Test D: compare(..., Equal) == true implies that compare(..., GreaterEqual) == true
     // (but not vice versa). So we copy/pate tests from test B again:
     // -----------------------------------------------------------------------------------------
-    CHECK(compare(Timestamp{}, Timestamp{}, realm::GreaterEqual()));
-    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), realm::GreaterEqual()));
-    CHECK(compare(Timestamp(1, 2), Timestamp(1, 2), realm::GreaterEqual()));
-    CHECK(compare(Timestamp(-1, -2), Timestamp(-1, -2), realm::GreaterEqual()));
+    CHECK(compare(Timestamp{}, Timestamp{}, tessera::GreaterEqual()));
+    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), tessera::GreaterEqual()));
+    CHECK(compare(Timestamp(1, 2), Timestamp(1, 2), tessera::GreaterEqual()));
+    CHECK(compare(Timestamp(-1, -2), Timestamp(-1, -2), tessera::GreaterEqual()));
 
-    CHECK(compare(Timestamp{}, Timestamp{}, realm::LessEqual()));
-    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), realm::LessEqual()));
-    CHECK(compare(Timestamp(1, 2), Timestamp(1, 2), realm::LessEqual()));
-    CHECK(compare(Timestamp(-1, -2), Timestamp(-1, -2), realm::LessEqual()));
+    CHECK(compare(Timestamp{}, Timestamp{}, tessera::LessEqual()));
+    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), tessera::LessEqual()));
+    CHECK(compare(Timestamp(1, 2), Timestamp(1, 2), tessera::LessEqual()));
+    CHECK(compare(Timestamp(-1, -2), Timestamp(-1, -2), tessera::LessEqual()));
 
     // Test E: Sorting order of nulls vs. non-nulls should be the same for Timestamp as for other types
     // -----------------------------------------------------------------------------------------
     // All four data elements are null here (StringData{} means null)
-    CHECK(compare(Timestamp{}, Timestamp{}, realm::Greater()) ==
-          compare(StringData{}, StringData{}, realm::Greater()));
+    CHECK(compare(Timestamp{}, Timestamp{}, tessera::Greater()) ==
+          compare(StringData{}, StringData{}, tessera::Greater()));
 
     // Compare null with non-nulls (Timestamp(0, 0) is non-null and StringData("") is non-null
-    CHECK(compare(Timestamp(0, 0), Timestamp{}, realm::Greater()) ==
-          compare(StringData(""), StringData{}, realm::Greater()));
+    CHECK(compare(Timestamp(0, 0), Timestamp{}, tessera::Greater()) ==
+          compare(StringData(""), StringData{}, tessera::Greater()));
 
     // All four elements are non-nulls
-    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), realm::Greater()) ==
-          compare(StringData(""), StringData(""), realm::Greater()));
+    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), tessera::Greater()) ==
+          compare(StringData(""), StringData(""), tessera::Greater()));
 
     // Repeat with other operators than Greater
-    CHECK(compare(Timestamp{}, Timestamp{}, realm::Less()) == compare(StringData{}, StringData{}, realm::Less()));
-    CHECK(compare(Timestamp(0, 0), Timestamp{}, realm::Less()) ==
-          compare(StringData(""), StringData{}, realm::Less()));
-    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), realm::Less()) ==
-          compare(StringData(""), StringData(""), realm::Less()));
+    CHECK(compare(Timestamp{}, Timestamp{}, tessera::Less()) == compare(StringData{}, StringData{}, tessera::Less()));
+    CHECK(compare(Timestamp(0, 0), Timestamp{}, tessera::Less()) ==
+          compare(StringData(""), StringData{}, tessera::Less()));
+    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), tessera::Less()) ==
+          compare(StringData(""), StringData(""), tessera::Less()));
 
-    CHECK(compare(Timestamp{}, Timestamp{}, realm::Equal()) == compare(StringData{}, StringData{}, realm::Equal()));
-    CHECK(compare(Timestamp(0, 0), Timestamp{}, realm::Equal()) ==
-          compare(StringData(""), StringData{}, realm::Equal()));
-    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), realm::Equal()) ==
-          compare(StringData(""), StringData(""), realm::Equal()));
+    CHECK(compare(Timestamp{}, Timestamp{}, tessera::Equal()) == compare(StringData{}, StringData{}, tessera::Equal()));
+    CHECK(compare(Timestamp(0, 0), Timestamp{}, tessera::Equal()) ==
+          compare(StringData(""), StringData{}, tessera::Equal()));
+    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), tessera::Equal()) ==
+          compare(StringData(""), StringData(""), tessera::Equal()));
 
-    CHECK(compare(Timestamp{}, Timestamp{}, realm::NotEqual()) ==
-          compare(StringData{}, StringData{}, realm::NotEqual()));
-    CHECK(compare(Timestamp(0, 0), Timestamp{}, realm::NotEqual()) ==
-          compare(StringData(""), StringData{}, realm::NotEqual()));
-    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), realm::NotEqual()) ==
-          compare(StringData(""), StringData(""), realm::NotEqual()));
+    CHECK(compare(Timestamp{}, Timestamp{}, tessera::NotEqual()) ==
+          compare(StringData{}, StringData{}, tessera::NotEqual()));
+    CHECK(compare(Timestamp(0, 0), Timestamp{}, tessera::NotEqual()) ==
+          compare(StringData(""), StringData{}, tessera::NotEqual()));
+    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), tessera::NotEqual()) ==
+          compare(StringData(""), StringData(""), tessera::NotEqual()));
 
-    CHECK(compare(Timestamp{}, Timestamp{}, realm::GreaterEqual()) ==
-          compare(StringData{}, StringData{}, realm::GreaterEqual()));
-    CHECK(compare(Timestamp(0, 0), Timestamp{}, realm::GreaterEqual()) ==
-          compare(StringData(""), StringData{}, realm::GreaterEqual()));
-    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), realm::GreaterEqual()) ==
-          compare(StringData(""), StringData(""), realm::GreaterEqual()));
+    CHECK(compare(Timestamp{}, Timestamp{}, tessera::GreaterEqual()) ==
+          compare(StringData{}, StringData{}, tessera::GreaterEqual()));
+    CHECK(compare(Timestamp(0, 0), Timestamp{}, tessera::GreaterEqual()) ==
+          compare(StringData(""), StringData{}, tessera::GreaterEqual()));
+    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), tessera::GreaterEqual()) ==
+          compare(StringData(""), StringData(""), tessera::GreaterEqual()));
 
-    CHECK(compare(Timestamp{}, Timestamp{}, realm::LessEqual()) ==
-          compare(StringData{}, StringData{}, realm::LessEqual()));
-    CHECK(compare(Timestamp(0, 0), Timestamp{}, realm::LessEqual()) ==
-          compare(StringData(""), StringData{}, realm::LessEqual()));
-    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), realm::LessEqual()) ==
-          compare(StringData(""), StringData(""), realm::LessEqual()));
+    CHECK(compare(Timestamp{}, Timestamp{}, tessera::LessEqual()) ==
+          compare(StringData{}, StringData{}, tessera::LessEqual()));
+    CHECK(compare(Timestamp(0, 0), Timestamp{}, tessera::LessEqual()) ==
+          compare(StringData(""), StringData{}, tessera::LessEqual()));
+    CHECK(compare(Timestamp(0, 0), Timestamp(0, 0), tessera::LessEqual()) ==
+          compare(StringData(""), StringData(""), tessera::LessEqual()));
 }
 
 
@@ -249,7 +249,7 @@ TEST(TimestampColumn_ForceReallocate)
     BPlusTree<Timestamp> c(Allocator::get_default());
     c.create();
 
-    int32_t items_count = REALM_MAX_BPNODE_SIZE * 5;
+    int32_t items_count = TESSERA_MAX_BPNODE_SIZE * 5;
     for (int32_t i = 0; i < items_count; ++i) {
         c.add(Timestamp{i, i});
     }
@@ -301,7 +301,7 @@ TEST(TimestampColumn_AddColumnAfterRows)
     Table t;
     auto col_0 = t.add_column(type_Int, "1", non_nullable);
     std::vector<ObjKey> keys;
-    t.create_objects(REALM_MAX_BPNODE_SIZE * 2 + 1, keys);
+    t.create_objects(TESSERA_MAX_BPNODE_SIZE * 2 + 1, keys);
     t.get_object(keys[0]).set<Int>(col_0, 100);
 
     auto col_1 = t.add_column(type_Timestamp, "2", non_nullable);

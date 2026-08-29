@@ -1,9 +1,9 @@
-#include <realm/util/uri.hpp>
+#include <tessera/util/uri.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 namespace {
 
@@ -40,11 +40,11 @@ TEST(Util_Uri_Basics)
 {
     // normal uri
     {
-        const std::string input = "http://www.realm.io/foo?bar#zob";
+        const std::string input = "http://www.tess.io/foo?bar#zob";
         auto u = Uri(input);
 
         CHECK_EQUAL(u.get_scheme(), "http:");
-        CHECK_EQUAL(u.get_auth(), "//www.realm.io");
+        CHECK_EQUAL(u.get_auth(), "//www.tess.io");
         CHECK_EQUAL(u.get_path(), "/foo");
         CHECK_EQUAL(u.get_query(), "?bar");
         CHECK_EQUAL(u.get_frag(), "#zob");
@@ -57,17 +57,17 @@ TEST(Util_Uri_Basics)
             CHECK(result);
             CHECK(userinfo.empty());
             CHECK(port.empty());
-            CHECK_EQUAL(host, "www.realm.io");
+            CHECK_EQUAL(host, "www.tess.io");
         }
     }
 
     // complex authority
     {
-        const std::string input = "http://myuser:mypass@www.realm.io:12345/foo?bar#zob";
+        const std::string input = "http://myuser:mypass@www.tess.io:12345/foo?bar#zob";
         auto u = Uri(input);
 
         CHECK_EQUAL(u.get_scheme(), "http:");
-        CHECK_EQUAL(u.get_auth(), "//myuser:mypass@www.realm.io:12345");
+        CHECK_EQUAL(u.get_auth(), "//myuser:mypass@www.tess.io:12345");
         CHECK_EQUAL(u.get_path(), "/foo");
         CHECK_EQUAL(u.get_query(), "?bar");
         CHECK_EQUAL(u.get_frag(), "#zob");
@@ -79,7 +79,7 @@ TEST(Util_Uri_Basics)
 
             CHECK(result);
             CHECK_EQUAL(userinfo, "myuser:mypass");
-            CHECK_EQUAL(host, "www.realm.io");
+            CHECK_EQUAL(host, "www.tess.io");
             CHECK_EQUAL(port, "12345");
         }
     }
@@ -107,7 +107,7 @@ TEST(Util_Uri_Basics)
 
     // empty setters
     {
-        const std::string input = "http://www.realm.io/foo?bar#zob";
+        const std::string input = "http://www.tess.io/foo?bar#zob";
         auto u = Uri(input);
 
         u.set_scheme("");
@@ -241,7 +241,7 @@ TEST(Util_UriPercentEncoding_1)
 
     std::vector<std::string> escaped_strings{"", "A%00", "%2F", "abc", "def", "%FF%7F%80", "%2Fsync%2Fcalendar"};
 
-    REALM_ASSERT(unescaped_strings.size() == escaped_strings.size());
+    TESSERA_ASSERT(unescaped_strings.size() == escaped_strings.size());
     for (size_t i = 0; i < unescaped_strings.size(); ++i) {
         const std::string& unescaped = unescaped_strings[i];
         const std::string& escaped = escaped_strings[i];

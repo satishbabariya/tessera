@@ -25,7 +25,7 @@ file(COPY ${AFL_SEEDS}
 add_executable(fuzz-group ${TEST_AFL_SOURCES})
 target_link_libraries(fuzz-group TestUtil Storage)
 
-if(REALM_LIBFUZZER)
+if(TESSERA_LIBFUZZER)
     add_executable(realm-libfuzzer ${TEST_LIBFUZZER_SOURCES})
     target_link_libraries(realm-libfuzzer TestUtil Storage)
 endif()

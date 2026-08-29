@@ -21,11 +21,11 @@
 
 #include <string>
 
-#include <realm/binary_data.hpp>
+#include <tessera/binary_data.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 
 // Test independence and thread-safety

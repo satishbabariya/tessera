@@ -22,19 +22,19 @@
 #include <util/sync/session_util.hpp>
 #include <util/sync/sync_test_utils.hpp>
 
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/sync/sync_manager.hpp>
-#include <realm/object-store/sync/sync_user.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/sync/sync_manager.hpp>
+#include <tessera/object-store/sync/sync_user.hpp>
 
-#include <realm/sync/config.hpp>
+#include <tessera/sync/config.hpp>
 
-#include <realm/util/logger.hpp>
-#include <realm/util/optional.hpp>
-#include <realm/util/scope_exit.hpp>
+#include <tessera/util/logger.hpp>
+#include <tessera/util/optional.hpp>
+#include <tessera/util/scope_exit.hpp>
 
-using namespace realm;
-using namespace realm::util;
-using File = realm::util::File;
+using namespace tessera;
+using namespace tessera::util;
+using File = tessera::util::File;
 
 static const auto base_path =
     fs::path{util::make_temp_dir()}.make_preferred() / "realm_objectstore_sync_manager.test-dir";

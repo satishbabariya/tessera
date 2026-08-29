@@ -20,16 +20,16 @@
 
 #include <limits>
 
-#include <realm/array_integer.hpp>
-#include <realm/array_ref.hpp>
-#include <realm/column_integer.hpp>
-#include <realm/array_integer_tpl.hpp>
-#include <realm/query_conditions.hpp>
+#include <tessera/array_integer.hpp>
+#include <tessera/array_ref.hpp>
+#include <tessera/column_integer.hpp>
+#include <tessera/array_integer_tpl.hpp>
+#include <tessera/query_conditions.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::test_util;
 
 
 TEST(ArrayIntNull_SetNull)

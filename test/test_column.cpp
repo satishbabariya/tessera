@@ -22,13 +22,13 @@
 #include <vector>
 #include <algorithm>
 
-#include <realm/column_integer.hpp>
-#include <realm/bplustree.hpp>
+#include <tessera/column_integer.hpp>
+#include <tessera/bplustree.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::test_util;
 
 
 // Test independence and thread-safety
@@ -414,21 +414,21 @@ TEST(Column_FindLeafs)
 
     // Create values that span multible leaves
     // we use 5 to ensure that we get two levels
-    // when testing with REALM_MAX_BPNODE_SIZE=4
-    for (size_t i = 0; i < REALM_MAX_BPNODE_SIZE * 5; ++i)
+    // when testing with TESSERA_MAX_BPNODE_SIZE=4
+    for (size_t i = 0; i < TESSERA_MAX_BPNODE_SIZE * 5; ++i)
         a.add(0);
 
     // Set sentinel values at before and after each break
     a.set(0, 1);
-    a.set(REALM_MAX_BPNODE_SIZE - 1, 2);
-    a.set(REALM_MAX_BPNODE_SIZE, 3);
-    a.set(REALM_MAX_BPNODE_SIZE * 2 - 1, 4);
-    a.set(REALM_MAX_BPNODE_SIZE * 2, 5);
-    a.set(REALM_MAX_BPNODE_SIZE * 3 - 1, 6);
-    a.set(REALM_MAX_BPNODE_SIZE * 3, 7);
-    a.set(REALM_MAX_BPNODE_SIZE * 4 - 1, 8);
-    a.set(REALM_MAX_BPNODE_SIZE * 4, 9);
-    a.set(REALM_MAX_BPNODE_SIZE * 5 - 1, 10);
+    a.set(TESSERA_MAX_BPNODE_SIZE - 1, 2);
+    a.set(TESSERA_MAX_BPNODE_SIZE, 3);
+    a.set(TESSERA_MAX_BPNODE_SIZE * 2 - 1, 4);
+    a.set(TESSERA_MAX_BPNODE_SIZE * 2, 5);
+    a.set(TESSERA_MAX_BPNODE_SIZE * 3 - 1, 6);
+    a.set(TESSERA_MAX_BPNODE_SIZE * 3, 7);
+    a.set(TESSERA_MAX_BPNODE_SIZE * 4 - 1, 8);
+    a.set(TESSERA_MAX_BPNODE_SIZE * 4, 9);
+    a.set(TESSERA_MAX_BPNODE_SIZE * 5 - 1, 10);
 
     size_t res1 = a.find_first(1);
     size_t res2 = a.find_first(2);
@@ -442,15 +442,15 @@ TEST(Column_FindLeafs)
     size_t res10 = a.find_first(10);
 
     CHECK_EQUAL(0, res1);
-    CHECK_EQUAL(REALM_MAX_BPNODE_SIZE - 1, res2);
-    CHECK_EQUAL(REALM_MAX_BPNODE_SIZE, res3);
-    CHECK_EQUAL(REALM_MAX_BPNODE_SIZE * 2 - 1, res4);
-    CHECK_EQUAL(REALM_MAX_BPNODE_SIZE * 2, res5);
-    CHECK_EQUAL(REALM_MAX_BPNODE_SIZE * 3 - 1, res6);
-    CHECK_EQUAL(REALM_MAX_BPNODE_SIZE * 3, res7);
-    CHECK_EQUAL(REALM_MAX_BPNODE_SIZE * 4 - 1, res8);
-    CHECK_EQUAL(REALM_MAX_BPNODE_SIZE * 4, res9);
-    CHECK_EQUAL(REALM_MAX_BPNODE_SIZE * 5 - 1, res10);
+    CHECK_EQUAL(TESSERA_MAX_BPNODE_SIZE - 1, res2);
+    CHECK_EQUAL(TESSERA_MAX_BPNODE_SIZE, res3);
+    CHECK_EQUAL(TESSERA_MAX_BPNODE_SIZE * 2 - 1, res4);
+    CHECK_EQUAL(TESSERA_MAX_BPNODE_SIZE * 2, res5);
+    CHECK_EQUAL(TESSERA_MAX_BPNODE_SIZE * 3 - 1, res6);
+    CHECK_EQUAL(TESSERA_MAX_BPNODE_SIZE * 3, res7);
+    CHECK_EQUAL(TESSERA_MAX_BPNODE_SIZE * 4 - 1, res8);
+    CHECK_EQUAL(TESSERA_MAX_BPNODE_SIZE * 4, res9);
+    CHECK_EQUAL(TESSERA_MAX_BPNODE_SIZE * 5 - 1, res10);
 
     a.destroy();
 }

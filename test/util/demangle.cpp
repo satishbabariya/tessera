@@ -18,17 +18,17 @@
 
 #include <cstdlib>
 
-#include <realm/util/features.h>
+#include <tessera/util/features.h>
 #include <memory>
 
-#if REALM_HAVE_AT_LEAST_GCC(3, 2)
-#define REALM_HAVE_CXXABI_DEMANGLE
+#if TESSERA_HAVE_AT_LEAST_GCC(3, 2)
+#define TESSERA_HAVE_CXXABI_DEMANGLE
 #include <cxxabi.h>
 #endif
 
 #include "demangle.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 namespace {
 
@@ -41,7 +41,7 @@ struct Free {
 
 } // anonymous namespace
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 
@@ -51,7 +51,7 @@ namespace test_util {
 // http://autoconf-archive.cryp.to.
 std::string demangle(const std::string& mangled_name)
 {
-#ifdef REALM_HAVE_CXXABI_DEMANGLE
+#ifdef TESSERA_HAVE_CXXABI_DEMANGLE
     int status = 0;
     std::unique_ptr<char[], Free> buffer(abi::__cxa_demangle(mangled_name.c_str(), nullptr, nullptr, &status));
     if (!buffer)
@@ -65,4 +65,4 @@ std::string demangle(const std::string& mangled_name)
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera

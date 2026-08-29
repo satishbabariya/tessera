@@ -25,15 +25,15 @@
 #include <string>
 #include <iostream>
 
-#include <realm/util/assert.hpp>
+#include <tessera/util/assert.hpp>
 #include <memory>
-#include <realm/unicode.hpp>
+#include <tessera/unicode.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 // Test independence and thread-safety
 // -----------------------------------
@@ -203,7 +203,7 @@ TEST(Compare_Core_utf8_invalid_crash)
     constexpr size_t str_len = 20;
     char str1[str_len];
     char str2[str_len];
-    using namespace realm::test_util;
+    using namespace tessera::test_util;
     Random r;
 
     for (size_t t = 0; t < 10000; t++) {

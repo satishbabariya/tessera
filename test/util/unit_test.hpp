@@ -16,8 +16,8 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_UNIT_TEST_HPP
-#define REALM_TEST_UTIL_UNIT_TEST_HPP
+#ifndef TESSERA_TEST_UTIL_UNIT_TEST_HPP
+#define TESSERA_TEST_UTIL_UNIT_TEST_HPP
 
 #include <algorithm>
 #include <cmath>
@@ -29,12 +29,12 @@
 #include <string>
 #include <vector>
 
-#include <realm/util/bind_ptr.hpp>
-#include <realm/util/optional.hpp>
-#include <realm/util/features.h>
-#include <realm/util/logger.hpp>
-#include <realm/util/safe_int_ops.hpp>
-#include <realm/util/serializer.hpp>
+#include <tessera/util/bind_ptr.hpp>
+#include <tessera/util/optional.hpp>
+#include <tessera/util/features.h>
+#include <tessera/util/logger.hpp>
+#include <tessera/util/safe_int_ops.hpp>
+#include <tessera/util/serializer.hpp>
 
 
 #define TEST(name) TEST_IF(name, true)
@@ -46,7 +46,7 @@
 /// TestList::run(). This allows you to base the condition on global
 /// variables which can then be adjusted before calling
 /// TestList::run().
-#define TEST_IF(name, enabled) TEST_EX(name, realm::test_util::unit_test::get_default_test_list(), enabled, true)
+#define TEST_IF(name, enabled) TEST_EX(name, tessera::test_util::unit_test::get_default_test_list(), enabled, true)
 
 /// Add a test that must neither execute concurrently with other tests, nor with
 /// itself. These tests will always be executed by the thread that calls
@@ -54,21 +54,21 @@
 #define NONCONCURRENT_TEST(name) NONCONCURRENT_TEST_IF(name, true)
 
 #define NONCONCURRENT_TEST_IF(name, enabled)                                                                         \
-    TEST_EX(name, realm::test_util::unit_test::get_default_test_list(), enabled, false)
+    TEST_EX(name, tessera::test_util::unit_test::get_default_test_list(), enabled, false)
 
 #define TEST_EX(name, list, enabled, allow_concur)                                                                   \
-    struct Realm_UnitTest__##name : realm::test_util::unit_test::TestBase {                                          \
+    struct Realm_UnitTest__##name : tessera::test_util::unit_test::TestBase {                                          \
         static bool test_enabled()                                                                                   \
         {                                                                                                            \
             return bool(enabled);                                                                                    \
         }                                                                                                            \
-        Realm_UnitTest__##name(realm::test_util::unit_test::TestContext& c)                                          \
+        Realm_UnitTest__##name(tessera::test_util::unit_test::TestContext& c)                                          \
             : TestBase(c)                                                                                            \
         {                                                                                                            \
         }                                                                                                            \
         void test_run();                                                                                             \
     };                                                                                                               \
-    realm::test_util::unit_test::RegisterTest<Realm_UnitTest__##name> realm_unit_test_reg__##name(                   \
+    tessera::test_util::unit_test::RegisterTest<Realm_UnitTest__##name> realm_unit_test_reg__##name(                   \
         (list), (allow_concur), "DefaultSuite", #name, __FILE__, __LINE__);                                          \
     void Realm_UnitTest__##name::test_run()
 
@@ -193,25 +193,25 @@
         return false;                                                                                                \
     }())
 
-#if REALM_VALGRIND
+#if TESSERA_VALGRIND
 static const bool running_with_valgrind = true;
 #else
 static const bool running_with_valgrind = false;
 #endif
 
-#if REALM_TSAN
+#if TESSERA_TSAN
 static const bool running_with_tsan = true;
 #else
 static const bool running_with_tsan = false;
 #endif
 
-#if REALM_ASAN
+#if TESSERA_ASAN
 static const bool running_with_asan = true;
 #else
 static const bool running_with_asan = false;
 #endif
 
-#if REALM_ANDROID || REALM_IOS
+#if TESSERA_ANDROID || TESSERA_IOS
 // android doesn't implement posix_spawn(), iOS doesn't permit starting another process
 constexpr bool testing_supports_spawn_process = false;
 #else
@@ -251,7 +251,7 @@ constexpr bool testing_supports_spawn_process = !running_with_valgrind;
 //@}
 
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 namespace unit_test {
 
@@ -570,7 +570,7 @@ private:
 
     TestContext(TestList::ThreadContextImpl&, const TestDetails&, size_t test_index, int recurrence_index);
 
-    REALM_NORETURN void abort();
+    TESSERA_NORETURN void abort();
     void test_failed(const std::string& message);
     void check_failed(const char* file, long line, const std::string& message);
     void cond_failed(const char* file, long line, const char* macro_name, const char* cond_text);
@@ -780,7 +780,7 @@ struct SetPrecision<T, true> {
 template <typename T>
 constexpr static bool realm_serializable_types =
     is_any_v<T, StringData, BinaryData, Timestamp, ObjectId, std::optional<ObjectId>, ObjKey, ObjLink, UUID,
-             std::optional<UUID>, bool, float, std::optional<float>, double, std::optional<double>, realm::null>;
+             std::optional<UUID>, bool, float, std::optional<float>, double, std::optional<double>, tessera::null>;
 
 template <class T>
 void to_string(const T& value, std::string& str)
@@ -837,7 +837,7 @@ void to_string(const std::optional<T>& value, std::string& str)
 inline bool TestContext::check_cond(bool cond, const char* file, long line, const char* macro_name,
                                     const char* cond_text)
 {
-    if (REALM_LIKELY(cond)) {
+    if (TESSERA_LIKELY(cond)) {
         check_succeeded(line);
     }
     else {
@@ -860,7 +860,7 @@ template <class A, class B>
 inline bool TestContext::check_compare(bool cond, const A& a, const B& b, const char* file, long line,
                                        const char* macro_name, const char* a_text, const char* b_text)
 {
-    if (REALM_LIKELY(cond)) {
+    if (TESSERA_LIKELY(cond)) {
         check_succeeded(line);
     }
     else {
@@ -876,7 +876,7 @@ inline bool TestContext::check_inexact_compare(bool cond, long double a, long do
                                                const char* file, long line, const char* macro_name,
                                                const char* a_text, const char* b_text, const char* eps_text)
 {
-    if (REALM_LIKELY(cond)) {
+    if (TESSERA_LIKELY(cond)) {
         check_succeeded(line);
     }
     else {
@@ -996,6 +996,6 @@ inline void TestBase::log(const char* message, Params&&... params)
 
 } // namespace unit_test
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_UNIT_TEST_HPP
+#endif // TESSERA_TEST_UTIL_UNIT_TEST_HPP

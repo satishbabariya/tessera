@@ -18,9 +18,9 @@
 
 #include "spawned_process.hpp"
 
-#include <realm/util/assert.hpp>
-#include <realm/util/backtrace.hpp>
-#include <realm/util/file_mapper.hpp>
+#include <tessera/util/assert.hpp>
+#include <tessera/util/backtrace.hpp>
+#include <tessera/util/file_mapper.hpp>
 
 #include "test_path.hpp"
 
@@ -35,7 +35,7 @@
 #include <iostream>
 #include <sstream>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 SpawnedProcess::SpawnedProcess(const std::string& test_name, const std::string& ident)
@@ -72,13 +72,13 @@ void SpawnedProcess::set_pid(int id)
 
 bool SpawnedProcess::is_child()
 {
-    const char* str = getenv("REALM_CHILD_IDENT");
+    const char* str = getenv("TESSERA_CHILD_IDENT");
     return str && str == m_identifier;
 }
 
 bool SpawnedProcess::is_parent()
 {
-    return !(getenv("REALM_CHILD_IDENT") || getenv("REALM_SPAWNED"));
+    return !(getenv("TESSERA_CHILD_IDENT") || getenv("TESSERA_SPAWNED"));
 }
 
 int SpawnedProcess::wait_for_child_to_finish()
@@ -90,34 +90,34 @@ int SpawnedProcess::wait_for_child_to_finish()
     do {
         ret = waitpid(m_pid, &status, options);
     } while (ret == -1 && errno == EINTR);
-    REALM_ASSERT_RELEASE_EX(ret != -1, errno, m_pid, m_test_name, m_identifier);
+    TESSERA_ASSERT_RELEASE_EX(ret != -1, errno, m_pid, m_test_name, m_identifier);
 
     bool signaled_to_stop = WIFSIGNALED(status);
-    REALM_ASSERT_RELEASE_EX(!signaled_to_stop, WTERMSIG(status), WCOREDUMP(status), m_pid, m_test_name, m_identifier);
+    TESSERA_ASSERT_RELEASE_EX(!signaled_to_stop, WTERMSIG(status), WCOREDUMP(status), m_pid, m_test_name, m_identifier);
 
     bool stopped = WIFSTOPPED(status);
-    REALM_ASSERT_RELEASE_EX(!stopped, WSTOPSIG(status), m_pid, m_test_name, m_identifier);
+    TESSERA_ASSERT_RELEASE_EX(!stopped, WSTOPSIG(status), m_pid, m_test_name, m_identifier);
 
     bool exited_normally = WIFEXITED(status);
-    REALM_ASSERT_RELEASE_EX(exited_normally, m_pid, m_test_name, m_identifier);
+    TESSERA_ASSERT_RELEASE_EX(exited_normally, m_pid, m_test_name, m_identifier);
 
     auto exit_status = WEXITSTATUS(status);
-    REALM_ASSERT_RELEASE_EX(exit_status == 0, exit_status, m_pid, m_test_name, m_identifier);
+    TESSERA_ASSERT_RELEASE_EX(exit_status == 0, exit_status, m_pid, m_test_name, m_identifier);
     return status;
 #else
     if (!is_parent()) {
         return 0;
     }
-    REALM_ASSERT_EX(m_process.hProcess != 0, m_test_name, m_identifier);
+    TESSERA_ASSERT_EX(m_process.hProcess != 0, m_test_name, m_identifier);
     constexpr DWORD milliseconds_to_wait = 10 * 60 * 1000;
     auto status = WaitForSingleObject(m_process.hProcess, milliseconds_to_wait);
     if (status == WAIT_TIMEOUT) {
-        REALM_ASSERT_EX(false, "process wait failed", m_test_name, m_identifier);
+        TESSERA_ASSERT_EX(false, "process wait failed", m_test_name, m_identifier);
     }
     else if (status == WAIT_FAILED) {
-        REALM_ASSERT_EX(false, util::format("process wait failed (%1)", GetLastError()), m_test_name, m_identifier);
+        TESSERA_ASSERT_EX(false, util::format("process wait failed (%1)", GetLastError()), m_test_name, m_identifier);
     }
-    REALM_ASSERT_EX(status == WAIT_OBJECT_0, status, m_test_name, m_identifier);
+    TESSERA_ASSERT_EX(status == WAIT_OBJECT_0, status, m_test_name, m_identifier);
     return 0;
 #endif
 }
@@ -134,15 +134,15 @@ static void signal_handler(int signal)
 std::unique_ptr<SpawnedProcess> spawn_process(const std::string& test_name, const std::string& process_ident)
 {
     std::unique_ptr<SpawnedProcess> process = std::make_unique<SpawnedProcess>(test_name, process_ident);
-    const char* child_ident = getenv("REALM_CHILD_IDENT");
+    const char* child_ident = getenv("TESSERA_CHILD_IDENT");
     if (child_ident) {
         std::signal(SIGSEGV, signal_handler);
         std::signal(SIGABRT, signal_handler);
         return process;
     }
 
-    std::vector<std::string> env_vars = {"REALM_SPAWNED=1", util::format("UNITTEST_FILTER=%1", test_name),
-                                         util::format("REALM_CHILD_IDENT=%1", process_ident)};
+    std::vector<std::string> env_vars = {"TESSERA_SPAWNED=1", util::format("UNITTEST_FILTER=%1", test_name),
+                                         util::format("TESSERA_CHILD_IDENT=%1", process_ident)};
     if (auto value = getenv("UNITTEST_ENCRYPT_ALL")) {
         env_vars.push_back(util::format("UNITTEST_ENCRYPT_ALL=%1", value));
     }
@@ -153,9 +153,9 @@ std::unique_ptr<SpawnedProcess> spawn_process(const std::string& test_name, cons
         env_vars.push_back(util::format("TMPDIR=%1", getenv("TMPDIR")));
     }
 
-#if REALM_ANDROID || REALM_IOS
+#if TESSERA_ANDROID || TESSERA_IOS
     // posix_spawn() is unavailable on Android, and not permitted on iOS
-    REALM_UNREACHABLE();
+    TESSERA_UNREACHABLE();
 #elif defined(_WIN32)
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
@@ -164,7 +164,7 @@ std::unique_ptr<SpawnedProcess> spawn_process(const std::string& test_name, cons
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
     auto success = GetModuleFileName(NULL, program_name, MAX_PATH);
-    REALM_ASSERT_EX(success, util::format("GetModuleFileName failed (%1)", GetLastError()), test_name, process_ident);
+    TESSERA_ASSERT_EX(success, util::format("GetModuleFileName failed (%1)", GetLastError()), test_name, process_ident);
     std::string env;
     for (auto& var : env_vars) {
         env.append(var);
@@ -182,7 +182,7 @@ std::unique_ptr<SpawnedProcess> spawn_process(const std::string& test_name, cons
                        &si,          // Pointer to STARTUPINFO structure
                        &pi)          // Pointer to PROCESS_INFORMATION structure
     ) {
-        REALM_ASSERT_EX(false, util::format("CreateProcess failed (%1).\n", GetLastError()), test_name,
+        TESSERA_ASSERT_EX(false, util::format("CreateProcess failed (%1).\n", GetLastError()), test_name,
                         process_ident);
     }
     process->set_pid(pi);
@@ -197,7 +197,7 @@ std::unique_ptr<SpawnedProcess> spawn_process(const std::string& test_name, cons
     if (pos != std::string::npos)
         name_of_exe = test_path_prefix + "/" + name_of_exe.substr(pos + 1);
 #endif
-    REALM_ASSERT(name_of_exe.size());
+    TESSERA_ASSERT(name_of_exe.size());
     char* arg_v[] = {name_of_exe.data(), test_path_prefix.data(), nullptr};
     std::vector<char*> env_var_ptrs;
     env_var_ptrs.reserve(env_vars.size() + 1);
@@ -206,7 +206,7 @@ std::unique_ptr<SpawnedProcess> spawn_process(const std::string& test_name, cons
     });
     env_var_ptrs.push_back(nullptr);
     int ret = posix_spawn(&pid_of_child, name_of_exe.data(), nullptr, nullptr, arg_v, env_var_ptrs.data());
-    REALM_ASSERT_EX(ret == 0, ret);
+    TESSERA_ASSERT_EX(ret == 0, ret);
     process->set_pid(pid_of_child);
 #endif
     return process;
@@ -224,4 +224,4 @@ int64_t get_pid()
 }
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera

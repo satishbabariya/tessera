@@ -16,11 +16,11 @@
  *
  **************************************************************************/
 
-#include <realm/util/memory_stream.hpp>
+#include <tessera/util/memory_stream.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 // Test independence and thread-safety
 // -----------------------------------
@@ -55,7 +55,7 @@ namespace {
 
 TEST(MemoryStream_InputBasic)
 {
-    realm::util::MemoryInputStream in;
+    tessera::util::MemoryInputStream in;
     in.set_c_string("123 4567");
     in.unsetf(std::ios_base::skipws);
 
@@ -91,7 +91,7 @@ TEST(MemoryStream_InputBasic)
 
 TEST(MemoryStream_InputSeek)
 {
-    realm::util::MemoryInputStream in;
+    tessera::util::MemoryInputStream in;
 
     // No buffer
     CHECK_EQUAL(0, int(in.tellg()));

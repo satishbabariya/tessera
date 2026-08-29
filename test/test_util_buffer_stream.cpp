@@ -2,10 +2,10 @@
 
 #include "test.hpp"
 
-#include <realm/util/buffer_stream.hpp>
+#include <tessera/util/buffer_stream.hpp>
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 TEST(Util_BufferStream_Basics)
 {

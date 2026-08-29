@@ -3,16 +3,16 @@
 #include <thread>
 #include <iostream>
 
-#include <realm/status.hpp>
-#include <realm/sync/network/network.hpp>
+#include <tessera/status.hpp>
+#include <tessera/sync/network/network.hpp>
 
 #include "../util/timer.hpp"
 #include "../util/random.hpp"
 #include "../util/benchmark_results.hpp"
 
-using namespace realm;
-using namespace realm::sync;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::sync;
+using namespace tessera::test_util;
 
 
 namespace {
@@ -35,11 +35,11 @@ void connect_sockets(network::Socket& socket_1, network::Socket& socket_2)
     network::Endpoint ep = bind_acceptor(acceptor);
     bool accept_occurred = false, connect_occurred = false;
     auto accept_handler = [&](std::error_code ec) {
-        REALM_ASSERT(!ec);
+        TESSERA_ASSERT(!ec);
         accept_occurred = true;
     };
     auto connect_handler = [&](std::error_code ec) {
-        REALM_ASSERT(!ec);
+        TESSERA_ASSERT(!ec);
         connect_occurred = true;
     };
     acceptor.async_accept(socket_1, std::move(accept_handler));
@@ -54,8 +54,8 @@ void connect_sockets(network::Socket& socket_1, network::Socket& socket_2)
         service_2.run();
         thread.join();
     }
-    REALM_ASSERT(accept_occurred);
-    REALM_ASSERT(connect_occurred);
+    TESSERA_ASSERT(accept_occurred);
+    TESSERA_ASSERT(connect_occurred);
 }
 
 

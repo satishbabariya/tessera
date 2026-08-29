@@ -43,7 +43,7 @@ set(TEST_UTIL_HEADERS
     wildcard.hpp
 ) # TEST_UTIL_HEADERS
 
-if(REALM_ENABLE_SYNC)
+if(TESSERA_ENABLE_SYNC)
     list(APPEND TEST_UTIL_SOURCES
         compare_groups.cpp
         dump_changesets.cpp

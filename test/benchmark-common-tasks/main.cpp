@@ -23,12 +23,12 @@
 #include <sstream>
 #include <set>
 
-#include <realm.hpp>
-#if REALM_ENABLE_GEOSPATIAL
-#include <realm/geospatial.hpp>
+#include <tessera.hpp>
+#if TESSERA_ENABLE_GEOSPATIAL
+#include <tessera/geospatial.hpp>
 #endif
-#include <realm/string_data.hpp>
-#include <realm/util/file.hpp>
+#include <tessera/string_data.hpp>
+#include <tessera/util/file.hpp>
 
 #include "../test_types_helper.hpp"
 #include "../util/timer.hpp"
@@ -36,13 +36,13 @@
 #include "../util/benchmark_results.hpp"
 #include "../util/test_path.hpp"
 #include "../util/unit_test.hpp"
-#if REALM_ENABLE_ENCRYPTION
+#if TESSERA_ENABLE_ENCRYPTION
 #include "../util/crypt_key.hpp"
 #endif
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 static std::vector<std::regex> g_bench_filter;
 
@@ -717,7 +717,7 @@ struct BenchmarkInsertPKToIndexForType : public BenchmarkWithType<Type> {
         TableRef t = tr.get_or_add_table(Base::name());
         Base::m_col = t->add_column(Type::data_type, Base::name(), Type::is_nullable);
         t->set_primary_key_column(Base::m_col);
-        REALM_ASSERT(t->has_search_index(Base::m_col));
+        TESSERA_ASSERT(t->has_search_index(Base::m_col));
         tr.commit();
         while (m_unique_randoms.size() < BASE_SIZE) {
             int64_t random_int = m_random.draw_int<int64_t>();
@@ -771,7 +771,7 @@ struct BenchmarkParsedChainedOrEquality : public BenchmarkWithType<Type> {
         Base::before_all(db);
         auto wt = db->start_write();
         TableRef table = wt->get_table(Base::name());
-        REALM_ASSERT(Base::needles.size());
+        TESSERA_ASSERT(Base::needles.size());
         while (Base::needles.size() < NUM_CONDITIONS) {
             OwnedMixed needle;
             while (needle.is_null()) {
@@ -814,7 +814,7 @@ struct BenchmarkParsedIn : public BenchmarkWithType<Type> {
         Base::before_all(db);
         auto wt = db->start_write();
         TableRef table = wt->get_table(Base::name());
-        REALM_ASSERT(Base::needles.size());
+        TESSERA_ASSERT(Base::needles.size());
         while (Base::needles.size() < NUM_CONDITIONS) {
             OwnedMixed needle;
             while (needle.is_null()) {
@@ -906,7 +906,7 @@ struct BenchmarkQueryTimestampGreater : BenchmarkWithTimestamps {
         ConstTableRef table = m_table;
         Query query = table->where().greater(m_col, needle);
         TableView results = query.find_all();
-        REALM_ASSERT_EX(results.size() == values.size() - num_results_to_needle - 1, results.size(),
+        TESSERA_ASSERT_EX(results.size() == values.size() - num_results_to_needle - 1, results.size(),
                         num_results_to_needle, values.size());
         static_cast<void>(results);
     }
@@ -941,7 +941,7 @@ struct BenchmarkQueryTimestampGreaterOverLinks : BenchmarkQueryTimestampGreater 
         TableRef table = m_tr->get_table("Links");
         Query query = table->link(link_col_ndx).column<Timestamp>(m_col) > needle;
         TableView results = query.find_all();
-        REALM_ASSERT_EX(results.size() == values.size() - num_results_to_needle - 1, results.size(),
+        TESSERA_ASSERT_EX(results.size() == values.size() - num_results_to_needle - 1, results.size(),
                         num_results_to_needle, values.size());
         static_cast<void>(results);
     }
@@ -972,7 +972,7 @@ struct BenchmarkQueryTimestampGreaterEqual : BenchmarkWithTimestamps {
         ConstTableRef table = m_table;
         Query query = table->where().greater_equal(m_col, needle);
         TableView results = query.find_all();
-        REALM_ASSERT_EX(results.size() == values.size() - num_results_to_needle, results.size(),
+        TESSERA_ASSERT_EX(results.size() == values.size() - num_results_to_needle, results.size(),
                         num_results_to_needle, values.size());
         static_cast<void>(results);
     }
@@ -996,7 +996,7 @@ struct BenchmarkQueryTimestampLess : BenchmarkWithTimestamps {
         ConstTableRef table = m_table;
         Query query = table->where().less(m_col, needle);
         TableView results = query.find_all();
-        REALM_ASSERT_EX(results.size() == num_results_to_needle, results.size(), num_results_to_needle,
+        TESSERA_ASSERT_EX(results.size() == num_results_to_needle, results.size(), num_results_to_needle,
                         values.size());
         static_cast<void>(results);
     }
@@ -1019,7 +1019,7 @@ struct BenchmarkQueryTimestampLessEqual : BenchmarkWithTimestamps {
         ConstTableRef table = m_table;
         Query query = table->where().less_equal(m_col, needle);
         TableView results = query.find_all();
-        REALM_ASSERT_EX(results.size() == num_results_to_needle + 1, results.size(), num_results_to_needle,
+        TESSERA_ASSERT_EX(results.size() == num_results_to_needle + 1, results.size(), num_results_to_needle,
                         values.size());
         static_cast<void>(results);
     }
@@ -1043,7 +1043,7 @@ struct BenchmarkQueryTimestampEqual : BenchmarkWithTimestamps {
         ConstTableRef table = m_table;
         Query query = table->where().equal(m_col, needle);
         TableView results = query.find_all();
-        REALM_ASSERT_EX(results.size() == values.count(needle), results.size(), num_results_to_needle,
+        TESSERA_ASSERT_EX(results.size() == values.count(needle), results.size(), num_results_to_needle,
                         values.count(needle), values.size());
         static_cast<void>(results);
     }
@@ -1066,7 +1066,7 @@ struct BenchmarkQueryTimestampNotEqual : BenchmarkWithTimestamps {
         ConstTableRef table = m_table;
         Query query = table->where().not_equal(m_col, needle);
         TableView results = query.find_all();
-        REALM_ASSERT_EX(results.size() == values.size() - values.count(needle) + num_nulls_added, results.size(),
+        TESSERA_ASSERT_EX(results.size() == values.size() - values.count(needle) + num_nulls_added, results.size(),
                         values.size(), values.count(needle));
         static_cast<void>(results);
     }
@@ -1088,9 +1088,9 @@ struct BenchmarkQueryTimestampNotNull : BenchmarkWithTimestamps {
     void operator()(DBRef)
     {
         ConstTableRef table = m_table;
-        Query query = table->where().not_equal(m_col, realm::null());
+        Query query = table->where().not_equal(m_col, tessera::null());
         TableView results = query.find_all();
-        REALM_ASSERT_EX(results.size() == values.size(), results.size(), num_nulls_added, num_results_to_needle,
+        TESSERA_ASSERT_EX(results.size() == values.size(), results.size(), num_nulls_added, num_results_to_needle,
                         values.size());
         static_cast<void>(results);
     }
@@ -1111,9 +1111,9 @@ struct BenchmarkQueryTimestampEqualNull : BenchmarkWithTimestamps {
     void operator()(DBRef)
     {
         ConstTableRef table = m_table;
-        Query query = table->where().equal(m_col, realm::null());
+        Query query = table->where().equal(m_col, tessera::null());
         TableView results = query.find_all();
-        REALM_ASSERT_EX(results.size() == num_nulls_added, results.size(), num_nulls_added, values.size());
+        TESSERA_ASSERT_EX(results.size() == num_nulls_added, results.size(), num_nulls_added, values.size());
         static_cast<void>(results);
     }
 };
@@ -1179,7 +1179,7 @@ struct BenchmarkIntVsDoubleColumns : Benchmark {
     {
         TableRef table = m_table;
         Query q = (table->column<Int>(ints_col_ndx) > table->column<Double>(doubles_col_ndx));
-        REALM_ASSERT_3(q.count(), ==, ((num_rows / 2) - 1));
+        TESSERA_ASSERT_3(q.count(), ==, ((num_rows / 2) - 1));
     }
 
     void after_all(DBRef group)
@@ -1213,7 +1213,7 @@ struct BenchmarkQueryIntListSize : Benchmark {
         TableRef table = m_table;
         Query q = table->where().size_equal(int_list_col_ndx, 3);
         size_t count = q.count();
-        REALM_ASSERT_3(count, ==, (num_rows));
+        TESSERA_ASSERT_3(count, ==, (num_rows));
     }
 
     void after_all(DBRef group)
@@ -1352,7 +1352,7 @@ struct BenchmarkQueryChainedOrInts : BenchmarkWithIntsTable {
         TableRef t = tr.get_table(name());
         std::vector<ObjKey> keys;
         t->create_objects(num_rows, keys);
-        REALM_ASSERT(num_rows > num_queried_matches);
+        TESSERA_ASSERT(num_rows > num_queried_matches);
         Random r;
         size_t i = 0;
         for (auto e : *t) {
@@ -1374,7 +1374,7 @@ struct BenchmarkQueryChainedOrInts : BenchmarkWithIntsTable {
             query.Or().equal(m_col, values_to_query[i]);
         }
         TableView results = query.find_all();
-        REALM_ASSERT_EX(results.size() == num_queried_matches, results.size(), num_queried_matches,
+        TESSERA_ASSERT_EX(results.size() == num_queried_matches, results.size(), num_queried_matches,
                         values_to_query.size());
         static_cast<void>(results);
     }
@@ -1394,7 +1394,7 @@ struct BenchmarkQueryChainedOrIntsCount : BenchmarkQueryChainedOrInts {
             query.Or().equal(m_col, values_to_query[i]);
         }
         size_t matches = query.count();
-        REALM_ASSERT_EX(matches == num_queried_matches, matches, num_queried_matches, values_to_query.size());
+        TESSERA_ASSERT_EX(matches == num_queried_matches, matches, num_queried_matches, values_to_query.size());
     }
 };
 
@@ -1426,7 +1426,7 @@ struct BenchmarkQueryIntEquality : BenchmarkQueryChainedOrInts {
         for (int k = 0; k < 1000; k++) {
             Query query = table->where().equal(m_col, k);
             TableView results = query.find_all();
-            REALM_ASSERT_EX(results.size() == 1, results.size(), 1);
+            TESSERA_ASSERT_EX(results.size() == 1, results.size(), 1);
             static_cast<void>(results);
         }
     }
@@ -1467,7 +1467,7 @@ struct BenchmarkForeignAggAvg : BenchmarkWithIntsTable {
         m_double_col = t->add_column(type_Double, "double_col");
         std::vector<ObjKey> keys;
         t->create_objects(num_rows, keys);
-        REALM_ASSERT(num_rows > num_queried_matches);
+        TESSERA_ASSERT(num_rows > num_queried_matches);
         Random r;
         size_t i = 0;
         for (auto e : *t) {
@@ -1488,7 +1488,7 @@ struct BenchmarkForeignAggAvg : BenchmarkWithIntsTable {
             auto result = table->where()
                               .not_equal(m_col, values_to_query[m_rand.draw_int<size_t>(0, values_to_query.size())])
                               .avg(m_double_col);
-            REALM_ASSERT(result);
+            TESSERA_ASSERT(result);
         }
     }
 };
@@ -1516,7 +1516,7 @@ struct BenchmarkWithStringsTableForIn : BenchmarkWithStringsTable {
         BenchmarkWithStringsTable::before_all(group);
         WriteTransaction tr(group);
         TableRef t = tr.get_table(name());
-        REALM_ASSERT(num_rows > num_queried_matches);
+        TESSERA_ASSERT(num_rows > num_queried_matches);
         for (size_t i = 0; i < num_rows; ++i) {
             t->create_object().set(m_col, util::to_string(i));
         }
@@ -1554,7 +1554,7 @@ struct BenchmarkQueryNotChainedOrStrings : BenchmarkWithStringsTableForIn {
         }
         query.end_group();
         TableView results = query.find_all();
-        REALM_ASSERT_EX(results.size() == num_rows - num_queried_matches, results.size(),
+        TESSERA_ASSERT_EX(results.size() == num_rows - num_queried_matches, results.size(),
                         num_rows - num_queried_matches, values_to_query.size());
         static_cast<void>(results);
     }
@@ -1580,7 +1580,7 @@ struct BenchmarkQueryChainedOrStrings : BenchmarkWithStringsTableForIn {
             query.Or().equal(m_col, StringData(values_to_query[i]));
         }
         TableView results = query.find_all();
-        REALM_ASSERT_EX(results.size() == num_queried_matches, results.size(), num_queried_matches,
+        TESSERA_ASSERT_EX(results.size() == num_queried_matches, results.size(), num_queried_matches,
                         values_to_query.size());
         static_cast<void>(results);
     }
@@ -1612,7 +1612,7 @@ struct BenchmarkQueryChainedOrStringsViewFilterPredicate : BenchmarkQueryChained
 
         TableView results = table->where().find_all();
         results.filter(FilterDescriptor(predicate));
-        REALM_ASSERT_EX(results.size() == num_queried_matches, results.size(), num_queried_matches,
+        TESSERA_ASSERT_EX(results.size() == num_queried_matches, results.size(), num_queried_matches,
                         values_to_query.size());
         static_cast<void>(results);
     }
@@ -1692,7 +1692,7 @@ struct BenchmarkSortIntList : Benchmark {
 
     void operator()(DBRef db)
     {
-        realm::ReadTransaction tr(db);
+        tessera::ReadTransaction tr(db);
         auto table = tr.get_group().get_table(name());
         auto list = table->get_object(m_obj).get_list<int64_t>(m_col);
         list.sort(m_indices, true);
@@ -1737,7 +1737,7 @@ struct BenchmarkSortIntDictionary : Benchmark {
 
     void operator()(DBRef db)
     {
-        realm::ReadTransaction tr(db);
+        tessera::ReadTransaction tr(db);
         auto table = tr.get_group().get_table(name());
         auto dict = table->get_object(m_obj).get_dictionary(m_col);
         dict.sort(m_indices, true);
@@ -1781,7 +1781,7 @@ struct BenchmarkSortThenLimit : Benchmark {
 
     void operator()(DBRef db)
     {
-        realm::ReadTransaction tr(db);
+        tessera::ReadTransaction tr(db);
         auto tv = tr.get_group().get_table(name())->where().find_all();
         DescriptorOrdering ordering;
         ordering.append_sort(SortDescriptor({{m_col}}));
@@ -2114,7 +2114,7 @@ struct BenchmarkNonInitiatorOpen : Benchmark {
         return "NonInitiatorOpen";
     }
     // the shared realm will be removed after the benchmark finishes
-    std::unique_ptr<realm::test_util::DBTestPathGuard> path;
+    std::unique_ptr<tessera::test_util::DBTestPathGuard> path;
     DBRef initiator;
 
     DBRef do_open()
@@ -2133,7 +2133,7 @@ struct BenchmarkNonInitiatorOpen : Benchmark {
         test_details.file_name = __FILE__;
         test_details.line_number = __LINE__;
 
-        path = std::make_unique<DBTestPathGuard>(get_test_path(ident, ".realm"));
+        path = std::make_unique<DBTestPathGuard>(get_test_path(ident, ".tess"));
 
         // open once - session initiation
         initiator = do_open();
@@ -2320,7 +2320,7 @@ struct TransactionDuplicate : Benchmark {
     void after_each(DBRef) {}
 };
 
-#if REALM_ENABLE_GEOSPATIAL
+#if TESSERA_ENABLE_GEOSPATIAL
 
 struct BenchmarkWithGeospatial : Benchmark {
     std::string loc_name() const
@@ -2531,7 +2531,7 @@ const char* to_ident_cstr(DBOptions::Durability level)
             return "Full";
         case DBOptions::Durability::MemOnly:
             return "MemOnly";
-        case realm::DBOptions::Durability::Unsafe:
+        case tessera::DBOptions::Durability::Unsafe:
             return "Unsafe";
     }
     return nullptr;
@@ -2560,7 +2560,7 @@ void run_benchmark(BenchmarkResults& results, bool force_full = false)
 
     if (force_full) {
         configs.push_back(config_pair(DBOptions::Durability::Full, nullptr));
-#if REALM_ENABLE_ENCRYPTION
+#if TESSERA_ENABLE_ENCRYPTION
         configs.push_back(config_pair(DBOptions::Durability::Full, crypt_key(true)));
 #endif
     }
@@ -2590,15 +2590,15 @@ void run_benchmark(BenchmarkResults& results, bool force_full = false)
                  << (key == nullptr ? "_EncryptionOff" : "_EncryptionOn");
         std::string ident = ident_ss.str();
 
-        realm::test_util::unit_test::TestDetails test_details;
+        tessera::test_util::unit_test::TestDetails test_details;
         test_details.suite_name = "BenchmarkCommonTasks";
         test_details.test_name = ident.c_str();
         test_details.file_name = __FILE__;
         test_details.line_number = __LINE__;
 
         // Open a SharedGroup:
-        realm::test_util::DBTestPathGuard realm_path(
-            test_util::get_test_path("benchmark_common_tasks_" + ident, ".realm"));
+        tessera::test_util::DBTestPathGuard realm_path(
+            test_util::get_test_path("benchmark_common_tasks_" + ident, ".tess"));
         DBRef group;
         group = DB::create(realm_path, DBOptions(level, key));
         benchmark.before_all(group);
@@ -2643,7 +2643,7 @@ extern "C" int benchmark_common_tasks_main();
 
 int benchmark_common_tasks_main()
 {
-    std::string results_file_stem = realm::test_util::get_test_path_prefix();
+    std::string results_file_stem = tessera::test_util::get_test_path_prefix();
     std::cout << "Results path: " << results_file_stem << std::endl;
     results_file_stem += "results";
     BenchmarkResults results(40, "benchmark-common-tasks", results_file_stem.c_str());
@@ -2778,7 +2778,7 @@ int benchmark_common_tasks_main()
 
     BENCH(TransactionDuplicate);
 
-#if REALM_ENABLE_GEOSPATIAL
+#if TESSERA_ENABLE_GEOSPATIAL
     BENCH(BenchmarkAssignGeoPoints);
     BENCH(BenchmarkAssignGeoPointsFromNull);
     BENCH(BenchmarkFetchGeoPoints);

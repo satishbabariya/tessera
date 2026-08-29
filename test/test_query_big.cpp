@@ -19,14 +19,14 @@
 #include "testsettings.hpp"
 #ifdef TEST_QUERY
 
-#include <realm.hpp>
+#include <tessera.hpp>
 
 #include "test.hpp"
 #include "test_table_helper.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 
 // Test independence and thread-safety
@@ -194,10 +194,10 @@ struct QueryInitHelper {
 
     // Using type erasure here is a massive speedup (up to 10x) to compile times.
     using TestFunc = util::FunctionRef<void(Query&, util::FunctionRef<void(QueryAnyRef)>)>;
-    REALM_NOINLINE void operator()(const TestFunc& fn);
+    TESSERA_NOINLINE void operator()(const TestFunc& fn);
 
     template <typename... Mutations>
-    REALM_NOINLINE size_t run(const TestFunc& fn);
+    TESSERA_NOINLINE size_t run(const TestFunc& fn);
 };
 
 void QueryInitHelper::operator()(const TestFunc& fn)

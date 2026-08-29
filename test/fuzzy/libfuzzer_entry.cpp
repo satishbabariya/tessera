@@ -1,10 +1,10 @@
-#include <realm/db.hpp>
-#include <realm/history.hpp>
+#include <tessera/db.hpp>
+#include <tessera/history.hpp>
 #include "../fuzz_group.hpp"
 #include "../util/test_path.hpp"
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size);
 
@@ -14,7 +14,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* Data, size_t Size)
     if (Size == 0) {
         return 0;
     }
-    realm::test_util::RealmPathInfo test_context{"libfuzzer_test"};
+    tessera::test_util::RealmPathInfo test_context{"libfuzzer_test"};
     SHARED_GROUP_TEST_PATH(path);
     disable_sync_to_disk();
     std::string contents(reinterpret_cast<const char*>(Data), Size);

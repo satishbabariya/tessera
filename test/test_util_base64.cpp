@@ -19,12 +19,12 @@
 #include "testsettings.hpp"
 #ifdef TEST_UTIL_BASE64
 
-#include <realm/util/base64.hpp>
+#include <tessera/util/base64.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 TEST(Base64_Decode)
 {

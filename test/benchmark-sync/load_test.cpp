@@ -3,7 +3,7 @@
 
 #include "load_tester.hpp"
 
-using namespace realm;
+using namespace tessera;
 using namespace sync;
 
 static void print_usage(std::ostream& os, const char* prog)
@@ -154,7 +154,7 @@ int main(int argc, char** argv)
     identity_file.open(*token_path);
     std::string syncUserToken;
     identity_file >> syncUserToken;
-    std::string realm_path = root_dir + "/load.realm";
+    std::string realm_path = root_dir + "/load.tess";
 
     LoadTester ld{syncUserToken,  realm_path,       server_url,  machine_id,      client_id,  sleep_in_between,
                   num_operations, num_transactions, listen == 1, statsd_hostname, statsd_port};

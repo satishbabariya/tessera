@@ -16,11 +16,11 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_TEST_ALL_HPP
-#define REALM_TEST_TEST_ALL_HPP
+#ifndef TESSERA_TEST_TEST_ALL_HPP
+#define TESSERA_TEST_TEST_ALL_HPP
 
-#include <realm/util/logger.hpp>
+#include <tessera/util/logger.hpp>
 
-int test_all(const std::shared_ptr<realm::util::Logger>& logger = nullptr);
+int test_all(const std::shared_ptr<tessera::util::Logger>& logger = nullptr);
 
-#endif // REALM_TEST_TEST_ALL_HPP
+#endif // TESSERA_TEST_TEST_ALL_HPP

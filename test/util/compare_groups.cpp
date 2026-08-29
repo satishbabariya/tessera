@@ -6,13 +6,13 @@
 #include <sstream>
 #include <iostream>
 
-#include <realm/table.hpp>
-#include <realm/sync/object_id.hpp>
-#include <realm/list.hpp>
-#include <realm/dictionary.hpp>
-#include <realm/set.hpp>
+#include <tessera/table.hpp>
+#include <tessera/sync/object_id.hpp>
+#include <tessera/list.hpp>
+#include <tessera/dictionary.hpp>
+#include <tessera/set.hpp>
 
-using namespace realm;
+using namespace tessera;
 
 namespace {
 
@@ -38,7 +38,7 @@ private:
     std::string m_prefix;
     void ensure_prefix()
     {
-        if (REALM_LIKELY(!m_prefix.empty()))
+        if (TESSERA_LIKELY(!m_prefix.empty()))
             return;
         std::ostringstream out;
         out << "Table[" << m_table_name << "]: "; // Throws
@@ -68,7 +68,7 @@ private:
     std::string m_prefix;
     void ensure_prefix()
     {
-        if (REALM_LIKELY(!m_prefix.empty()))
+        if (TESSERA_LIKELY(!m_prefix.empty()))
             return;
         std::ostringstream out;
         out << m_pk << ": ";  // Throws
@@ -83,10 +83,10 @@ bool compare_arrays(T& a, T& b, Cmp equals = Cmp{})
     auto a_it = a.begin();
     auto b_it = b.begin();
     if (a.size() != b.size()) {
-#if REALM_DEBUG
+#if TESSERA_DEBUG
         std::cerr << "LEFT size: " << a.size() << std::endl;
         std::cerr << "RIGHT size: " << b.size() << std::endl;
-#endif // REALM_DEBUG
+#endif // TESSERA_DEBUG
         return false;
     }
 
@@ -98,10 +98,10 @@ bool compare_arrays(T& a, T& b, Cmp equals = Cmp{})
 
     return true;
 different:
-#if REALM_DEBUG
+#if TESSERA_DEBUG
     std::cerr << "LEFT: " << *a_it << std::endl;
     std::cerr << "RIGHT: " << *b_it << std::endl;
-#endif // REALM_DEBUG
+#endif // TESSERA_DEBUG
     return false;
 }
 
@@ -116,7 +116,7 @@ bool compare_dictionaries(const Dictionary& a, const Dictionary& b)
     auto a_it = a.begin();
     auto b_it = b.begin();
     if (a.size() != b.size()) {
-#if REALM_DEBUG
+#if TESSERA_DEBUG
         std::cerr << "LEFT size: " << a.size() << std::endl;
         std::cerr << "RIGHT size: " << b.size() << std::endl;
 #endif
@@ -132,7 +132,7 @@ bool compare_dictionaries(const Dictionary& a, const Dictionary& b)
     return true;
 
 different:
-#if REALM_DEBUG
+#if TESSERA_DEBUG
     std::cerr << "LEFT: " << (*a_it).first << " => " << (*a_it).second << std::endl;
     std::cerr << "RIGHT: " << (*b_it).first << " => " << (*b_it).second << std::endl;
 #endif
@@ -180,7 +180,7 @@ ObjKey row_for_primary_key(const Table& table, Mixed pk)
         return pk.get<ObjKey>();
     }
     else {
-        REALM_TERMINATE("row_for_primary_key() with primary key, expected GlobalKey");
+        TESSERA_TERMINATE("row_for_primary_key() with primary key, expected GlobalKey");
     }
     return {};
 }
@@ -413,7 +413,7 @@ bool compare_lists(const Column& col, const Obj& obj_1, const Obj& obj_2, util::
                 // info. Instead compare just the objects
                 // themselves.
                 bool schemas_equal = compare_schemas(*target_table_1, *target_table_2, logger, &embedded_columns);
-                REALM_ASSERT(schemas_equal);
+                TESSERA_ASSERT(schemas_equal);
             }
 
             std::size_t n = a.size();
@@ -667,7 +667,7 @@ bool compare_objects(const Obj& obj_1, const Obj& obj_2, const std::vector<Colum
         }
 
         const bool nullable = table_1.is_nullable(col.key_1);
-        REALM_ASSERT(table_2.is_nullable(col.key_2) == nullable);
+        TESSERA_ASSERT(table_2.is_nullable(col.key_2) == nullable);
         switch (col.get_type()) {
             case type_Int: {
                 if (nullable) {
@@ -817,7 +817,7 @@ bool compare_objects(const Obj& obj_1, const Obj& obj_2, const std::vector<Colum
                         // themselves.
                         bool schemas_equal =
                             compare_schemas(*target_table_1, *target_table_2, logger, &embedded_columns);
-                        REALM_ASSERT(schemas_equal);
+                        TESSERA_ASSERT(schemas_equal);
                     }
 
                     if (is_embedded) {
@@ -845,7 +845,7 @@ bool compare_objects(const Obj& obj_1, const Obj& obj_2, const std::vector<Colum
                 continue;
             }
         }
-        REALM_TERMINATE("Unsupported column type.");
+        TESSERA_TERMINATE("Unsupported column type.");
     }
     return equal;
 }
@@ -857,8 +857,8 @@ bool compare_objects(Mixed& pk, const Table& table_1, const Table& table_2, cons
     ObjKey oid_2 = row_for_primary_key(table_2, pk);
 
     // Note: This is ensured by the inventory handling in compare_tables().
-    REALM_ASSERT(oid_1);
-    REALM_ASSERT(oid_2);
+    TESSERA_ASSERT(oid_1);
+    TESSERA_ASSERT(oid_2);
     const Obj obj_1 = table_1.get_object(oid_1);
     const Obj obj_2 = table_2.get_object(oid_2);
     return compare_objects(obj_1, obj_2, columns, logger);
@@ -866,7 +866,7 @@ bool compare_objects(Mixed& pk, const Table& table_1, const Table& table_2, cons
 
 } // anonymous namespace
 
-namespace realm::test_util {
+namespace tessera::test_util {
 
 bool compare_tables(const Table& table_1, const Table& table_2, util::Logger& logger)
 {
@@ -996,4 +996,4 @@ bool compare_groups(const Transaction& group_1, const Transaction& group_2,
     return equal;
 }
 
-} // namespace realm::test_util
+} // namespace tessera::test_util

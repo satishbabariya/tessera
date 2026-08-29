@@ -30,8 +30,8 @@ file
 *after* it because it works by wrapping pthread functions by macro-redefining their function names.
 */
 
-#ifndef REALM_PTHREAD_TEST_HPP
-#define REALM_PTHREAD_TEST_HPP
+#ifndef TESSERA_PTHREAD_TEST_HPP
+#define TESSERA_PTHREAD_TEST_HPP
 
 #ifdef _WIN32
 #define NOMINMAX

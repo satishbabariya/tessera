@@ -19,21 +19,21 @@
 #include "testsettings.hpp"
 #ifdef TEST_INDEX_STRING
 
-#include <realm.hpp>
-#include <realm/index_string.hpp>
-#include <realm/query_expression.hpp>
-#include <realm/tokenizer.hpp>
-#include <realm/util/to_string.hpp>
+#include <tessera.hpp>
+#include <tessera/index_string.hpp>
+#include <tessera/query_expression.hpp>
+#include <tessera/tokenizer.hpp>
+#include <tessera/util/to_string.hpp>
 #include <set>
 #include "test.hpp"
 #include "util/misc.hpp"
 #include "util/random.hpp"
 
-using namespace realm;
+using namespace tessera;
 using namespace util;
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 using unit_test::TestContext;
 
 // Test independence and thread-safety
@@ -130,8 +130,8 @@ public:
         size_t find_first(T value) const
         {
             auto k = m_owner->m_table.find_first(m_owner->m_col_key, value);
-            if (k == realm::null_key) {
-                return realm::npos;
+            if (k == tessera::null_key) {
+                return tessera::npos;
             }
             auto it = std::find(m_keys.begin(), m_keys.end(), k);
             return it - m_keys.begin();
@@ -253,16 +253,16 @@ using non_nullable = std::false_type;
 
 TEST(Tokenizer_Basic)
 {
-    auto tok = realm::Tokenizer::get_instance();
+    auto tok = tessera::Tokenizer::get_instance();
 
     tok->reset("to be or not to be");
     auto tokens = tok->get_all_tokens();
     CHECK_EQUAL(tokens.size(), 4);
 
     tok->reset("To be or not to be");
-    realm::TokenInfoMap info = tok->get_token_info();
+    tessera::TokenInfoMap info = tok->get_token_info();
     CHECK_EQUAL(info.size(), 4);
-    realm::TokenInfo& i(info["to"]);
+    tessera::TokenInfo& i(info["to"]);
     CHECK_EQUAL(i.positions.size(), 2);
     CHECK_EQUAL(i.positions[0], 0);
     CHECK_EQUAL(i.positions[1], 4);
@@ -275,7 +275,7 @@ TEST(Tokenizer_Basic)
     tok->reset("Jeg gik mig over sø og land");
     info = tok->get_token_info();
     CHECK_EQUAL(info.size(), 7);
-    realm::TokenInfo& j(info["sø"]);
+    tessera::TokenInfo& j(info["sø"]);
     CHECK_EQUAL(j.ranges[0].first, 17);
     CHECK_EQUAL(j.ranges[0].second, 20);
 
@@ -864,7 +864,7 @@ TEST(StringIndex_FuzzyTest_Int)
     column<Int> test_resources;
     auto col = test_resources.get_column();
     Random random(random_int<unsigned long>());
-    const size_t n = static_cast<size_t>(1.2 * REALM_MAX_BPNODE_SIZE);
+    const size_t n = static_cast<size_t>(1.2 * TESSERA_MAX_BPNODE_SIZE);
 
     col.create_search_index();
 
@@ -988,11 +988,11 @@ TEST_TYPES(StringIndex_Null, nullable_string_column, nullable_enum_column)
     typename TEST_TYPE::ColumnTestType& col = test_resources.get_column();
 
     col.add("");
-    col.add(realm::null());
+    col.add(tessera::null());
 
     const SearchIndex& ndx = *col.create_search_index();
 
-    auto r1 = ndx.find_first(realm::null());
+    auto r1 = ndx.find_first(tessera::null());
     CHECK_EQUAL(r1, col.key(1));
 }
 
@@ -1252,7 +1252,7 @@ TEST_TYPES(StringIndex_MaxBytes, string_column, nullable_string_column, enum_col
     };
 
     std::vector<size_t> num_duplicates_list = {
-        1, 10, REALM_MAX_BPNODE_SIZE - 1, REALM_MAX_BPNODE_SIZE, REALM_MAX_BPNODE_SIZE + 1,
+        1, 10, TESSERA_MAX_BPNODE_SIZE - 1, TESSERA_MAX_BPNODE_SIZE, TESSERA_MAX_BPNODE_SIZE + 1,
     };
     for (auto& dups : num_duplicates_list) {
         duplicate_check(dups, under_max);
@@ -1349,7 +1349,7 @@ TEST_TYPES(StringIndex_InsertLongPrefix, string_column, nullable_string_column, 
 TEST_TYPES(StringIndex_InsertLongPrefixAndQuery, string_column, nullable_string_column, enum_column,
            nullable_enum_column)
 {
-    constexpr int half_node_size = REALM_MAX_BPNODE_SIZE / 2;
+    constexpr int half_node_size = TESSERA_MAX_BPNODE_SIZE / 2;
     bool nullable_column = TEST_TYPE::is_nullable();
     Group g;
     auto t = g.add_table("StringsOnly");
@@ -1425,7 +1425,7 @@ TEST(StringIndex_Fuzzy)
         std::string strings[chunkcount];
 
         for (size_t j = 0; j < chunkcount; j++) {
-            size_t len = fastrand() % REALM_MAX_BPNODE_SIZE;
+            size_t len = fastrand() % TESSERA_MAX_BPNODE_SIZE;
 
             for (size_t i = 0; i < len; i++)
                 strings[j] += char(fastrand());
@@ -1725,7 +1725,7 @@ TEST_TYPES_IF(StringIndex_Insensitive_Fuzz, TEST_DURATION > 1, string_column, nu
         TEST_TYPE test_resources;
         typename TEST_TYPE::ColumnTestType& col = test_resources.get_column();
 
-        size_t rows = size_t(fastrand(2 * REALM_MAX_BPNODE_SIZE - 1));
+        size_t rows = size_t(fastrand(2 * TESSERA_MAX_BPNODE_SIZE - 1));
 
         // Add 'rows' number of rows in the column
         for (size_t t = 0; t < rows; t++) {

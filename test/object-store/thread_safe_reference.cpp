@@ -21,24 +21,24 @@
 #include "util/test_file.hpp"
 #include "util/test_utils.hpp"
 
-#include <realm/object-store/list.hpp>
-#include <realm/object-store/object.hpp>
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/object_store.hpp>
-#include <realm/object-store/results.hpp>
-#include <realm/object-store/schema.hpp>
-#include <realm/object-store/thread_safe_reference.hpp>
-#include <realm/object-store/util/scheduler.hpp>
+#include <tessera/object-store/list.hpp>
+#include <tessera/object-store/object.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/object_store.hpp>
+#include <tessera/object-store/results.hpp>
+#include <tessera/object-store/schema.hpp>
+#include <tessera/object-store/thread_safe_reference.hpp>
+#include <tessera/object-store/util/scheduler.hpp>
 
-#include <realm/object-store/impl/object_accessor_impl.hpp>
-#include <realm/object-store/impl/realm_coordinator.hpp>
+#include <tessera/object-store/impl/object_accessor_impl.hpp>
+#include <tessera/object-store/impl/realm_coordinator.hpp>
 
-#include <realm/db.hpp>
-#include <realm/history.hpp>
-#include <realm/string_data.hpp>
-#include <realm/util/optional.hpp>
+#include <tessera/db.hpp>
+#include <tessera/history.hpp>
+#include <tessera/string_data.hpp>
+#include <tessera/util/optional.hpp>
 
-using namespace realm;
+using namespace tessera;
 
 
 static TableRef get_table(Realm& realm, StringData object_name)

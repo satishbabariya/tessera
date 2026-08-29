@@ -23,23 +23,23 @@
 #include "util/event_loop.hpp"
 #include "util/index_helpers.hpp"
 
-#include <realm/object-store/binding_context.hpp>
-#include <realm/object-store/list.hpp>
-#include <realm/object-store/object.hpp>
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/results.hpp>
-#include <realm/object-store/schema.hpp>
+#include <tessera/object-store/binding_context.hpp>
+#include <tessera/object-store/list.hpp>
+#include <tessera/object-store/object.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/results.hpp>
+#include <tessera/object-store/schema.hpp>
 
-#include <realm/object-store/impl/realm_coordinator.hpp>
-#include <realm/object-store/impl/object_accessor_impl.hpp>
+#include <tessera/object-store/impl/realm_coordinator.hpp>
+#include <tessera/object-store/impl/object_accessor_impl.hpp>
 
-#include <realm/version.hpp>
-#include <realm/db.hpp>
+#include <tessera/version.hpp>
+#include <tessera/db.hpp>
 
 #include <cstdint>
 
-using namespace realm;
+using namespace tessera;
 using util::any_cast;
 
 TEST_CASE("list", "[list]") {
@@ -1219,8 +1219,8 @@ TEST_CASE("list", "[list]") {
             REQUIRE(list.get(10).get_key().value == 5);
         }
 
-        SECTION("adds boxed realm::Object") {
-            realm::Object obj(r, list.get_object_schema(), target->get_object(target_keys[5]));
+        SECTION("adds boxed tessera::Object") {
+            tessera::Object obj(r, list.get_object_schema(), target->get_object(target_keys[5]));
             list.add(ctx, std::any(obj));
             REQUIRE(list.size() == 11);
             REQUIRE(list.get(10).get_key() == target_keys[5]);
@@ -1236,7 +1236,7 @@ TEST_CASE("list", "[list]") {
         SECTION("throws for object in wrong table") {
             REQUIRE_EXCEPTION(list.add(ctx, std::any(origin->get_object(0))), ObjectTypeMismatch,
                               "Object of type (origin) does not match List type (target)");
-            realm::Object object(r, *r->schema().find("origin"), origin->get_object(0));
+            tessera::Object object(r, *r->schema().find("origin"), origin->get_object(0));
             REQUIRE_EXCEPTION(list.add(ctx, std::any(object)), ObjectTypeMismatch,
                               "Object of type (origin) does not match List type (target)");
         }
@@ -1253,7 +1253,7 @@ TEST_CASE("list", "[list]") {
         }
 
         SECTION("returns index in list for boxed Object") {
-            realm::Object obj(r, *r->schema().find("origin"), target->get_object(target_keys[5]));
+            tessera::Object obj(r, *r->schema().find("origin"), target->get_object(target_keys[5]));
             REQUIRE(list.find(ctx, std::any(obj)) == 5);
         }
 
@@ -1892,7 +1892,7 @@ TEST_CASE("embedded List", "[list]") {
         }
 
         SECTION("returns index in list for boxed Object") {
-            realm::Object obj(r, *r->schema().find("origin"), list.get(5));
+            tessera::Object obj(r, *r->schema().find("origin"), list.get(5));
             REQUIRE(list.find(ctx, std::any(obj)) == 5);
         }
 
@@ -2038,7 +2038,7 @@ TEST_CASE("list of embedded objects", "[list]") {
     }
 }
 
-#if REALM_ENABLE_SYNC
+#if TESSERA_ENABLE_SYNC
 
 TEST_CASE("list with unresolved links", "[list]") {
     TestSyncManager init_sync_manager({}, {false});

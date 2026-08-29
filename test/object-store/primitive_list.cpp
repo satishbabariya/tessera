@@ -24,30 +24,30 @@
 #include "util/test_file.hpp"
 #include "util/test_utils.hpp"
 
-#include <realm/object-store/binding_context.hpp>
-#include <realm/object-store/list.hpp>
-#include <realm/object-store/object.hpp>
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/results.hpp>
-#include <realm/object-store/schema.hpp>
-#include <realm/object-store/thread_safe_reference.hpp>
+#include <tessera/object-store/binding_context.hpp>
+#include <tessera/object-store/list.hpp>
+#include <tessera/object-store/object.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/results.hpp>
+#include <tessera/object-store/schema.hpp>
+#include <tessera/object-store/thread_safe_reference.hpp>
 
-#include <realm/object-store/impl/realm_coordinator.hpp>
-#include <realm/object-store/impl/object_accessor_impl.hpp>
+#include <tessera/object-store/impl/realm_coordinator.hpp>
+#include <tessera/object-store/impl/object_accessor_impl.hpp>
 
-#include <realm/db.hpp>
-#include <realm/query_expression.hpp>
-#include <realm/version.hpp>
+#include <tessera/db.hpp>
+#include <tessera/query_expression.hpp>
+#include <tessera/version.hpp>
 
 #include <numeric>
 
-using namespace realm;
-using namespace realm::util;
-namespace cf = realm::collection_fixtures;
+using namespace tessera;
+using namespace tessera::util;
+namespace cf = tessera::collection_fixtures;
 
 // Dummy implementation to satisfy StringifyingContext
-inline std::ostream& operator<<(std::ostream& out, const realm::object_store::Collection&)
+inline std::ostream& operator<<(std::ostream& out, const tessera::object_store::Collection&)
 {
     return out;
 }
@@ -809,7 +809,7 @@ TEMPLATE_TEST_CASE("primitive list", "[primitives]", cf::MixedVal, cf::Int, cf::
         }
     }
 
-#if REALM_ENABLE_SYNC && REALM_HAVE_SYNC_STABLE_IDS
+#if TESSERA_ENABLE_SYNC && TESSERA_HAVE_SYNC_STABLE_IDS
     SECTION("sync compatibility") {
         if (!util::EventLoop::has_implementation())
             return;

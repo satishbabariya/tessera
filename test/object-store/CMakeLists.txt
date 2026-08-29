@@ -10,7 +10,6 @@ set(SOURCES
     # slowest to compile first
     set.cpp
 
-    backup.cpp
     collection_change_indices.cpp
     dictionary.cpp
     frozen_objects.cpp
@@ -20,7 +19,7 @@ set(SOURCES
     object.cpp
     object_store.cpp
     primitive_list.cpp
-    realm.cpp
+    db.cpp
     results.cpp
     schema.cpp
     sectioned_results.cpp
@@ -35,13 +34,13 @@ set(SOURCES
     util/test_utils.cpp
 )
 
-if (REALM_ENABLE_GEOSPATIAL)
+if (TESSERA_ENABLE_GEOSPATIAL)
     list(APPEND SOURCES geospatial.cpp)
 endif()
 
-file(GLOB RESOURCES "*.realm" "../*.pem")
+file(GLOB RESOURCES "*.tess" "../*.pem")
 
-if(REALM_ENABLE_SYNC)
+if(TESSERA_ENABLE_SYNC)
     list(APPEND HEADERS
         util/sync/session_util.hpp
         util/sync/sync_test_utils.hpp
@@ -74,14 +73,14 @@ endif()
 target_link_libraries(ObjectStoreTestLib Catch2::Catch2 ObjectStore TestUtil)
 enable_stdfilesystem(ObjectStoreTestLib)
 
-if(REALM_CURL_CACERTS)
+if(TESSERA_CURL_CACERTS)
   target_compile_definitions(ObjectStoreTestLib PRIVATE
-    REALM_CURL_CACERTS="${REALM_CURL_CACERTS}"
+    TESSERA_CURL_CACERTS="${TESSERA_CURL_CACERTS}"
   )
 endif()
 
 add_executable(ObjectStoreTests main.cpp ${RESOURCES})
-set_target_properties(ObjectStoreTests PROPERTIES OUTPUT_NAME realm-object-store-tests)
+set_target_properties(ObjectStoreTests PROPERTIES OUTPUT_NAME tessera-object-store-tests)
 target_link_libraries(ObjectStoreTests ObjectStoreTestLib TestUtil)
 set_target_resources(ObjectStoreTests "${RESOURCES}")
 enable_stdfilesystem(ObjectStoreTests)
@@ -90,30 +89,30 @@ create_coverage_target(generate-coverage ObjectStoreTests)
 # add_bundled_test(ObjectStoreTests)
 add_labeled_test(ObjectStoreTests-local objstore-local ObjectStoreTests "~[baas]")
 
-if(REALM_ENABLE_SYNC)
+if(TESSERA_ENABLE_SYNC)
     target_link_libraries(ObjectStoreTestLib SyncServer)
 endif()
 
-if(REALM_TEST_LOGGING)
+if(TESSERA_TEST_LOGGING)
     target_compile_definitions(ObjectStoreTestLib PRIVATE
         TEST_ENABLE_LOGGING=1
     )
 
-    if(REALM_TEST_LOGGING_LEVEL)
-        message(STATUS "Test logging level: ${REALM_TEST_LOGGING_LEVEL}")
+    if(TESSERA_TEST_LOGGING_LEVEL)
+        message(STATUS "Test logging level: ${TESSERA_TEST_LOGGING_LEVEL}")
         target_compile_definitions(ObjectStoreTestLib PRIVATE
-            TEST_LOGGING_LEVEL=${REALM_TEST_LOGGING_LEVEL}
+            TEST_LOGGING_LEVEL=${TESSERA_TEST_LOGGING_LEVEL}
         )
     endif()
     message(STATUS "Test logging enabled")
 endif()
 
 # Optional extra time to add to test timeout values
-if(REALM_TEST_TIMEOUT_EXTRA)
+if(TESSERA_TEST_TIMEOUT_EXTRA)
     target_compile_definitions(ObjectStoreTests PRIVATE
-        TEST_TIMEOUT_EXTRA=${REALM_TEST_TIMEOUT_EXTRA}
+        TEST_TIMEOUT_EXTRA=${TESSERA_TEST_TIMEOUT_EXTRA}
     )
-    message(STATUS "Test wait timeouts extended by ${REALM_TEST_TIMEOUT_EXTRA} seconds")
+    message(STATUS "Test wait timeouts extended by ${TESSERA_TEST_TIMEOUT_EXTRA} seconds")
 endif()
 
 target_include_directories(ObjectStoreTestLib PRIVATE
@@ -126,15 +125,15 @@ target_include_directories(ObjectStoreTestLib PRIVATE
 # on WebAssembly we use an Emscripten-specific Scheduler and runloop
 # everywhere else it's libuv, except UWP where it doesn't build
 if(NOT APPLE AND NOT EMSCRIPTEN AND NOT WINDOWS_STORE AND NOT ANDROID)
-    option(REALM_FETCH_MISSING_DEPENDENCIES "Download missing dependencies with CMake's FetchContent where possible" ON)
-    if(REALM_FETCH_MISSING_DEPENDENCIES)
+    option(TESSERA_FETCH_MISSING_DEPENDENCIES "Download missing dependencies with CMake's FetchContent where possible" ON)
+    if(TESSERA_FETCH_MISSING_DEPENDENCIES)
         find_package(LibUV)
     else()
         find_package(LibUV REQUIRED)
     endif()
     if(LibUV_FOUND)
         set(libuv_target LibUV::LibUV)
-    elseif(REALM_FETCH_MISSING_DEPENDENCIES)
+    elseif(TESSERA_FETCH_MISSING_DEPENDENCIES)
         message(STATUS "LibUV not found, building from source with FetchContent")
         include(FetchContent)
         set(libUV_Git_TAG "v1.48.0")

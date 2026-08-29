@@ -21,14 +21,14 @@
 #include <util/sync/sync_test_utils.hpp>
 
 #include <util/test_path.hpp>
-#include <realm/object-store/shared_realm.hpp>
-#include <realm/object-store/sync/sync_manager.hpp>
+#include <tessera/object-store/shared_db.hpp>
+#include <tessera/object-store/sync/sync_manager.hpp>
 
-#include <realm/util/file.hpp>
+#include <tessera/util/file.hpp>
 
-using namespace realm;
-using namespace realm::util;
-using File = realm::util::File;
+using namespace tessera;
+using namespace tessera::util;
+using File = tessera::util::File;
 
 TEST_CASE("sync_file: percent-encoding APIs", "[sync][file]") {
     SECTION("does not encode a string that has no restricted characters") {
@@ -133,7 +133,7 @@ TEST_CASE("sync_file: URL manipulation APIs", "[sync][file]") {
 }
 
 TEST_CASE("sync_file: SyncFileManager APIs", "[sync][file]") {
-    realm::test_util::TestDirGuard test_dir(make_temp_dir(), false);
+    tessera::test_util::TestDirGuard test_dir(make_temp_dir(), false);
     const std::string identity = "abcdefghi";
     const std::vector<std::string> legacy_identities = {"legacy1", "legacy2"};
     const auto& local_identity = legacy_identities[0];
@@ -259,7 +259,7 @@ TEST_CASE("sync_file: SyncFileManager APIs", "[sync][file]") {
         const auto metadata_dir = manager_path / "server-utility" / "metadata";
 
         SECTION("getting the metadata path") {
-            REQUIRE(manager.metadata_path() == metadata_dir / "sync_metadata.realm");
+            REQUIRE(manager.metadata_path() == metadata_dir / "sync_metadata.tess");
         }
 
         SECTION("removing the metadata Realm") {

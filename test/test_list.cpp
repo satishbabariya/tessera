@@ -29,7 +29,7 @@
 
 using namespace std::chrono;
 
-#include <realm.hpp>
+#include <tessera.hpp>
 #include <external/json/json.hpp>
 #include "test.hpp"
 #include "test_types_helper.hpp"
@@ -37,9 +37,9 @@ using namespace std::chrono;
 // #include <valgrind/callgrind.h>
 // #define PERFORMACE_TESTING
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 using unit_test::TestContext;
 
 TEST(List_basic)
@@ -497,7 +497,7 @@ TEST(List_DecimalMinMax)
     lst.add(Decimal128(larger_than_max_int64_t));
     CHECK_EQUAL(lst.size(), 1);
     CHECK_EQUAL(lst.get(0), Decimal128(larger_than_max_int64_t));
-    size_t min_ndx = realm::npos;
+    size_t min_ndx = tessera::npos;
     auto min = lst.min(&min_ndx);
     CHECK(min);
     CHECK_EQUAL(min_ndx, 0);
@@ -508,7 +508,7 @@ TEST(List_DecimalMinMax)
     lst.add(Decimal128(smaller_than_min_int64_t));
     CHECK_EQUAL(lst.size(), 1);
     CHECK_EQUAL(lst.get(0), Decimal128(smaller_than_min_int64_t));
-    size_t max_ndx = realm::npos;
+    size_t max_ndx = tessera::npos;
     auto max = lst.max(&max_ndx);
     CHECK(max);
     CHECK_EQUAL(max_ndx, 0);
@@ -517,7 +517,7 @@ TEST(List_DecimalMinMax)
 
 
 template <typename T, typename U = T>
-void test_lists_numeric_agg(TestContext& test_context, DBRef sg, const realm::DataType type_id, U null_value = U{},
+void test_lists_numeric_agg(TestContext& test_context, DBRef sg, const tessera::DataType type_id, U null_value = U{},
                             bool optional = false)
 {
     auto t = sg->start_write();
@@ -540,7 +540,7 @@ void test_lists_numeric_agg(TestContext& test_context, DBRef sg, const realm::Da
         CHECK_EQUAL(lst.get(j + 1000), T(j));
     }
     {
-        size_t ret_ndx = realm::npos;
+        size_t ret_ndx = tessera::npos;
         auto min = lst.min(&ret_ndx);
         CHECK(min);
         CHECK(!min->is_null());
@@ -568,19 +568,19 @@ void test_lists_numeric_agg(TestContext& test_context, DBRef sg, const realm::Da
     lst.clear();
     CHECK_EQUAL(lst.size(), 0);
     {
-        size_t ret_ndx = realm::npos;
+        size_t ret_ndx = tessera::npos;
         auto min = lst.min(&ret_ndx);
         CHECK(min);
-        CHECK_EQUAL(ret_ndx, realm::npos);
-        ret_ndx = realm::npos;
+        CHECK_EQUAL(ret_ndx, tessera::npos);
+        ret_ndx = tessera::npos;
         auto max = lst.max(&ret_ndx);
         CHECK(max);
-        CHECK_EQUAL(ret_ndx, realm::npos);
-        size_t ret_count = realm::npos;
+        CHECK_EQUAL(ret_ndx, tessera::npos);
+        size_t ret_count = tessera::npos;
         auto sum = lst.sum(&ret_count);
         CHECK(sum);
         CHECK_EQUAL(ret_count, 0);
-        ret_count = realm::npos;
+        ret_count = tessera::npos;
         auto avg = lst.avg(&ret_count);
         CHECK(avg);
         CHECK_EQUAL(ret_count, 0);
@@ -588,7 +588,7 @@ void test_lists_numeric_agg(TestContext& test_context, DBRef sg, const realm::Da
 
     lst.add(T(1));
     {
-        size_t ret_ndx = realm::npos;
+        size_t ret_ndx = tessera::npos;
         auto min = lst.min(&ret_ndx);
         CHECK(min);
         CHECK(!min->is_null());
@@ -628,9 +628,9 @@ TEST(List_AggOps)
     test_lists_numeric_agg<Decimal128>(test_context, sg, type_Decimal);
 
     test_lists_numeric_agg<Optional<int64_t>>(test_context, sg, type_Int, Optional<int64_t>{}, true);
-    test_lists_numeric_agg<float>(test_context, sg, type_Float, realm::null::get_null_float<float>(), true);
-    test_lists_numeric_agg<double>(test_context, sg, type_Double, realm::null::get_null_float<double>(), true);
-    test_lists_numeric_agg<Decimal128>(test_context, sg, type_Decimal, Decimal128(realm::null()), true);
+    test_lists_numeric_agg<float>(test_context, sg, type_Float, tessera::null::get_null_float<float>(), true);
+    test_lists_numeric_agg<double>(test_context, sg, type_Double, tessera::null::get_null_float<double>(), true);
+    test_lists_numeric_agg<Decimal128>(test_context, sg, type_Decimal, Decimal128(tessera::null()), true);
 }
 
 TEST(List_Nested_InMixed)
@@ -1094,7 +1094,7 @@ TEST(List_Nested_Replication)
     CHECK_EQUAL(dict3.get_col_key(), col_any);
 }
 
-namespace realm {
+namespace tessera {
 static std::ostream& operator<<(std::ostream& os, UpdateStatus status)
 {
     switch (status) {
@@ -1110,7 +1110,7 @@ static std::ostream& operator<<(std::ostream& os, UpdateStatus status)
     }
     return os;
 }
-} // namespace realm
+} // namespace tessera
 
 TEST(List_UpdateIfNeeded)
 {

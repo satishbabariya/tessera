@@ -5,26 +5,26 @@
 #include "util/test_utils.hpp"
 #include "util/index_helpers.hpp"
 
-#include <realm/object-store/binding_context.hpp>
-#include <realm/object-store/set.hpp>
-#include <realm/object-store/object.hpp>
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/results.hpp>
-#include <realm/object-store/schema.hpp>
+#include <tessera/object-store/binding_context.hpp>
+#include <tessera/object-store/set.hpp>
+#include <tessera/object-store/object.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/results.hpp>
+#include <tessera/object-store/schema.hpp>
 
-#include <realm/object-store/impl/realm_coordinator.hpp>
-#include <realm/object-store/impl/object_accessor_impl.hpp>
+#include <tessera/object-store/impl/realm_coordinator.hpp>
+#include <tessera/object-store/impl/object_accessor_impl.hpp>
 
-#include <realm/db.hpp>
-#include <realm/util/any.hpp>
-#include <realm/version.hpp>
+#include <tessera/db.hpp>
+#include <tessera/util/any.hpp>
+#include <tessera/version.hpp>
 
 #include <numeric>
 
-using namespace realm;
-using namespace realm::util;
-namespace cf = realm::collection_fixtures;
+using namespace tessera;
+using namespace tessera::util;
+namespace cf = tessera::collection_fixtures;
 
 // Create a new Set for each operation to validate that every Set function
 // initializes things correctly
@@ -171,7 +171,7 @@ TEMPLATE_PRODUCT_TEST_CASE("set all types", "[set]", (CreateNewSet, ReuseSet),
         auto check_empty = [&]() {
             REQUIRE(set().size() == 0);
             for (size_t i = 0; i < values.size(); ++i) {
-                REQUIRE(set().find(T(values[i])) == realm::not_found);
+                REQUIRE(set().find(T(values[i])) == tessera::not_found);
             }
         };
         SECTION("remove()") {
@@ -412,7 +412,7 @@ TEMPLATE_PRODUCT_TEST_CASE("set of links to all types", "[set]", (CreateNewSet, 
         auto check_empty = [&] {
             REQUIRE(set().size() == 0);
             for (auto key : keys) {
-                REQUIRE(set().find(key) == realm::not_found);
+                REQUIRE(set().find(key) == tessera::not_found);
             }
         };
         SECTION("remove()") {
@@ -645,15 +645,15 @@ TEMPLATE_TEST_CASE("set", "[set]", CreateNewSet<void>, ReuseSet<void>)
 
         write([&] {
             CHECK(set().insert(Decimal128(5)).second);
-            CHECK(set().insert(Decimal128(realm::null())).second);
+            CHECK(set().insert(Decimal128(tessera::null())).second);
             CHECK(set().insert(Decimal128(7)).second);
         });
 
         REQUIRE(set().is_valid());
         CHECK(set().size() == 3);
-        CHECK(results.index_of(Decimal128(realm::null())) == 0);
+        CHECK(results.index_of(Decimal128(tessera::null())) == 0);
         auto sorted = results.sort({{"self", false}});
-        CHECK(sorted.index_of(Decimal128(realm::null())) == 2);
+        CHECK(sorted.index_of(Decimal128(tessera::null())) == 2);
     }
 
     SECTION("objects / links") {
@@ -1350,13 +1350,13 @@ TEMPLATE_TEST_CASE("set", "[set]", CreateNewSet<void>, ReuseSet<void>)
 
         write([&] {
             CHECK(set().insert(Decimal128(5)).second);
-            CHECK(set().insert(Decimal128(realm::null())).second);
+            CHECK(set().insert(Decimal128(tessera::null())).second);
             CHECK(set().insert(Decimal128(7)).second);
         });
 
         write([&] {
             list.add(Decimal128(4));
-            list.add(Decimal128(realm::null()));
+            list.add(Decimal128(tessera::null()));
             list.add(Decimal128(7));
             list.add(Decimal128(4));
         });

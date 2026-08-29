@@ -1,13 +1,13 @@
-#include <realm.hpp>
-#include <realm/sync/history.hpp>
-#include <realm/sync/noinst/client_history_impl.hpp>
+#include <tessera.hpp>
+#include <tessera/sync/history.hpp>
+#include <tessera/sync/noinst/client_history_impl.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::sync;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::sync;
+using namespace tessera::test_util;
 
 
 // Test independence and thread-safety

@@ -18,23 +18,23 @@
 
 #include <system_error>
 
-#include <realm/util/assert.hpp>
-#include <realm/util/backtrace.hpp>
+#include <tessera/util/assert.hpp>
+#include <tessera/util/backtrace.hpp>
 
 #include "resource_limits.hpp"
 
 #ifndef _WIN32
-#define REALM_HAVE_POSIX_RLIMIT 1
+#define TESSERA_HAVE_POSIX_RLIMIT 1
 #endif
 
-#if REALM_HAVE_POSIX_RLIMIT
+#if TESSERA_HAVE_POSIX_RLIMIT
 #include <sys/resource.h>
 #endif
 
-using namespace realm;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::test_util;
 
-#if REALM_HAVE_POSIX_RLIMIT
+#if TESSERA_HAVE_POSIX_RLIMIT
 
 namespace {
 
@@ -46,7 +46,7 @@ long get_rlimit(Resource resource, bool hard)
             resource_2 = RLIMIT_NOFILE;
             break;
     }
-    REALM_ASSERT(resource_2 != -1);
+    TESSERA_ASSERT(resource_2 != -1);
     rlimit rlimit;
     int status = getrlimit(resource_2, &rlimit);
     if (status < 0)
@@ -63,7 +63,7 @@ void set_rlimit(Resource resource, long value, bool hard)
             resource_2 = RLIMIT_NOFILE;
             break;
     }
-    REALM_ASSERT(resource_2 != -1);
+    TESSERA_ASSERT(resource_2 != -1);
     rlimit rlimit;
     int status = getrlimit(resource_2, &rlimit);
     if (status < 0)
@@ -77,13 +77,13 @@ void set_rlimit(Resource resource, long value, bool hard)
 
 } // anonymous namespace
 
-#endif // REALM_HAVE_POSIX_RLIMIT
+#endif // TESSERA_HAVE_POSIX_RLIMIT
 
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
-#if REALM_HAVE_POSIX_RLIMIT
+#if TESSERA_HAVE_POSIX_RLIMIT
 
 bool system_has_rlimit(Resource) noexcept
 {
@@ -108,7 +108,7 @@ void set_soft_rlimit(Resource resource, long value)
     set_rlimit(resource, value, hard);
 }
 
-#else // ! REALM_HAVE_POSIX_RLIMIT
+#else // ! TESSERA_HAVE_POSIX_RLIMIT
 
 bool system_has_rlimit(Resource) noexcept
 {
@@ -130,8 +130,8 @@ void set_soft_rlimit(Resource, long)
     throw util::runtime_error("Not supported");
 }
 
-#endif // ! REALM_HAVE_POSIX_RLIMIT
+#endif // ! TESSERA_HAVE_POSIX_RLIMIT
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera

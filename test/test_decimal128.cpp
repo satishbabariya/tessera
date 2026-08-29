@@ -16,12 +16,12 @@
  *
  **************************************************************************/
 
-#include <realm.hpp>
-#include <realm/array_decimal128.hpp>
+#include <tessera.hpp>
+#include <tessera/array_decimal128.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 TEST(Decimal_Basics)
 {
@@ -191,13 +191,13 @@ TEST(Decimal_Array)
 
     ArrayDecimal128 arr(Allocator::get_default());
     arr.create();
-    arr.add(Decimal128(realm::null()));
+    arr.add(Decimal128(tessera::null()));
     CHECK_EQUAL(arr.get_width(), 0);
-    CHECK_EQUAL(arr.get(0), Decimal128(realm::null()));
+    CHECK_EQUAL(arr.get(0), Decimal128(tessera::null()));
     CHECK(arr.is_null(0));
     arr.add(Decimal128());
     CHECK_EQUAL(arr.get_width(), 4);
-    CHECK_EQUAL(arr.get(0), Decimal128(realm::null()));
+    CHECK_EQUAL(arr.get(0), Decimal128(tessera::null()));
     CHECK_EQUAL(arr.get(1), Decimal128());
     CHECK(arr.is_null(0));
     CHECK_NOT(arr.is_null(1));
@@ -207,10 +207,10 @@ TEST(Decimal_Array)
     CHECK_EQUAL(arr.get_width(), 0);
     CHECK_EQUAL(arr.get(0), Decimal128());
     CHECK_NOT(arr.is_null(0));
-    arr.add(Decimal128(realm::null()));
+    arr.add(Decimal128(tessera::null()));
     CHECK_EQUAL(arr.get_width(), 4);
     CHECK_EQUAL(arr.get(0), Decimal128());
-    CHECK_EQUAL(arr.get(1), Decimal128(realm::null()));
+    CHECK_EQUAL(arr.get(1), Decimal128(tessera::null()));
     CHECK_NOT(arr.is_null(0));
     CHECK(arr.is_null(1));
 
@@ -218,7 +218,7 @@ TEST(Decimal_Array)
     arr.add(Decimal128(str0));
     arr.add(Decimal128(str1));
     arr.insert(1, Decimal128(str2));
-    arr.add(Decimal128(realm::null()));
+    arr.add(Decimal128(tessera::null()));
 
     Decimal128 id2(str2);
     CHECK_EQUAL(arr.get(0), Decimal128(str0));
@@ -226,7 +226,7 @@ TEST(Decimal_Array)
     CHECK_EQUAL(arr.get(2), Decimal128(str1));
     CHECK_EQUAL(arr.find_first(id2), 1);
     CHECK_EQUAL(arr.find_first(Decimal128("1000")), 2);
-    CHECK_EQUAL(arr.find_first(Decimal128(realm::null())), 3);
+    CHECK_EQUAL(arr.find_first(Decimal128(tessera::null())), 3);
 
     arr.erase(1);
     CHECK_EQUAL(arr.get(1), Decimal128(str1));
@@ -238,7 +238,7 @@ TEST(Decimal_Array)
     CHECK_EQUAL(arr.size(), 1);
     CHECK_EQUAL(arr1.size(), 2);
     CHECK_EQUAL(arr1.get(0), Decimal128(str1));
-    CHECK_EQUAL(arr1.get(1), Decimal128(realm::null()));
+    CHECK_EQUAL(arr1.get(1), Decimal128(tessera::null()));
 
     arr.add(Decimal128(str3)); // size 8
     arr1.move(arr, 1);
@@ -247,7 +247,7 @@ TEST(Decimal_Array)
     CHECK_EQUAL(arr1.size(), 1);
     CHECK_EQUAL(arr.get(0), Decimal128(str0));
     CHECK_EQUAL(arr.get(1), Decimal128(str3));
-    CHECK_EQUAL(arr.get(2), Decimal128(realm::null()));
+    CHECK_EQUAL(arr.get(2), Decimal128(tessera::null()));
     CHECK_EQUAL(arr1.get(0), Decimal128(str1));
     CHECK_EQUAL(arr.find_first(Decimal128("123.456000e100")), 1);
 
@@ -255,7 +255,7 @@ TEST(Decimal_Array)
     CHECK_EQUAL(arr.size(), 0);
 
     arr.add(Decimal128(0));
-    arr.add(Decimal128(realm::null()));
+    arr.add(Decimal128(tessera::null()));
     CHECK_NOT(arr.is_null(0));
     CHECK(arr.is_null(1));
 
@@ -265,7 +265,7 @@ TEST(Decimal_Array)
 
 TEST(Decimal_ArrayUpdgrade)
 {
-    Decimal128 size_0{realm::null()};
+    Decimal128 size_0{tessera::null()};
     Decimal128 size_4{"100"};
     Decimal128 large_size_4("8388607e90");
     Decimal128 small_size_4("8388607e-90");
@@ -392,9 +392,9 @@ TEST(Decimal_Query)
         CHECK_EQUAL(q1.count(), 24);
         q1 = table->where().less_equal(col, Decimal128(25));
         CHECK_EQUAL(q1.count(), 25);
-        Query q2 = table->column<Decimal>(col) == realm::null();
+        Query q2 = table->column<Decimal>(col) == tessera::null();
         CHECK_EQUAL(q2.count(), 1);
-        q2 = table->where().equal(col, realm::null());
+        q2 = table->where().equal(col, tessera::null());
         CHECK_EQUAL(q2.count(), 1);
         q2 = table->where().between(col, Decimal128(25), Decimal128(60));
         CHECK_EQUAL(q2.count(), 36);

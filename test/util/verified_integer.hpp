@@ -16,18 +16,18 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_VERIFIED_INTEGER_HPP
-#define REALM_TEST_UTIL_VERIFIED_INTEGER_HPP
+#ifndef TESSERA_TEST_UTIL_VERIFIED_INTEGER_HPP
+#define TESSERA_TEST_UTIL_VERIFIED_INTEGER_HPP
 
 #include <cstddef>
 #include <vector>
 
-#include <realm/array.hpp>
-#include <realm/column_integer.hpp>
+#include <tessera/array.hpp>
+#include <tessera/column_integer.hpp>
 
 #include "random.hpp"
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 
@@ -69,6 +69,6 @@ inline VerifiedInteger::VerifiedInteger(Random& random)
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_VERIFIED_INTEGER_HPP
+#endif // TESSERA_TEST_UTIL_VERIFIED_INTEGER_HPP

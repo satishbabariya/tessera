@@ -1,10 +1,10 @@
-add_subdirectory(realm)
+add_subdirectory(tessera)
 add_subdirectory(external/IntelRDFPMathLib20U2)
-if (NOT REALM_BUILD_LIB_ONLY)
+if (NOT TESSERA_BUILD_LIB_ONLY)
     add_subdirectory(external/bson EXCLUDE_FROM_ALL)
 endif()
 
-if (REALM_ENABLE_GEOSPATIAL)
+if (TESSERA_ENABLE_GEOSPATIAL)
     add_subdirectory(external/s2)
 endif()
 

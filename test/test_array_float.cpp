@@ -19,12 +19,12 @@
 #include "testsettings.hpp"
 #ifdef TEST_ARRAY_FLOAT
 
-#include <realm/array_basic.hpp>
-#include <realm/column_integer.hpp>
+#include <tessera/array_basic.hpp>
+#include <tessera/column_integer.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 using test_util::unit_test::TestContext;
 
 

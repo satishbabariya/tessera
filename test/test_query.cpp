@@ -26,19 +26,19 @@
 
 using namespace std::chrono;
 
-#include <realm.hpp>
-#include <realm/column_integer.hpp>
-#include <realm/array_bool.hpp>
-#include <realm/query_expression.hpp>
-#include <realm/index_string.hpp>
-#include <realm/query_expression.hpp>
+#include <tessera.hpp>
+#include <tessera/column_integer.hpp>
+#include <tessera/array_bool.hpp>
+#include <tessera/query_expression.hpp>
+#include <tessera/index_string.hpp>
+#include <tessera/query_expression.hpp>
 #include "test.hpp"
 #include "test_table_helper.hpp"
 #include "test_types_helper.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 // #include <valgrind/callgrind.h>
 
@@ -109,7 +109,7 @@ TEST(Query_Count)
 {
     // Intended to test QueryState::match<pattern = true>(); which is only triggered if:
     // * Table size is large enough to have SSE-aligned or bithack-aligned rows (this requires
-    //   REALM_MAX_BPNODE_SIZE > [some large number]!)
+    //   TESSERA_MAX_BPNODE_SIZE > [some large number]!)
     // * You're doing a 'count' which is currently the only operation that uses 'pattern', and
     // * There exists exactly 1 condition (if there is 0 conditions, it will fallback to column::count
     //   and if there exists > 1 conditions, 'pattern' is currently not supported - but could easily be
@@ -122,7 +122,7 @@ TEST(Query_Count)
 
         size_t matching = 0;
         size_t not_matching = 0;
-        size_t rows = random.draw_int_mod(5 * REALM_MAX_BPNODE_SIZE); // to cross some leaf boundaries
+        size_t rows = random.draw_int_mod(5 * TESSERA_MAX_BPNODE_SIZE); // to cross some leaf boundaries
 
         for (size_t i = 0; i < rows; ++i) {
             int64_t val = random.draw_int_mod(5);
@@ -216,7 +216,7 @@ TEST(Query_NextGenSyntax)
 
 
     match = (untyped.column<int64_t>(c0) > untyped.column<int64_t>(c0)).find();
-    CHECK_EQUAL(match, realm::null_key);
+    CHECK_EQUAL(match, tessera::null_key);
 
     // Left condition makes first row non-match
     match = untyped.query("second + 1 > 21 && third > 1 + 1").find();
@@ -236,11 +236,11 @@ TEST(Query_NextGenSyntax)
 
     // Left cond match 0, right match 1
     match = untyped.query("second < 20 && third > 3.5").find();
-    CHECK_EQUAL(match, realm::null_key);
+    CHECK_EQUAL(match, tessera::null_key);
 
     // Left match 1, right match 0
     match = untyped.query("second > 20 && third < 3.5").find();
-    CHECK_EQUAL(match, realm::null_key);
+    CHECK_EQUAL(match, tessera::null_key);
 
     // Untyped ||
 
@@ -458,16 +458,16 @@ TEST(Query_NextGen_StringConditions)
     cnt = table2->column<String>(col_str3).not_equal(StringData("")).count();
     CHECK_EQUAL(cnt, 4);
 
-    cnt = table2->column<String>(col_str3).equal(realm::null()).count();
+    cnt = table2->column<String>(col_str3).equal(tessera::null()).count();
     CHECK_EQUAL(cnt, 1);
 
-    cnt = table2->column<String>(col_str3).not_equal(realm::null()).count();
+    cnt = table2->column<String>(col_str3).not_equal(tessera::null()).count();
     CHECK_EQUAL(cnt, 4);
 
-    cnt = table2->column<String>(col_str3).contains(realm::null()).count();
+    cnt = table2->column<String>(col_str3).contains(tessera::null()).count();
     CHECK_EQUAL(cnt, 5);
 
-    cnt = table2->column<String>(col_str3).like(realm::null()).count();
+    cnt = table2->column<String>(col_str3).like(tessera::null()).count();
     CHECK_EQUAL(cnt, 1);
 
     cnt = table2->column<String>(col_str3).contains(StringData(""), false).count();
@@ -488,16 +488,16 @@ TEST(Query_NextGen_StringConditions)
     cnt = table2->column<String>(col_str3).not_equal(StringData(""), false).count();
     CHECK_EQUAL(cnt, 4);
 
-    cnt = table2->column<String>(col_str3).equal(realm::null(), false).count();
+    cnt = table2->column<String>(col_str3).equal(tessera::null(), false).count();
     CHECK_EQUAL(cnt, 1);
 
-    cnt = table2->column<String>(col_str3).not_equal(realm::null(), false).count();
+    cnt = table2->column<String>(col_str3).not_equal(tessera::null(), false).count();
     CHECK_EQUAL(cnt, 4);
 
-    cnt = table2->column<String>(col_str3).contains(realm::null(), false).count();
+    cnt = table2->column<String>(col_str3).contains(tessera::null(), false).count();
     CHECK_EQUAL(cnt, 5);
 
-    cnt = table2->column<String>(col_str3).like(realm::null(), false).count();
+    cnt = table2->column<String>(col_str3).like(tessera::null(), false).count();
     CHECK_EQUAL(cnt, 1);
 
     auto check_results = [&](Query q, std::vector<StringData>&& matches) {
@@ -577,10 +577,10 @@ TEST(Query_NextGen_StringConditions)
     cnt = table3->link(col_link1).column<String>(col_str3).not_equal(StringData("")).count();
     CHECK_EQUAL(cnt, 4);
 
-    cnt = table3->link(col_link1).column<String>(col_str3).equal(realm::null()).count();
+    cnt = table3->link(col_link1).column<String>(col_str3).equal(tessera::null()).count();
     CHECK_EQUAL(cnt, 1);
 
-    cnt = table3->link(col_link1).column<String>(col_str3).not_equal(realm::null()).count();
+    cnt = table3->link(col_link1).column<String>(col_str3).not_equal(tessera::null()).count();
     CHECK_EQUAL(cnt, 4);
 
 
@@ -602,13 +602,13 @@ TEST(Query_NextGen_StringConditions)
     cnt = table3->link(col_link1).column<String>(col_str3).not_equal(StringData(""), false).count();
     CHECK_EQUAL(cnt, 4);
 
-    cnt = table3->link(col_link1).column<String>(col_str3).equal(realm::null(), false).count();
+    cnt = table3->link(col_link1).column<String>(col_str3).equal(tessera::null(), false).count();
     CHECK_EQUAL(cnt, 1);
 
-    cnt = table3->link(col_link1).column<String>(col_str3).not_equal(realm::null(), false).count();
+    cnt = table3->link(col_link1).column<String>(col_str3).not_equal(tessera::null(), false).count();
     CHECK_EQUAL(cnt, 4);
 
-    cnt = table3->link(col_link1).column<String>(col_str3).contains(realm::null(), false).count();
+    cnt = table3->link(col_link1).column<String>(col_str3).contains(tessera::null(), false).count();
     CHECK_EQUAL(cnt, 4);
 
     // Test long string contains search (where needle is longer than 255 chars)
@@ -646,7 +646,7 @@ TEST(Query_NextGen_StringConditions)
     cnt = table2->column<String>(col_str3).contains(search_2, true).count();
     CHECK_EQUAL(cnt, 1);
 
-    cnt = table3->link(col_link1).column<String>(col_str3).like(realm::null(), false).count();
+    cnt = table3->link(col_link1).column<String>(col_str3).like(tessera::null(), false).count();
     CHECK_EQUAL(cnt, 1);
 }
 
@@ -657,7 +657,7 @@ TEST(Query_NextGenSyntaxMonkey0)
 
     Random random(random_int<unsigned long>()); // Seed from slow global generator
     for (int iter = 1; iter < 10 + TEST_DURATION * 1000; iter++) {
-        const size_t rows = 1 + random.draw_int_mod(2 * REALM_MAX_BPNODE_SIZE);
+        const size_t rows = 1 + random.draw_int_mod(2 * TESSERA_MAX_BPNODE_SIZE);
         Table table;
 
         // Two different row types prevents fallback to query_engine (good because we want to test query_expression)
@@ -678,11 +678,11 @@ TEST(Query_NextGenSyntaxMonkey0)
 
         size_t tvpos;
 
-        realm::Query q =
+        tessera::Query q =
             table.column<Int>(col_int) > table.column<Float>(col_float) && table.column<String>(col_str) == "a";
 
         // without start or limit
-        realm::TableView tv = q.find_all();
+        tessera::TableView tv = q.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int) > o.get<Float>(col_float) && o.get<String>(col_str) == "a") {
@@ -712,7 +712,7 @@ TEST_TYPES(Query_NextGenSyntaxMonkey, std::true_type, std::false_type)
     Random random(random_int<unsigned long>()); // Seed from slow global generator
     for (int iter = 1; iter < 5 * (TEST_DURATION * TEST_DURATION * TEST_DURATION + 1); iter++) {
         // Set 'rows' to at least '* 20' else some tests will give 0 matches and bad coverage
-        const size_t rows = 1 + random.draw_int_mod<size_t>(REALM_MAX_BPNODE_SIZE * 20 *
+        const size_t rows = 1 + random.draw_int_mod<size_t>(TESSERA_MAX_BPNODE_SIZE * 20 *
                                                             (TEST_DURATION * TEST_DURATION * TEST_DURATION + 1));
         Table table;
         auto col_int0 = table.add_column(type_Int, "first", nullable);
@@ -730,9 +730,9 @@ TEST_TYPES(Query_NextGenSyntaxMonkey, std::true_type, std::false_type)
         size_t tvpos;
 
         // second == 1
-        realm::Query q1_0 = table.where().equal(col_int1, 1);
-        realm::Query q2_0 = table.column<int64_t>(col_int1) == 1;
-        realm::TableView tv_0 = q2_0.find_all();
+        tessera::Query q1_0 = table.where().equal(col_int1, 1);
+        tessera::Query q2_0 = table.column<int64_t>(col_int1) == 1;
+        tessera::TableView tv_0 = q2_0.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int1) == 1) {
@@ -743,9 +743,9 @@ TEST_TYPES(Query_NextGenSyntaxMonkey, std::true_type, std::false_type)
         CHECK_EQUAL(tvpos, tv_0.size());
 
         // (first == 0 || first == 1) && second == 1
-        realm::Query q2_1 = (table.column<int64_t>(col_int0) == 0 || table.column<int64_t>(col_int0) == 1) &&
+        tessera::Query q2_1 = (table.column<int64_t>(col_int0) == 0 || table.column<int64_t>(col_int0) == 1) &&
                             table.column<int64_t>(col_int1) == 1;
-        realm::TableView tv_1 = q2_1.find_all();
+        tessera::TableView tv_1 = q2_1.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if ((o.get<Int>(col_int0) == 0 || o.get<Int>(col_int0) == 1) && o.get<Int>(col_int1) == 1) {
@@ -756,9 +756,9 @@ TEST_TYPES(Query_NextGenSyntaxMonkey, std::true_type, std::false_type)
         CHECK_EQUAL(tvpos, tv_1.size());
 
         // first == 0 || (first == 1 && second == 1)
-        realm::Query q2_2 = table.column<int64_t>(col_int0) == 0 ||
+        tessera::Query q2_2 = table.column<int64_t>(col_int0) == 0 ||
                             (table.column<int64_t>(col_int0) == 1 && table.column<int64_t>(col_int1) == 1);
-        realm::TableView tv_2 = q2_2.find_all();
+        tessera::TableView tv_2 = q2_2.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int0) == 0 || (o.get<Int>(col_int0) == 1 && o.get<Int>(col_int1) == 1)) {
@@ -770,9 +770,9 @@ TEST_TYPES(Query_NextGenSyntaxMonkey, std::true_type, std::false_type)
 
 
         // second == 0 && (first == 0 || first == 2)
-        realm::Query q4_8 = table.column<int64_t>(col_int1) == 0 &&
+        tessera::Query q4_8 = table.column<int64_t>(col_int1) == 0 &&
                             (table.column<int64_t>(col_int0) == 0 || table.column<int64_t>(col_int0) == 2);
-        realm::TableView tv_8 = q4_8.find_all();
+        tessera::TableView tv_8 = q4_8.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int1) == 0 && ((o.get<Int>(col_int0) == 0) || o.get<Int>(col_int0) == 2)) {
@@ -784,9 +784,9 @@ TEST_TYPES(Query_NextGenSyntaxMonkey, std::true_type, std::false_type)
 
 
         // (first == 0 || first == 2) && (first == 1 || second == 1)
-        realm::Query q3_7 = (table.column<int64_t>(col_int0) == 0 || table.column<int64_t>(col_int0) == 2) &&
+        tessera::Query q3_7 = (table.column<int64_t>(col_int0) == 0 || table.column<int64_t>(col_int0) == 2) &&
                             (table.column<int64_t>(col_int0) == 1 || table.column<int64_t>(col_int1) == 1);
-        realm::TableView tv_7 = q3_7.find_all();
+        tessera::TableView tv_7 = q3_7.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if ((o.get<Int>(col_int0) == 0 || o.get<Int>(col_int0) == 2) &&
@@ -799,9 +799,9 @@ TEST_TYPES(Query_NextGenSyntaxMonkey, std::true_type, std::false_type)
 
 
         // (first == 0 || first == 2) || (first == 1 || second == 1)
-        realm::Query q4_7 = (table.column<int64_t>(col_int0) == 0 || table.column<int64_t>(col_int0) == 2) ||
+        tessera::Query q4_7 = (table.column<int64_t>(col_int0) == 0 || table.column<int64_t>(col_int0) == 2) ||
                             (table.column<int64_t>(col_int0) == 1 || table.column<int64_t>(col_int1) == 1);
-        realm::TableView tv_10 = q4_7.find_all();
+        tessera::TableView tv_10 = q4_7.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if ((o.get<Int>(col_int0) == 0 || o.get<Int>(col_int0) == 2) ||
@@ -816,7 +816,7 @@ TEST_TYPES(Query_NextGenSyntaxMonkey, std::true_type, std::false_type)
         TableView tv;
 
         // first == 0 || first == 2 || first == 1 || second == 1
-        realm::Query q20 = table.column<int64_t>(col_int0) == 0 || table.column<int64_t>(col_int0) == 2 ||
+        tessera::Query q20 = table.column<int64_t>(col_int0) == 0 || table.column<int64_t>(col_int0) == 2 ||
                            table.column<int64_t>(col_int0) == 1 || table.column<int64_t>(col_int1) == 1;
         tv = q20.find_all();
         tvpos = 0;
@@ -830,7 +830,7 @@ TEST_TYPES(Query_NextGenSyntaxMonkey, std::true_type, std::false_type)
         CHECK_EQUAL(tvpos, tv.size());
 
 
-        realm::Query q21 = table.query("first * 2 > second / 2 + third + 1");
+        tessera::Query q21 = table.query("first * 2 > second / 2 + third + 1");
         tv = q21.find_all();
         tvpos = 0;
         for (Obj o : table) {
@@ -841,7 +841,7 @@ TEST_TYPES(Query_NextGenSyntaxMonkey, std::true_type, std::false_type)
         }
         CHECK_EQUAL(tvpos, tv.size());
 
-        realm::Query q22 = table.query("first * 2 > second / 2 + third + 1 + third - third + third - third + third - "
+        tessera::Query q22 = table.query("first * 2 > second / 2 + third + 1 + third - third + third - third + third - "
                                        "third + third - third + third - third");
         tv = q22.find_all();
         tvpos = 0;
@@ -870,9 +870,9 @@ TEST(Query_MergeQueriesOverloads)
     size_t c;
 
     // q1_0 && q2_0
-    realm::Query q1_110 = table.where().equal(col_int0, 20);
-    realm::Query q2_110 = table.where().equal(col_int1, 30);
-    realm::Query q3_110 = q1_110.and_query(q2_110);
+    tessera::Query q1_110 = table.where().equal(col_int0, 20);
+    tessera::Query q2_110 = table.where().equal(col_int1, 30);
+    tessera::Query q3_110 = q1_110.and_query(q2_110);
     c = q1_110.count();
     c = q2_110.count();
     c = q3_110.count();
@@ -882,25 +882,25 @@ TEST(Query_MergeQueriesOverloads)
     // (first == 1 || first == 20) operator&& (second == 30), regardless of order of operands
 
     // q1_0 && q2_0
-    realm::Query q1_0 = table.where().equal(col_int0, 10).Or().equal(col_int0, 20);
-    realm::Query q2_0 = table.where().equal(col_int1, 30);
-    realm::Query q3_0 = q1_0 && q2_0;
+    tessera::Query q1_0 = table.where().equal(col_int0, 10).Or().equal(col_int0, 20);
+    tessera::Query q2_0 = table.where().equal(col_int1, 30);
+    tessera::Query q3_0 = q1_0 && q2_0;
     c = q3_0.count();
     CHECK_EQUAL(1, c);
 
     // q2_0 && q1_0 (reversed operand order)
-    realm::Query q1_1 = table.where().equal(col_int0, 10).Or().equal(col_int0, 20);
-    realm::Query q2_1 = table.where().equal(col_int1, 30);
+    tessera::Query q1_1 = table.where().equal(col_int0, 10).Or().equal(col_int0, 20);
+    tessera::Query q2_1 = table.where().equal(col_int1, 30);
     c = q1_1.count();
 
-    realm::Query q3_1 = q2_1 && q1_1;
+    tessera::Query q3_1 = q2_1 && q1_1;
     c = q3_1.count();
     CHECK_EQUAL(1, c);
 
     // Short test for ||
-    realm::Query q1_2 = table.where().equal(col_int0, 10);
-    realm::Query q2_2 = table.where().equal(col_int1, 30);
-    realm::Query q3_2 = q2_2 || q1_2;
+    tessera::Query q1_2 = table.where().equal(col_int0, 10);
+    tessera::Query q2_2 = table.where().equal(col_int1, 30);
+    tessera::Query q3_2 = q2_2 || q1_2;
     c = q3_2.count();
     CHECK_EQUAL(2, c);
 }
@@ -918,8 +918,8 @@ TEST(Query_MergeQueries)
     table.create_object().set_all(30, 20);
 
     // Must evaluate as if and_query is inside paranthesis, that is, (first == 10 || first == 20) && second == 30
-    realm::Query q1_0 = table.where().equal(col_int0, 10).Or().equal(col_int0, 20);
-    realm::Query q2_0 = table.where().and_query(q1_0).equal(col_int1, 30);
+    tessera::Query q1_0 = table.where().equal(col_int0, 10).Or().equal(col_int0, 20);
+    tessera::Query q2_0 = table.where().and_query(q1_0).equal(col_int1, 30);
 
     size_t c = q2_0.count();
     CHECK_EQUAL(1, c);
@@ -948,68 +948,68 @@ TEST(Query_Not)
     CHECK_EQUAL(q.validate(), "Missing argument of OR");
 
     // should apply not to single term, leading to query "not A" with two matching entries:
-    realm::Query q0 = table.where().Not().equal(col_int0, 10);
+    tessera::Query q0 = table.where().Not().equal(col_int0, 10);
     CHECK_EQUAL(2, q0.count());
 
     // grouping, after not
-    realm::Query q0b = table.where().Not().group().equal(col_int0, 10).end_group();
+    tessera::Query q0b = table.where().Not().group().equal(col_int0, 10).end_group();
     CHECK_EQUAL(q0b.validate(), "");
     CHECK_EQUAL(2, q0b.count());
 
     // grouping, surrounding not
-    realm::Query q0c = table.where().group().Not().equal(col_int0, 10).end_group();
+    tessera::Query q0c = table.where().group().Not().equal(col_int0, 10).end_group();
     CHECK_EQUAL(2, q0c.count());
 
     // nested nots (implicit grouping)
-    realm::Query q0d = table.where().Not().Not().equal(col_int0, 10);
+    tessera::Query q0d = table.where().Not().Not().equal(col_int0, 10);
     CHECK_EQUAL(1, q0d.count()); // FAILS
 
-    realm::Query q0e = table.where().Not().Not().Not().equal(col_int0, 10);
+    tessera::Query q0e = table.where().Not().Not().Not().equal(col_int0, 10);
     CHECK_EQUAL(2, q0e.count()); // FAILS
 
     // just checking the above
-    realm::Query q0f = table.where().Not().not_equal(col_int0, 10);
+    tessera::Query q0f = table.where().Not().not_equal(col_int0, 10);
     CHECK_EQUAL(1, q0f.count());
 
-    realm::Query q0g = table.where().Not().Not().not_equal(col_int0, 10);
+    tessera::Query q0g = table.where().Not().Not().not_equal(col_int0, 10);
     CHECK_EQUAL(2, q0g.count()); // FAILS
 
-    realm::Query q0h = table.where().not_equal(col_int0, 10);
+    tessera::Query q0h = table.where().not_equal(col_int0, 10);
     CHECK_EQUAL(2, q0h.count());
 
     // should apply not to first term, leading to query "not A and A", which is obviously empty:
-    realm::Query q1 = table.where().Not().equal(col_int0, 10).equal(col_int0, 10);
+    tessera::Query q1 = table.where().Not().equal(col_int0, 10).equal(col_int0, 10);
     CHECK_EQUAL(0, q1.count());
 
     // should apply not to first term, leading to query "not A and A", which is obviously empty:
-    realm::Query q1b = table.where().group().Not().equal(col_int0, 10).end_group().equal(col_int0, 10);
+    tessera::Query q1b = table.where().group().Not().equal(col_int0, 10).end_group().equal(col_int0, 10);
     CHECK_EQUAL(0, q1b.count());
 
     // should apply not to first term, leading to query "not A and A", which is obviously empty:
-    realm::Query q1c = table.where().Not().group().equal(col_int0, 10).end_group().equal(col_int0, 10);
+    tessera::Query q1c = table.where().Not().group().equal(col_int0, 10).end_group().equal(col_int0, 10);
     CHECK_EQUAL(0, q1c.count());
 
 
     // should apply not to second term, leading to query "A and not A", which is obviously empty:
-    realm::Query q2 = table.where().equal(col_int0, 10).Not().equal(col_int0, 10);
+    tessera::Query q2 = table.where().equal(col_int0, 10).Not().equal(col_int0, 10);
     CHECK_EQUAL(0, q2.count()); // FAILS
 
     // should apply not to second term, leading to query "A and not A", which is obviously empty:
-    realm::Query q2b = table.where().equal(col_int0, 10).group().Not().equal(col_int0, 10).end_group();
+    tessera::Query q2b = table.where().equal(col_int0, 10).group().Not().equal(col_int0, 10).end_group();
     CHECK_EQUAL(0, q2b.count());
 
     // should apply not to second term, leading to query "A and not A", which is obviously empty:
-    realm::Query q2c = table.where().equal(col_int0, 10).Not().group().equal(col_int0, 10).end_group();
+    tessera::Query q2c = table.where().equal(col_int0, 10).Not().group().equal(col_int0, 10).end_group();
     CHECK_EQUAL(0, q2c.count()); // FAILS
 
 
     // should apply not to both terms, leading to query "not A and not A", which has 2 members
-    realm::Query q3 = table.where().Not().equal(col_int0, 10).Not().equal(col_int0, 10);
+    tessera::Query q3 = table.where().Not().equal(col_int0, 10).Not().equal(col_int0, 10);
     CHECK_EQUAL(2, q3.count()); // FAILS
 
     // applying not to an empty query is forbidden
-    realm::Query q4 = table.where();
-    CHECK_THROW(!q4, realm::Exception);
+    tessera::Query q4 = table.where();
+    CHECK_THROW(!q4, tessera::Exception);
 }
 
 
@@ -1017,7 +1017,7 @@ TEST(Query_MergeQueriesMonkey)
 {
     Random random(random_int<unsigned long>()); // Seed from slow global generator
     for (int iter = 0; iter < 5; iter++) {
-        const size_t rows = REALM_MAX_BPNODE_SIZE * 4;
+        const size_t rows = TESSERA_MAX_BPNODE_SIZE * 4;
         Table table;
         auto col_int0 = table.add_column(type_Int, "first");
         auto col_int1 = table.add_column(type_Int, "second");
@@ -1033,9 +1033,9 @@ TEST(Query_MergeQueriesMonkey)
         size_t tvpos;
 
         // and_query(second == 1)
-        realm::Query q1_0 = table.where().equal(col_int1, 1);
-        realm::Query q2_0 = table.where().and_query(q1_0);
-        realm::TableView tv_0 = q2_0.find_all();
+        tessera::Query q1_0 = table.where().equal(col_int1, 1);
+        tessera::Query q2_0 = table.where().and_query(q1_0);
+        tessera::TableView tv_0 = q2_0.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int1) == 1) {
@@ -1045,10 +1045,10 @@ TEST(Query_MergeQueriesMonkey)
         }
 
         // (first == 0 || first == 1) && and_query(second == 1)
-        realm::Query q1_1 = table.where().equal(col_int1, 1);
-        realm::Query q2_1 =
+        tessera::Query q1_1 = table.where().equal(col_int1, 1);
+        tessera::Query q2_1 =
             table.where().group().equal(col_int0, 0).Or().equal(col_int0, 1).end_group().and_query(q1_1);
-        realm::TableView tv_1 = q2_1.find_all();
+        tessera::TableView tv_1 = q2_1.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if ((o.get<Int>(col_int0) == 0 || o.get<Int>(col_int0) == 1) && o.get<Int>(col_int1) == 1) {
@@ -1058,9 +1058,9 @@ TEST(Query_MergeQueriesMonkey)
         }
 
         // first == 0 || (first == 1 && and_query(second == 1))
-        realm::Query q1_2 = table.where().equal(col_int1, 1);
-        realm::Query q2_2 = table.where().equal(col_int0, 0).Or().equal(col_int0, 1).and_query(q1_2);
-        realm::TableView tv_2 = q2_2.find_all();
+        tessera::Query q1_2 = table.where().equal(col_int1, 1);
+        tessera::Query q2_2 = table.where().equal(col_int0, 0).Or().equal(col_int0, 1).and_query(q1_2);
+        tessera::TableView tv_2 = q2_2.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int0) == 0 || (o.get<Int>(col_int0) == 1 && o.get<Int>(col_int1) == 1)) {
@@ -1070,9 +1070,9 @@ TEST(Query_MergeQueriesMonkey)
         }
 
         // and_query(first == 0) || (first == 1 && second == 1)
-        realm::Query q1_3 = table.where().equal(col_int0, 0);
-        realm::Query q2_3 = table.where().and_query(q1_3).Or().equal(col_int0, 1).equal(col_int1, 1);
-        realm::TableView tv_3 = q2_3.find_all();
+        tessera::Query q1_3 = table.where().equal(col_int0, 0);
+        tessera::Query q2_3 = table.where().and_query(q1_3).Or().equal(col_int0, 1).equal(col_int1, 1);
+        tessera::TableView tv_3 = q2_3.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int0) == 0 || (o.get<Int>(col_int0) == 1 && o.get<Int>(col_int1) == 1)) {
@@ -1083,9 +1083,9 @@ TEST(Query_MergeQueriesMonkey)
 
 
         // first == 0 || and_query(first == 1 && second == 1)
-        realm::Query q2_4 = table.where().equal(col_int0, 1).equal(col_int1, 1);
-        realm::Query q1_4 = table.where().equal(col_int0, 0).Or().and_query(q2_4);
-        realm::TableView tv_4 = q1_4.find_all();
+        tessera::Query q2_4 = table.where().equal(col_int0, 1).equal(col_int1, 1);
+        tessera::Query q1_4 = table.where().equal(col_int0, 0).Or().and_query(q2_4);
+        tessera::TableView tv_4 = q1_4.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int0) == 0 || (o.get<Int>(col_int0) == 1 && o.get<Int>(col_int1) == 1)) {
@@ -1096,10 +1096,10 @@ TEST(Query_MergeQueriesMonkey)
 
 
         // and_query(first == 0 || first == 2) || and_query(first == 1 && second == 1)
-        realm::Query q2_5 = table.where().equal(col_int0, 0).Or().equal(col_int0, 2);
-        realm::Query q1_5 = table.where().equal(col_int0, 1).equal(col_int1, 1);
-        realm::Query q3_5 = table.where().and_query(q2_5).Or().and_query(q1_5);
-        realm::TableView tv_5 = q3_5.find_all();
+        tessera::Query q2_5 = table.where().equal(col_int0, 0).Or().equal(col_int0, 2);
+        tessera::Query q1_5 = table.where().equal(col_int0, 1).equal(col_int1, 1);
+        tessera::Query q3_5 = table.where().and_query(q2_5).Or().and_query(q1_5);
+        tessera::TableView tv_5 = q3_5.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if ((o.get<Int>(col_int0) == 0 || o.get<Int>(col_int0) == 2) ||
@@ -1111,10 +1111,10 @@ TEST(Query_MergeQueriesMonkey)
 
 
         // and_query(first == 0) && and_query(second == 1)
-        realm::Query q1_6 = table.where().equal(col_int0, 0);
-        realm::Query q2_6 = table.where().equal(col_int1, 1);
-        realm::Query q3_6 = table.where().and_query(q1_6).and_query(q2_6);
-        realm::TableView tv_6 = q3_6.find_all();
+        tessera::Query q1_6 = table.where().equal(col_int0, 0);
+        tessera::Query q2_6 = table.where().equal(col_int1, 1);
+        tessera::Query q3_6 = table.where().and_query(q1_6).and_query(q2_6);
+        tessera::TableView tv_6 = q3_6.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int0) == 0 && o.get<Int>(col_int1) == 1) {
@@ -1124,10 +1124,10 @@ TEST(Query_MergeQueriesMonkey)
         }
 
         // and_query(first == 0 || first == 2) && and_query(first == 1 || second == 1)
-        realm::Query q2_7 = table.where().equal(col_int0, 0).Or().equal(col_int0, 2);
-        realm::Query q1_7 = table.where().equal(col_int0, 1).equal(col_int0, 1).Or().equal(col_int1, 1);
-        realm::Query q3_7 = table.where().and_query(q2_7).and_query(q1_7);
-        realm::TableView tv_7 = q3_7.find_all();
+        tessera::Query q2_7 = table.where().equal(col_int0, 0).Or().equal(col_int0, 2);
+        tessera::Query q1_7 = table.where().equal(col_int0, 1).equal(col_int0, 1).Or().equal(col_int1, 1);
+        tessera::Query q3_7 = table.where().and_query(q2_7).and_query(q1_7);
+        tessera::TableView tv_7 = q3_7.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if ((o.get<Int>(col_int0) == 0 || o.get<Int>(col_int0) == 2) &&
@@ -1140,10 +1140,10 @@ TEST(Query_MergeQueriesMonkey)
         // Nested and_query
 
         // second == 0 && and_query(first == 0 || and_query(first == 2))
-        realm::Query q2_8 = table.where().equal(col_int0, 2);
-        realm::Query q3_8 = table.where().equal(col_int0, 0).Or().and_query(q2_8);
-        realm::Query q4_8 = table.where().equal(col_int1, 0).and_query(q3_8);
-        realm::TableView tv_8 = q4_8.find_all();
+        tessera::Query q2_8 = table.where().equal(col_int0, 2);
+        tessera::Query q3_8 = table.where().equal(col_int0, 0).Or().and_query(q2_8);
+        tessera::Query q4_8 = table.where().equal(col_int1, 0).and_query(q3_8);
+        tessera::TableView tv_8 = q4_8.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int1) == 0 && ((o.get<Int>(col_int0) == 0) || o.get<Int>(col_int0) == 2)) {
@@ -1156,11 +1156,11 @@ TEST(Query_MergeQueriesMonkey)
         // Nested as above but constructed differently
 
         // second == 0 && and_query(first == 0 || and_query(first == 2))
-        realm::Query q2_9 = table.where().equal(col_int0, 2);
-        realm::Query q5_9 = table.where().equal(col_int0, 0);
-        realm::Query q3_9 = table.where().and_query(q5_9).Or().and_query(q2_9);
-        realm::Query q4_9 = table.where().equal(col_int1, 0).and_query(q3_9);
-        realm::TableView tv_9 = q4_9.find_all();
+        tessera::Query q2_9 = table.where().equal(col_int0, 2);
+        tessera::Query q5_9 = table.where().equal(col_int0, 0);
+        tessera::Query q3_9 = table.where().and_query(q5_9).Or().and_query(q2_9);
+        tessera::Query q4_9 = table.where().equal(col_int1, 0).and_query(q3_9);
+        tessera::TableView tv_9 = q4_9.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int1) == 0 && ((o.get<Int>(col_int0) == 0) || o.get<Int>(col_int0) == 2)) {
@@ -1173,11 +1173,11 @@ TEST(Query_MergeQueriesMonkey)
         // Nested
 
         // and_query(and_query(and_query(first == 0)))
-        realm::Query q2_10 = table.where().equal(col_int0, 0);
-        realm::Query q5_10 = table.where().and_query(q2_10);
-        realm::Query q3_10 = table.where().and_query(q5_10);
-        realm::Query q4_10 = table.where().and_query(q3_10);
-        realm::TableView tv_10 = q4_10.find_all();
+        tessera::Query q2_10 = table.where().equal(col_int0, 0);
+        tessera::Query q5_10 = table.where().and_query(q2_10);
+        tessera::Query q3_10 = table.where().and_query(q5_10);
+        tessera::Query q4_10 = table.where().and_query(q3_10);
+        tessera::TableView tv_10 = q4_10.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int0) == 0) {
@@ -1192,7 +1192,7 @@ TEST(Query_MergeQueriesMonkeyOverloads)
 {
     Random random(random_int<unsigned long>()); // Seed from slow global generator
     for (int iter = 0; iter < 5; iter++) {
-        const size_t rows = REALM_MAX_BPNODE_SIZE * 4;
+        const size_t rows = TESSERA_MAX_BPNODE_SIZE * 4;
         Table table;
         auto col_int0 = table.add_column(type_Int, "first");
         auto col_int1 = table.add_column(type_Int, "second");
@@ -1209,9 +1209,9 @@ TEST(Query_MergeQueriesMonkeyOverloads)
 
         // Left side of operator&& is empty query
         // and_query(second == 1)
-        realm::Query q1_0 = table.where().equal(col_int1, 1);
-        realm::Query q2_0 = table.where() && q1_0;
-        realm::TableView tv_0 = q2_0.find_all();
+        tessera::Query q1_0 = table.where().equal(col_int1, 1);
+        tessera::Query q2_0 = table.where() && q1_0;
+        tessera::TableView tv_0 = q2_0.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int1) == 1) {
@@ -1222,9 +1222,9 @@ TEST(Query_MergeQueriesMonkeyOverloads)
 
         // Right side of operator&& is empty query
         // and_query(second == 1)
-        realm::Query q1_10 = table.where().equal(col_int1, 1);
-        realm::Query q2_10 = q1_10 && table.where();
-        realm::TableView tv_10 = q2_10.find_all();
+        tessera::Query q1_10 = table.where().equal(col_int1, 1);
+        tessera::Query q2_10 = q1_10 && table.where();
+        tessera::TableView tv_10 = q2_10.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int1) == 1) {
@@ -1234,13 +1234,13 @@ TEST(Query_MergeQueriesMonkeyOverloads)
         }
 
         // (first == 0 || first == 1) && and_query(second == 1)
-        realm::Query q1_1 = table.where().equal(col_int0, 0);
-        realm::Query q2_1 = table.where().equal(col_int0, 1);
-        realm::Query q3_1 = q1_1 || q2_1;
-        realm::Query q4_1 = table.where().equal(col_int1, 1);
-        realm::Query q5_1 = q3_1 && q4_1;
+        tessera::Query q1_1 = table.where().equal(col_int0, 0);
+        tessera::Query q2_1 = table.where().equal(col_int0, 1);
+        tessera::Query q3_1 = q1_1 || q2_1;
+        tessera::Query q4_1 = table.where().equal(col_int1, 1);
+        tessera::Query q5_1 = q3_1 && q4_1;
 
-        realm::TableView tv_1 = q5_1.find_all();
+        tessera::TableView tv_1 = q5_1.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if ((o.get<Int>(col_int0) == 0 || o.get<Int>(col_int0) == 1) && o.get<Int>(col_int1) == 1) {
@@ -1250,9 +1250,9 @@ TEST(Query_MergeQueriesMonkeyOverloads)
         }
 
         // (first == 0 || first == 1) && and_query(second == 1) as above, written in another way
-        realm::Query q1_20 =
+        tessera::Query q1_20 =
             table.where().equal(col_int0, 0).Or().equal(col_int0, 1) && table.where().equal(col_int1, 1);
-        realm::TableView tv_20 = q1_20.find_all();
+        tessera::TableView tv_20 = q1_20.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if ((o.get<Int>(col_int0) == 0 || o.get<Int>(col_int0) == 1) && o.get<Int>(col_int1) == 1) {
@@ -1262,11 +1262,11 @@ TEST(Query_MergeQueriesMonkeyOverloads)
         }
 
         // and_query(first == 0) || (first == 1 && second == 1)
-        realm::Query q1_3 = table.where().equal(col_int0, 0);
-        realm::Query q2_3 = table.where().equal(col_int0, 1);
-        realm::Query q3_3 = table.where().equal(col_int1, 1);
-        realm::Query q4_3 = q1_3 || (q2_3 && q3_3);
-        realm::TableView tv_3 = q4_3.find_all();
+        tessera::Query q1_3 = table.where().equal(col_int0, 0);
+        tessera::Query q2_3 = table.where().equal(col_int0, 1);
+        tessera::Query q3_3 = table.where().equal(col_int1, 1);
+        tessera::Query q4_3 = q1_3 || (q2_3 && q3_3);
+        tessera::TableView tv_3 = q4_3.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int0) == 0 || (o.get<Int>(col_int0) == 1 && o.get<Int>(col_int1) == 1)) {
@@ -1277,10 +1277,10 @@ TEST(Query_MergeQueriesMonkeyOverloads)
 
 
         // and_query(first == 0) || (first == 1 && second == 1) written in another way
-        realm::Query q1_30 = table.where().equal(col_int0, 0);
-        realm::Query q3_30 = table.where().equal(col_int1, 1);
-        realm::Query q4_30 = table.where().equal(col_int0, 0) || (table.where().equal(col_int0, 1) && q3_30);
-        realm::TableView tv_30 = q4_30.find_all();
+        tessera::Query q1_30 = table.where().equal(col_int0, 0);
+        tessera::Query q3_30 = table.where().equal(col_int1, 1);
+        tessera::Query q4_30 = table.where().equal(col_int0, 0) || (table.where().equal(col_int0, 1) && q3_30);
+        tessera::TableView tv_30 = q4_30.find_all();
         tvpos = 0;
         for (Obj o : table) {
             if (o.get<Int>(col_int0) == 0 || (o.get<Int>(col_int0) == 1 && o.get<Int>(col_int1) == 1)) {
@@ -1509,7 +1509,7 @@ TEST(Query_StrIndexCrash)
 
         size_t eights = 0;
 
-        for (int i = 0; i < REALM_MAX_BPNODE_SIZE * 2; ++i) {
+        for (int i = 0; i < TESSERA_MAX_BPNODE_SIZE * 2; ++i) {
             int v = random.draw_int_mod(10);
             if (v == 8) {
                 eights++;
@@ -1539,7 +1539,7 @@ TEST(Query_IntIndex)
     size_t eights = 0;
     size_t nulls = 0;
 
-    for (int i = 0; i < REALM_MAX_BPNODE_SIZE * 2; ++i) {
+    for (int i = 0; i < TESSERA_MAX_BPNODE_SIZE * 2; ++i) {
         int v = random.draw_int_mod(10);
         if (v == 8) {
             eights++;
@@ -1573,7 +1573,7 @@ TEST(Query_IntIndex)
     cnt = q.count();
     CHECK_EQUAL(cnt, eights);
 
-    q = origin->link(col_link).column<Int>(col) == realm::null();
+    q = origin->link(col_link).column<Int>(col) == tessera::null();
     cnt = q.count();
     CHECK_EQUAL(cnt, nulls);
 }
@@ -1588,7 +1588,7 @@ TEST(Query_StringIndexNull)
 
     size_t nulls = 0;
 
-    for (int i = 0; i < REALM_MAX_BPNODE_SIZE * 2; ++i) {
+    for (int i = 0; i < TESSERA_MAX_BPNODE_SIZE * 2; ++i) {
         int v = random.draw_int_mod(10);
         auto obj = table->create_object();
         if (v == 8) {
@@ -1605,7 +1605,7 @@ TEST(Query_StringIndexNull)
         origin->create_object().set(col_link, o.get_key());
     }
 
-    auto q = origin->link(col_link).column<String>(col) == realm::null();
+    auto q = origin->link(col_link).column<String>(col) == tessera::null();
     auto cnt = q.count();
     CHECK_EQUAL(cnt, nulls);
 }
@@ -1756,7 +1756,7 @@ TEST(Query_size)
     CHECK_EQUAL(table1_keys[1], match);
 
     // Check that the null values are handled correctly
-    q = binaries.size() == realm::null();
+    q = binaries.size() == tessera::null();
     tv = q.find_all();
     CHECK_EQUAL(tv.size(), 8);
     CHECK_EQUAL(tv.get_key(0), table1_keys[2]);
@@ -2029,7 +2029,7 @@ struct AggregateValues<Decimal128> {
                 std::numeric_limits<Decimal128>::max()};
     }
     using OptionalT = Decimal128;
-    static const constexpr realm::null null = realm::null();
+    static const constexpr tessera::null null = tessera::null();
 };
 
 template <>
@@ -2040,7 +2040,7 @@ struct AggregateValues<Timestamp> {
                 std::numeric_limits<Timestamp>::max()};
     }
     using OptionalT = Timestamp;
-    static const constexpr realm::null null = realm::null();
+    static const constexpr tessera::null null = tessera::null();
 };
 
 template <typename T>
@@ -2068,7 +2068,7 @@ ColKey generate_all_combinations(Table& table)
             }
 
             // Loop over each permutation of the selected values
-            REALM_ASSERT(std::is_sorted(selected_values.begin(), selected_values.end()));
+            TESSERA_ASSERT(std::is_sorted(selected_values.begin(), selected_values.end()));
             do {
                 auto list = table.create_object().get_list<OptionalT>(col);
                 for (auto value : selected_values)
@@ -2208,8 +2208,8 @@ TEST(Query_TwoColsEqualVaryWidthAndValues)
     auto col_double8 = table.add_column(type_Double, "fifth");
     auto col_double9 = table.add_column(type_Double, "sixth");
 
-#ifdef REALM_DEBUG
-    for (int i = 0; i < REALM_MAX_BPNODE_SIZE * 5; i++) {
+#ifdef TESSERA_DEBUG
+    for (int i = 0; i < TESSERA_MAX_BPNODE_SIZE * 5; i++) {
 #else
     for (int i = 0; i < 50000; i++) {
 #endif
@@ -2252,12 +2252,12 @@ TEST(Query_TwoColsEqualVaryWidthAndValues)
             doubles.push_back(key);
     }
 
-    realm::TableView t1 = table.where().equal(col_int0, col_int1).find_all();
-    realm::TableView t2 = table.where().equal(col_int2, col_int3).find_all();
-    realm::TableView t3 = table.where().equal(col_int4, col_int5).find_all();
+    tessera::TableView t1 = table.where().equal(col_int0, col_int1).find_all();
+    tessera::TableView t2 = table.where().equal(col_int2, col_int3).find_all();
+    tessera::TableView t3 = table.where().equal(col_int4, col_int5).find_all();
 
-    realm::TableView t4 = table.where().equal(col_float6, col_float7).find_all();
-    realm::TableView t5 = table.where().equal(col_double8, col_double9).find_all();
+    tessera::TableView t4 = table.where().equal(col_float6, col_float7).find_all();
+    tessera::TableView t5 = table.where().equal(col_double8, col_double9).find_all();
 
 
     CHECK_EQUAL(ints1.size(), t1.size());
@@ -2334,10 +2334,10 @@ TEST(Query_TwoCols0)
         table.create_object();
     }
 
-    realm::TableView t1 = table.where().equal(col0, col1).find_all();
+    tessera::TableView t1 = table.where().equal(col0, col1).find_all();
     CHECK_EQUAL(50, t1.size());
 
-    realm::TableView t2 = table.where().less(col0, col1).find_all();
+    tessera::TableView t2 = table.where().less(col0, col1).find_all();
     CHECK_EQUAL(0, t2.size());
 }
 
@@ -2911,9 +2911,9 @@ TEST(Query_OnTableView_where)
 
         size_t cnt1 = 0;
         size_t cnt0 = 0;
-        size_t limit = random.draw_int_max(REALM_MAX_BPNODE_SIZE * 10);
+        size_t limit = random.draw_int_max(TESSERA_MAX_BPNODE_SIZE * 10);
 
-        for (size_t i = 0; i < REALM_MAX_BPNODE_SIZE * 10; i++) {
+        for (size_t i = 0; i < TESSERA_MAX_BPNODE_SIZE * 10; i++) {
             int v = random.draw_int_mod(3);
 
             if (v == 1 && cnt0 < limit)
@@ -2940,13 +2940,13 @@ TEST_IF(Query_StrIndex3, TEST_DURATION > 0)
 
     Random random(random_int<unsigned long>()); // Seed from slow global generator
 
-#if REALM_MAX_BPNODE_SIZE > 256
+#if TESSERA_MAX_BPNODE_SIZE > 256
     constexpr int node_size = 256;
 #else
     constexpr int node_size = 4;
 #endif
 
-#if defined REALM_DEBUG || REALM_ANDROID
+#if defined TESSERA_DEBUG || TESSERA_ANDROID
     for (int N = 0; N < 4; N++) {
 #else
     for (int N = 0; N < 20; N++) {
@@ -2957,7 +2957,7 @@ TEST_IF(Query_StrIndex3, TEST_DURATION > 0)
 
         std::vector<ObjKey> vec;
 
-#if defined REALM_DEBUG || REALM_ANDROID
+#if defined TESSERA_DEBUG || TESSERA_ANDROID
         for (int i = 0; i < 4; i++) {
 #else
         for (int i = 0; i < 20; i++) {
@@ -3072,7 +3072,7 @@ TEST(Query_StrEnum)
     for (int i = 0; i < 100; ++i) {
         ttt.clear();
         aa = 0;
-        for (size_t t = 0; t < REALM_MAX_BPNODE_SIZE * 2; ++t) {
+        for (size_t t = 0; t < TESSERA_MAX_BPNODE_SIZE * 2; ++t) {
             if (random.chance(1, 3)) {
                 ttt.create_object().set_all(1, "AA");
                 ++aa;
@@ -3091,7 +3091,7 @@ TEST(Query_StrIndex)
 {
     Random random(random_int<unsigned long>()); // Seed from slow global generator
 
-#ifdef REALM_DEBUG
+#ifdef TESSERA_DEBUG
     size_t itera = 4;
     size_t iterb = 100;
 #else
@@ -5310,7 +5310,7 @@ TEST(Query_Sort_And_Requery_Untyped_Monkey2)
         auto col_int1 = table.add_column(type_Int, "second1");
 
         // Add random data to table
-        for (size_t t = 0; t < 2 * REALM_MAX_BPNODE_SIZE; t++) {
+        for (size_t t = 0; t < 2 * TESSERA_MAX_BPNODE_SIZE; t++) {
             int64_t val1 = rand() % 5;
             int64_t val2 = rand() % 5;
             table.create_object().set_all(val1, val2);
@@ -5329,7 +5329,7 @@ TEST(Query_Sort_And_Requery_Untyped_Monkey2)
         // Test if sort order is the same as original
         for (size_t t = 0; t < tv2.size(); t++) {
             ObjKey a = tv2.get_key(t);
-            REALM_ASSERT_EX(b < tv.size(), b, tv.size());
+            TESSERA_ASSERT_EX(b < tv.size(), b, tv.size());
             while (a != tv.get_key(b)) {
                 b++;
             }
@@ -5349,7 +5349,7 @@ TEST(Query_Sort_And_Requery_Untyped_Monkey2)
         // Test if sort order is the same as original
         for (size_t t = 0; t < tv3.size(); t++) {
             ObjKey a = tv3.get_key(t);
-            REALM_ASSERT_EX(b < tv2.size(), b, tv2.size());
+            TESSERA_ASSERT_EX(b < tv2.size(), b, tv2.size());
             while (a != tv2.get_key(b)) {
                 b++;
                 CHECK(b < tv2.size());

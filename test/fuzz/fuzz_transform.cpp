@@ -24,9 +24,9 @@
 
 #include <fstream>
 
-using namespace realm;
-using namespace realm::test_util;
-using namespace realm::test_util::unit_test;
+using namespace tessera;
+using namespace tessera::test_util;
+using namespace tessera::test_util::unit_test;
 
 
 struct FileSource {
@@ -43,7 +43,7 @@ struct FileSource {
     {
     }
 
-    // Emulate realm::test_util::Random interface
+    // Emulate tessera::test_util::Random interface
 
     unsigned int get_byte()
     {
@@ -152,13 +152,13 @@ int main(int argc, char* argv[])
     g_argc = argc;
     g_argv = argv;
 
-    realm::disable_sync_to_disk();
+    tessera::disable_sync_to_disk();
 
     TestList::Config config;
     config.logger = nullptr;
     config.intra_test_log_level = util::Logger::Level::fatal;
     TestList& list = get_default_test_list();
     bool success = list.run(config);
-    REALM_ASSERT_RELEASE(success == true);
+    TESSERA_ASSERT_RELEASE(success == true);
     return 0;
 }

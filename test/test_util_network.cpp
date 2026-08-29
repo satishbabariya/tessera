@@ -5,18 +5,18 @@
 #include <memory>
 #include <thread>
 
-#include <realm/status.hpp>
-#include <realm/util/future.hpp>
-#include <realm/util/memory_stream.hpp>
-#include <realm/sync/network/network.hpp>
-#include <realm/sync/trigger.hpp>
+#include <tessera/status.hpp>
+#include <tessera/util/future.hpp>
+#include <tessera/util/memory_stream.hpp>
+#include <tessera/sync/network/network.hpp>
+#include <tessera/sync/trigger.hpp>
 
 #include "test.hpp"
 #include "util/semaphore.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 
 // Test independence and thread-safety
@@ -48,7 +48,7 @@ using namespace realm::test_util;
 // `experiments/testcase.cpp` and then run `sh build.sh
 // check-testcase` (or one of its friends) from the command line.
 
-using namespace realm::sync;
+using namespace tessera::sync;
 
 namespace {
 
@@ -70,11 +70,11 @@ void connect_sockets(network::Socket& socket_1, network::Socket& socket_2)
     network::Endpoint ep = bind_acceptor(acceptor);
     bool accept_occurred = false, connect_occurred = false;
     auto accept_handler = [&](std::error_code ec) {
-        REALM_ASSERT(!ec);
+        TESSERA_ASSERT(!ec);
         accept_occurred = true;
     };
     auto connect_handler = [&](std::error_code ec) {
-        REALM_ASSERT(!ec);
+        TESSERA_ASSERT(!ec);
         connect_occurred = true;
     };
     acceptor.async_accept(socket_1, std::move(accept_handler));
@@ -89,8 +89,8 @@ void connect_sockets(network::Socket& socket_1, network::Socket& socket_2)
         service_2.run();
         thread.join();
     }
-    REALM_ASSERT(accept_occurred);
-    REALM_ASSERT(connect_occurred);
+    TESSERA_ASSERT(accept_occurred);
+    TESSERA_ASSERT(connect_occurred);
     socket_1.set_option(network::SocketBase::no_delay(true));
     socket_2.set_option(network::SocketBase::no_delay(true));
 }
@@ -511,7 +511,7 @@ TEST(Network_AsyncReadWriteLargeAmount)
         std::unique_ptr<char[]> buffer(new char[buffer_size]);
         size_t offset_in_chunk = 0;
         int chunk_index = 0;
-        realm::util::UniqueFunction<void()> read_chunk = [&] {
+        tessera::util::UniqueFunction<void()> read_chunk = [&] {
             auto handler = [&](std::error_code ec, size_t n) {
                 bool equal = true;
                 for (size_t i = 0; i < n; ++i) {
@@ -1257,7 +1257,7 @@ struct AsyncReadWriteRealloc {
                 write_socket.async_write(write_buffer, n, WriteHandler<1000>(*this));
                 return;
         }
-        REALM_ASSERT(false);
+        TESSERA_ASSERT(false);
     }
 
     template <int size>
@@ -1296,7 +1296,7 @@ struct AsyncReadWriteRealloc {
                 read_socket.async_read(read_buffer, n, rab, ReadHandler<1000>(*this));
                 return;
         }
-        REALM_ASSERT(false);
+        TESSERA_ASSERT(false);
     }
 };
 
@@ -1760,7 +1760,7 @@ TEST(Network_RepeatedCancelAndRestartRead)
         char read_buffer[read_buffer_size];
         size_t num_bytes_read = 0;
         bool end_of_input_seen = false;
-        realm::util::UniqueFunction<void()> initiate_read = [&] {
+        tessera::util::UniqueFunction<void()> initiate_read = [&] {
             auto handler = [&](std::error_code ec, size_t n) {
                 num_bytes_read += n;
                 if (ec == MiscExtErrors::end_of_input) {
@@ -1851,7 +1851,7 @@ TEST(Network_StressTest)
         std::uint_fast64_t microseconds_per_cancellation = 10;
         bool progress = false;
         bool read_done = false, write_done = false;
-        realm::util::UniqueFunction<void()> shedule_cancellation = [&] {
+        tessera::util::UniqueFunction<void()> shedule_cancellation = [&] {
             if (progress) {
                 microseconds_per_cancellation /= 2;
                 progress = false;
@@ -1863,7 +1863,7 @@ TEST(Network_StressTest)
                 microseconds_per_cancellation = 10;
             cancellation_timer.async_wait(std::chrono::microseconds(microseconds_per_cancellation),
                                           [&](Status status) {
-                                              REALM_ASSERT(status.is_ok() || status == ErrorCodes::OperationAborted);
+                                              TESSERA_ASSERT(status.is_ok() || status == ErrorCodes::OperationAborted);
                                               if (status == ErrorCodes::OperationAborted)
                                                   return;
                                               if (read_done && write_done)
@@ -1877,7 +1877,7 @@ TEST(Network_StressTest)
         char* read_begin = read_buffer.get();
         char* read_end = read_buffer.get() + original_size;
         int num_read_cycles = 0;
-        realm::util::UniqueFunction<void()> read = [&] {
+        tessera::util::UniqueFunction<void()> read = [&] {
             if (read_begin == read_end) {
                 //                log("<R%1>", id);
                 CHECK(std::equal(read_original, read_original + original_size, read_buffer.get()));
@@ -1893,7 +1893,7 @@ TEST(Network_StressTest)
                 read_end = read_buffer.get() + original_size;
             }
             auto handler = [&](std::error_code ec, size_t n) {
-                REALM_ASSERT(!ec || ec == error::operation_aborted);
+                TESSERA_ASSERT(!ec || ec == error::operation_aborted);
                 ++stats.num_reads;
                 if (ec == error::operation_aborted) {
                     ++stats.num_canceled_reads;
@@ -1904,7 +1904,7 @@ TEST(Network_StressTest)
                 }
                 if (delayed_read_write_dist(prng) == 0) {
                     read_timer.async_wait(std::chrono::microseconds(100), [&](Status status) {
-                        REALM_ASSERT(status.is_ok());
+                        TESSERA_ASSERT(status.is_ok());
                         read();
                     });
                 }
@@ -1923,7 +1923,7 @@ TEST(Network_StressTest)
         const char* write_begin = write_original;
         const char* write_end = write_original + original_size;
         int num_write_cycles = 0;
-        realm::util::UniqueFunction<void()> write = [&] {
+        tessera::util::UniqueFunction<void()> write = [&] {
             if (write_begin == write_end) {
                 //                log("<W%1>", id);
                 ++num_write_cycles;
@@ -1940,7 +1940,7 @@ TEST(Network_StressTest)
                 write_end = write_original + original_size;
             }
             auto handler = [&](std::error_code ec, size_t n) {
-                REALM_ASSERT(!ec || ec == error::operation_aborted);
+                TESSERA_ASSERT(!ec || ec == error::operation_aborted);
                 ++stats.num_writes;
                 if (ec == error::operation_aborted) {
                     ++stats.num_canceled_writes;
@@ -1951,7 +1951,7 @@ TEST(Network_StressTest)
                 }
                 if (delayed_read_write_dist(prng) == 0) {
                     write_timer.async_wait(std::chrono::microseconds(100), [&](Status status) {
-                        REALM_ASSERT(status.is_ok());
+                        TESSERA_ASSERT(status.is_ok());
                         write();
                     });
                 }
@@ -1998,7 +1998,7 @@ TEST(Sync_Trigger_Basics)
 
     // Check that triggering works
     bool was_triggered = false;
-    auto func = [&](realm::Status) {
+    auto func = [&](tessera::Status) {
         was_triggered = true;
     };
     Trigger<network::Service> trigger(&service, std::move(func));
@@ -2019,8 +2019,8 @@ TEST(Sync_Trigger_Basics)
     CHECK(was_triggered);
 
     // Check that retriggering from triggered function works
-    realm::util::UniqueFunction<void()> func_2;
-    Trigger<network::Service> trigger_2(&service, [&](realm::Status) {
+    tessera::util::UniqueFunction<void()> func_2;
+    Trigger<network::Service> trigger_2(&service, [&](tessera::Status) {
         func_2();
     });
     was_triggered = false;
@@ -2042,7 +2042,7 @@ TEST(Sync_Trigger_Basics)
     // object
     was_triggered = false;
     {
-        auto func_3 = [&](realm::Status) {
+        auto func_3 = [&](tessera::Status) {
             was_triggered = true;
         };
         Trigger<network::Service> trigger_3(&service, std::move(func_3));
@@ -2054,10 +2054,10 @@ TEST(Sync_Trigger_Basics)
     // Check that two functions can be triggered in an overlapping fashion
     bool was_triggered_4 = false;
     bool was_triggered_5 = false;
-    auto func_4 = [&](realm::Status) {
+    auto func_4 = [&](tessera::Status) {
         was_triggered_4 = true;
     };
-    auto func_5 = [&](realm::Status) {
+    auto func_5 = [&](tessera::Status) {
         was_triggered_5 = true;
     };
     Trigger<network::Service> trigger_4(&service, std::move(func_4));
@@ -2077,7 +2077,7 @@ TEST(Sync_Trigger_ThreadSafety)
     keep_alive.async_wait(std::chrono::hours(10000), [](Status) {});
     long n_1 = 0, n_2 = 0;
     std::atomic<bool> flag{false};
-    auto func = [&](realm::Status) {
+    auto func = [&](tessera::Status) {
         ++n_1;
         if (flag)
             ++n_2;

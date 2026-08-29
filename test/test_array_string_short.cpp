@@ -19,13 +19,13 @@
 #include "testsettings.hpp"
 #ifdef TEST_ARRAY_STRING
 
-#include <realm/array_string_short.hpp>
-#include <realm/column_integer.hpp>
+#include <tessera/array_string_short.hpp>
+#include <tessera/column_integer.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::test_util;
 
 
 // Test independence and thread-safety
@@ -536,7 +536,7 @@ TEST(ArrayString_Null)
 
         a.add("foo");
         a.add("");
-        a.add(realm::null());
+        a.add(tessera::null());
 
         CHECK_EQUAL(a.is_null(0), false);
         CHECK_EQUAL(a.is_null(1), false);
@@ -558,7 +558,7 @@ TEST(ArrayString_Null)
         ArrayStringShort a(Allocator::get_default(), true);
         a.create();
 
-        a.add(realm::null());
+        a.add(tessera::null());
         a.add("");
         a.add("foo");
 
@@ -568,9 +568,9 @@ TEST(ArrayString_Null)
         CHECK(a.get(2) == "foo");
 
         // Test insert
-        a.insert(0, realm::null());
-        a.insert(2, realm::null());
-        a.insert(4, realm::null());
+        a.insert(0, tessera::null());
+        a.insert(2, tessera::null());
+        a.insert(4, tessera::null());
 
         CHECK_EQUAL(a.is_null(0), true);
         CHECK_EQUAL(a.is_null(1), true);
@@ -587,7 +587,7 @@ TEST(ArrayString_Null)
         a.create();
 
         a.add("");
-        a.add(realm::null());
+        a.add(tessera::null());
         a.add("foo");
 
         CHECK_EQUAL(a.is_null(0), false);
@@ -627,8 +627,8 @@ TEST(ArrayString_Null)
                 v.erase(v.begin() + del);
             }
             else {
-                // Generate string with good probability of being empty or realm::null()
-                static const char str[] = "This is a test of realm::null() strings";
+                // Generate string with good probability of being empty or tessera::null()
+                static const char str[] = "This is a test of tessera::null() strings";
                 size_t len;
 
                 if (random.draw_int<int>() > 100)
@@ -640,8 +640,8 @@ TEST(ArrayString_Null)
                 std::string stdstr;
 
                 if (random.draw_int<int>() > 100) {
-                    sd = realm::null();
-                    stdstr = "realm::null()";
+                    sd = tessera::null();
+                    stdstr = "tessera::null()";
                 }
                 else {
                     sd = StringData(str, len);
@@ -660,7 +660,7 @@ TEST(ArrayString_Null)
 
                 CHECK_EQUAL(a.size(), v.size());
                 for (size_t a_i = 0; a_i < a.size(); a_i++) {
-                    if (v[a_i] == "realm::null()") {
+                    if (v[a_i] == "tessera::null()") {
                         CHECK(a.is_null(a_i));
                         CHECK(a.get(a_i).data() == nullptr);
                     }

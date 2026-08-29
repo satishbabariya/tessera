@@ -16,15 +16,15 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_CHECK_LOGIC_ERROR_HPP
-#define REALM_TEST_UTIL_CHECK_LOGIC_ERROR_HPP
+#ifndef TESSERA_TEST_UTIL_CHECK_LOGIC_ERROR_HPP
+#define TESSERA_TEST_UTIL_CHECK_LOGIC_ERROR_HPP
 
-#include <realm/exceptions.hpp>
+#include <tessera/exceptions.hpp>
 
 #include "unit_test.hpp"
 
-#define CHECK_LOGIC_ERROR(expr, error_kind) CHECK_THROW_EX(expr, realm::LogicError, e.code() == error_kind)
+#define CHECK_LOGIC_ERROR(expr, error_kind) CHECK_THROW_EX(expr, tessera::LogicError, e.code() == error_kind)
 
-#define CHECK_RUNTIME_ERROR(expr, error_kind) CHECK_THROW_EX(expr, realm::RuntimeError, e.code() == error_kind)
+#define CHECK_RUNTIME_ERROR(expr, error_kind) CHECK_THROW_EX(expr, tessera::RuntimeError, e.code() == error_kind)
 
-#endif // REALM_TEST_UTIL_CHECK_LOGIC_ERROR_HPP
+#endif // TESSERA_TEST_UTIL_CHECK_LOGIC_ERROR_HPP

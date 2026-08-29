@@ -1,13 +1,13 @@
-#include <realm/db.hpp>
-#include <realm/list.hpp>
-#include <realm/object_converter.hpp>
-#include <realm/sync/noinst/client_reset.hpp>
-#include <realm/sync/noinst/client_reset_operation.hpp>
-#include <realm/sync/noinst/client_reset_recovery.hpp>
-#include <realm/sync/noinst/pending_reset_store.hpp>
-#include <realm/sync/subscriptions.hpp>
-#include <realm/table_view.hpp>
-#include <realm/util/random.hpp>
+#include <tessera/db.hpp>
+#include <tessera/list.hpp>
+#include <tessera/object_converter.hpp>
+#include <tessera/sync/noinst/client_reset.hpp>
+#include <tessera/sync/noinst/client_reset_operation.hpp>
+#include <tessera/sync/noinst/client_reset_recovery.hpp>
+#include <tessera/sync/noinst/pending_reset_store.hpp>
+#include <tessera/sync/subscriptions.hpp>
+#include <tessera/table_view.hpp>
+#include <tessera/util/random.hpp>
 
 #include "test.hpp"
 #include "sync_fixtures.hpp"
@@ -17,10 +17,10 @@
 #include <string>
 #include <thread>
 
-using namespace realm;
-using namespace realm::sync;
-using namespace realm::test_util;
-using namespace realm::fixtures;
+using namespace tessera;
+using namespace tessera::sync;
+using namespace tessera::test_util;
+using namespace tessera::fixtures;
 
 namespace {
 
@@ -68,7 +68,7 @@ TEST(ClientReset_TransferGroupWithDanglingLinks)
     _impl::client_reset::transfer_group(*rt, *wt, *test_context.logger, allow_schema_additions);
 }
 
-#if !REALM_MOBILE
+#if !TESSERA_MOBILE
 TEST(ClientReset_NoLocalChanges)
 {
     TEST_DIR(dir_1);                // The original server dir.
@@ -156,7 +156,7 @@ TEST(ClientReset_NoLocalChanges)
                                                           util::Optional<ErrorInfo> error_info) {
                 if (state != ConnectionState::disconnected)
                     return;
-                REALM_ASSERT(error_info);
+                TESSERA_ASSERT(error_info);
                 CHECK_EQUAL(error_info->status, ErrorCodes::SyncClientResetRequired);
                 CHECK_EQUAL(static_cast<ProtocolError>(error_info->raw_error_code),
                             ProtocolError::bad_server_version);
@@ -588,7 +588,7 @@ TEST(ClientReset_ThreeClients)
                                                               util::Optional<ErrorInfo> error_info) {
                     if (state != ConnectionState::disconnected)
                         return;
-                    REALM_ASSERT(error_info);
+                    TESSERA_ASSERT(error_info);
                     CHECK_EQUAL(error_info->status, ErrorCodes::SyncClientResetRequired);
                     CHECK_EQUAL(static_cast<ProtocolError>(error_info->raw_error_code),
                                 ProtocolError::bad_server_version);
@@ -762,7 +762,7 @@ TEST(ClientReset_DoNotRecoverSchema)
                                                               util::Optional<ErrorInfo> error_info) {
             if (state != ConnectionState::disconnected)
                 return;
-            REALM_ASSERT(error_info);
+            TESSERA_ASSERT(error_info);
             CHECK_EQUAL(error_info->status, ErrorCodes::AutoClientResetFailed);
             CHECK(error_info->status.reason().find(error_msg) != std::string::npos);
             bowl.add_stone();
@@ -851,7 +851,7 @@ TEST(ClientReset_PinnedVersion)
         session.wait_for_download_complete_or_client_stopped();
     }
 }
-#endif // !REALM_MOBILE
+#endif // !TESSERA_MOBILE
 
 void expect_reset(unit_test::TestContext& test_context, DBRef& target, DBRef& fresh, ClientResyncMode mode,
                   SubscriptionStore* sub_store = nullptr, bool allow_recovery = true)

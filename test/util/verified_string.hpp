@@ -16,18 +16,18 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_VERIFIED_STRING_HPP
-#define REALM_TEST_UTIL_VERIFIED_STRING_HPP
+#ifndef TESSERA_TEST_UTIL_VERIFIED_STRING_HPP
+#define TESSERA_TEST_UTIL_VERIFIED_STRING_HPP
 
 #include <cstddef>
 #include <vector>
 #include <string>
 
-#include <realm/string_data.hpp>
-#include <realm/bplustree.hpp>
-#include <realm/array_string.hpp>
+#include <tessera/string_data.hpp>
+#include <tessera/bplustree.hpp>
+#include <tessera/array_string.hpp>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 
@@ -54,6 +54,6 @@ private:
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_VERIFIED_STRING_HPP
+#endif // TESSERA_TEST_UTIL_VERIFIED_STRING_HPP

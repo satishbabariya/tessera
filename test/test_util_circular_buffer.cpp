@@ -5,12 +5,12 @@
 #include <stdexcept>
 #include <vector>
 
-#include <realm/util/circular_buffer.hpp>
+#include <tessera/util/circular_buffer.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 namespace {
 

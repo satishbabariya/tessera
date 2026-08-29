@@ -1,10 +1,10 @@
 #include "test.hpp"
 
-#include <realm/sync/network/network.hpp>
-#include <realm/sync/network/websocket.hpp>
+#include <tessera/sync/network/network.hpp>
+#include <tessera/sync/network/websocket.hpp>
 
-using namespace realm;
-using namespace realm::sync;
+using namespace tessera;
+using namespace tessera::sync;
 
 using WriteCompletionHandler = websocket::WriteCompletionHandler;
 using ReadCompletionHandler = websocket::ReadCompletionHandler;
@@ -32,7 +32,7 @@ public:
     void async_read(char* buffer, size_t size, ReadCompletionHandler handler)
     {
         m_logger_ptr->trace(util::LogCategory::network, "async_read, size = %1", size);
-        REALM_ASSERT(!m_reader_waiting);
+        TESSERA_ASSERT(!m_reader_waiting);
         m_reader_waiting = true;
         m_plain_async_read = true;
         m_read_buffer = buffer;
@@ -44,7 +44,7 @@ public:
     void async_read_until(char* buffer, size_t size, char delim, ReadCompletionHandler handler)
     {
         m_logger_ptr->trace(util::LogCategory::network, "async_read_until, size = %1, delim = %2", size, delim);
-        REALM_ASSERT(!m_reader_waiting);
+        TESSERA_ASSERT(!m_reader_waiting);
         m_reader_waiting = true;
         m_plain_async_read = false;
         m_read_buffer = buffer;

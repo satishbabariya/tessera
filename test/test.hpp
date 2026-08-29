@@ -16,8 +16,8 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_HPP
-#define REALM_TEST_HPP
+#ifndef TESSERA_TEST_HPP
+#define TESSERA_TEST_HPP
 
 #include "util/random.hpp"
 #include "util/thread_wrapper.hpp"
@@ -29,4 +29,4 @@
 #include "util/test_only.hpp"
 #include "util/crypt_key.hpp"
 
-#endif // REALM_TEST_HPP
+#endif // TESSERA_TEST_HPP

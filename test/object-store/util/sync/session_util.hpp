@@ -21,14 +21,14 @@
 #include <util/test_file.hpp>
 #include <util/sync/sync_test_utils.hpp>
 
-#include <realm/object-store/sync/sync_manager.hpp>
-#include <realm/object-store/sync/sync_session.hpp>
-#include <realm/object-store/sync/sync_user.hpp>
+#include <tessera/object-store/sync/sync_manager.hpp>
+#include <tessera/object-store/sync/sync_session.hpp>
+#include <tessera/object-store/sync/sync_user.hpp>
 
-#include <realm/sync/config.hpp>
+#include <tessera/sync/config.hpp>
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 namespace Catch {
 template <>

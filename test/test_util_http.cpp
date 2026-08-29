@@ -1,12 +1,12 @@
 #include "test.hpp"
 
-#include <realm/sync/network/http.hpp>
-#include <realm/sync/network/network.hpp>
+#include <tessera/sync/network/http.hpp>
+#include <tessera/sync/network/network.hpp>
 
 #include <thread>
 
-using namespace realm;
-using namespace realm::sync;
+using namespace tessera;
+using namespace tessera::sync;
 
 namespace {
 

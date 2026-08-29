@@ -24,18 +24,18 @@
 #include <sstream>
 #include <ostream>
 
-#include <realm/query_expression.hpp>
-#include <realm/table_view.hpp>
-#include <realm/util/to_string.hpp>
-#include <realm.hpp>
+#include <tessera/query_expression.hpp>
+#include <tessera/table_view.hpp>
+#include <tessera/util/to_string.hpp>
+#include <tessera.hpp>
 
 #include "util/misc.hpp"
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 using namespace test_util;
-using namespace realm::util;
+using namespace tessera::util;
 
 
 namespace {
@@ -851,7 +851,7 @@ TEST(Link_FindNullLink)
     match = table2->column<Link>(col_linklist2).is_null().find();
     CHECK_EQUAL(obj_2_1.get_key(), match);
 
-    // We have not yet defined behaviour of finding realm::null()-links in a linked-to table, so we just throw. Todo.
+    // We have not yet defined behaviour of finding tessera::null()-links in a linked-to table, so we just throw. Todo.
     CHECK_THROW_ANY(table2->link(col_linklist2).column<Link>(col_link1).is_null());
 }
 
@@ -1224,61 +1224,61 @@ TEST(LinkList_QueryLinkNull)
     auto o2 = data_table->create_object();
     o2.set_all("Horse", o1.get_key(), 2, 2.0, Timestamp(0, 2));
 
-    CHECK_EQUAL(1, data_table->where().and_query(data_table->column<String>(c0) == realm::null()).count());
-    CHECK_EQUAL(2, data_table->where().and_query(data_table->column<String>(c0) != realm::null()).count());
+    CHECK_EQUAL(1, data_table->where().and_query(data_table->column<String>(c0) == tessera::null()).count());
+    CHECK_EQUAL(2, data_table->where().and_query(data_table->column<String>(c0) != tessera::null()).count());
 
-    CHECK_EQUAL(1, data_table->where().and_query(data_table->column<Int>(c2) == realm::null()).count());
-    CHECK_EQUAL(1, data_table->where().and_query(data_table->column<Double>(c3) == realm::null()).count());
-    CHECK_EQUAL(1, data_table->where().and_query(data_table->column<Timestamp>(c4) == realm::null()).count());
+    CHECK_EQUAL(1, data_table->where().and_query(data_table->column<Int>(c2) == tessera::null()).count());
+    CHECK_EQUAL(1, data_table->where().and_query(data_table->column<Double>(c3) == tessera::null()).count());
+    CHECK_EQUAL(1, data_table->where().and_query(data_table->column<Timestamp>(c4) == tessera::null()).count());
 
-    CHECK_EQUAL(2, data_table->where().and_query(data_table->link(c1).column<String>(c0) == realm::null()).count());
-    CHECK_EQUAL(1, data_table->where().and_query(data_table->link(c1).column<String>(c0) != realm::null()).count());
+    CHECK_EQUAL(2, data_table->where().and_query(data_table->link(c1).column<String>(c0) == tessera::null()).count());
+    CHECK_EQUAL(1, data_table->where().and_query(data_table->link(c1).column<String>(c0) != tessera::null()).count());
     CHECK_EQUAL(o0.get_key(), data_table->where()
-                                  .and_query(data_table->link(c1).column<String>(c0) != realm::null())
+                                  .and_query(data_table->link(c1).column<String>(c0) != tessera::null())
                                   .find_all()
                                   .get_key(0));
 
-    CHECK_EQUAL(2, data_table->where().and_query(data_table->link(c1).column<Int>(c2) == realm::null()).count());
-    CHECK_EQUAL(1, data_table->where().and_query(data_table->link(c1).column<Int>(c2) != realm::null()).count());
+    CHECK_EQUAL(2, data_table->where().and_query(data_table->link(c1).column<Int>(c2) == tessera::null()).count());
+    CHECK_EQUAL(1, data_table->where().and_query(data_table->link(c1).column<Int>(c2) != tessera::null()).count());
 
-    CHECK_EQUAL(2, data_table->where().and_query(data_table->link(c1).column<Double>(c3) == realm::null()).count());
-    CHECK_EQUAL(1, data_table->where().and_query(data_table->link(c1).column<Double>(c3) != realm::null()).count());
+    CHECK_EQUAL(2, data_table->where().and_query(data_table->link(c1).column<Double>(c3) == tessera::null()).count());
+    CHECK_EQUAL(1, data_table->where().and_query(data_table->link(c1).column<Double>(c3) != tessera::null()).count());
 
     CHECK_EQUAL(2,
-                data_table->where().and_query(data_table->link(c1).column<Timestamp>(c4) == realm::null()).count());
+                data_table->where().and_query(data_table->link(c1).column<Timestamp>(c4) == tessera::null()).count());
     CHECK_EQUAL(1,
-                data_table->where().and_query(data_table->link(c1).column<Timestamp>(c4) != realm::null()).count());
+                data_table->where().and_query(data_table->link(c1).column<Timestamp>(c4) != tessera::null()).count());
 
     CHECK_EQUAL(2,
-                data_table->where().and_query(data_table->link(c1).column<String>(c0).equal(realm::null())).count());
+                data_table->where().and_query(data_table->link(c1).column<String>(c0).equal(tessera::null())).count());
     CHECK_EQUAL(
-        1, data_table->where().and_query(data_table->link(c1).column<String>(c0).not_equal(realm::null())).count());
+        1, data_table->where().and_query(data_table->link(c1).column<String>(c0).not_equal(tessera::null())).count());
 
     CHECK_EQUAL(2, data_table->where()
                        .Not()
-                       .and_query(data_table->link(c1).column<String>(c0).not_equal(realm::null()))
+                       .and_query(data_table->link(c1).column<String>(c0).not_equal(tessera::null()))
                        .count());
     CHECK_EQUAL(o1.get_key(), data_table->where()
                                   .Not()
-                                  .and_query(data_table->link(c1).column<String>(c0).not_equal(realm::null()))
+                                  .and_query(data_table->link(c1).column<String>(c0).not_equal(tessera::null()))
                                   .find_all()
                                   .get_key(0));
     CHECK_EQUAL(o2.get_key(), data_table->where()
                                   .Not()
-                                  .and_query(data_table->link(c1).column<String>(c0).not_equal(realm::null()))
+                                  .and_query(data_table->link(c1).column<String>(c0).not_equal(tessera::null()))
                                   .find_all()
                                   .get_key(1));
 
     CHECK_EQUAL(
-        1, data_table->where().Not().and_query(data_table->link(c1).column<String>(c0).equal(realm::null())).count());
+        1, data_table->where().Not().and_query(data_table->link(c1).column<String>(c0).equal(tessera::null())).count());
     CHECK_EQUAL(o0.get_key(), data_table->where()
                                   .Not()
-                                  .and_query(data_table->link(c1).column<String>(c0).equal(realm::null()))
+                                  .and_query(data_table->link(c1).column<String>(c0).equal(tessera::null()))
                                   .find_all()
                                   .get_key(0));
 
-    CHECK_EQUAL(1, (data_table->column<Link>(c1) == realm::null()).count());
-    CHECK_EQUAL(2, (data_table->column<Link>(c1) != realm::null()).count());
+    CHECK_EQUAL(1, (data_table->column<Link>(c1) == tessera::null()).count());
+    CHECK_EQUAL(2, (data_table->column<Link>(c1) != tessera::null()).count());
 }
 
 TEST(LinkList_QueryOnIndexedPropertyOfLinkListMultipleMatches)
@@ -1293,7 +1293,7 @@ TEST(LinkList_QueryOnIndexedPropertyOfLinkListMultipleMatches)
     auto c1 = link_table->add_column_list(*data_table, "col");
 
     // Ensure that the results from the index don't fit in a single leaf
-    const size_t count = round_up(std::max(REALM_MAX_BPNODE_SIZE * 8, 100), 4);
+    const size_t count = round_up(std::max(TESSERA_MAX_BPNODE_SIZE * 8, 100), 4);
     // data_table->add_empty_row(count);
     for (size_t i = 0; i < count; ++i) {
         char str[2]{};

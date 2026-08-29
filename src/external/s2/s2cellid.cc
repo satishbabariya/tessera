@@ -505,7 +505,7 @@ S2CellId S2CellId::FromString(const string& str) {
 
 string S2CellId::ToString() const {
   if (!is_valid()) {
-    return realm::util::format("Invalid: %1", id());
+    return tessera::util::format("Invalid: %1", id());
   }
   string out;
   out.reserve(2 + level());

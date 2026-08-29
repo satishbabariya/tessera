@@ -5,9 +5,9 @@
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::sync;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::sync;
+using namespace tessera::test_util;
 
 TEST(EmbeddedObjects_Basic)
 {
@@ -624,7 +624,7 @@ TEST(EmbeddedObjects_CreateEraseCreateSequencePreservesObject)
             subobj.set("int", 1);
 
             subobj.remove();
-            REALM_ASSERT(obj.is_null(col));
+            TESSERA_ASSERT(obj.is_null(col));
 
             subobj = obj.create_and_set_linked_object(col);
             subobj.set("int", 2);
@@ -690,8 +690,8 @@ TEST(EmbeddedObjects_CreateEraseCreateSequencePreservesObject_Nested)
 
             // subobj.remove(); // FIXME: Core doesn't cascade this to the subsubobj
             obj.set_null("embedded");
-            REALM_ASSERT(obj.is_null(col));
-            REALM_ASSERT(!subsubobj.is_valid());
+            TESSERA_ASSERT(obj.is_null(col));
+            TESSERA_ASSERT(!subsubobj.is_valid());
 
             subobj = obj.create_and_set_linked_object(col);
             subsubobj = subobj.create_and_set_linked_object(subcol);

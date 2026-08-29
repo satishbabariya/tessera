@@ -32,7 +32,7 @@
 
 // Wrap pthread function calls with the pthread bug finding tool (program execution will be slower) by
 // #including pthread_test.h. Works both in debug and release mode.
-// #define REALM_PTHREADS_TEST
+// #define TESSERA_PTHREADS_TEST
 
 #define TEST_BASIC_UTILS
 #define TEST_BPLUS_TREE

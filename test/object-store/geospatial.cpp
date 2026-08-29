@@ -20,27 +20,27 @@
 #include <util/index_helpers.hpp>
 #include <util/test_file.hpp>
 
-#include <realm/geospatial.hpp>
-#include <realm/group.hpp>
+#include <tessera/geospatial.hpp>
+#include <tessera/group.hpp>
 
-#include <realm/object-store/feature_checks.hpp>
-#include <realm/object-store/collection_notifications.hpp>
-#include <realm/object-store/object_accessor.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/schema.hpp>
-#include <realm/object-store/object.hpp>
-#include <realm/object-store/impl/realm_coordinator.hpp>
-#include <realm/object-store/impl/object_accessor_impl.hpp>
-#include <realm/object-store/util/scheduler.hpp>
+#include <tessera/object-store/feature_checks.hpp>
+#include <tessera/object-store/collection_notifications.hpp>
+#include <tessera/object-store/object_accessor.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/schema.hpp>
+#include <tessera/object-store/object.hpp>
+#include <tessera/object-store/impl/realm_coordinator.hpp>
+#include <tessera/object-store/impl/object_accessor_impl.hpp>
+#include <tessera/object-store/util/scheduler.hpp>
 
-#include <realm/util/any.hpp>
+#include <tessera/util/any.hpp>
 
 
 #include <catch2/catch_all.hpp>
 
 #include <cstdint>
 
-using namespace realm;
+using namespace tessera;
 using util::any_cast;
 
 namespace {
@@ -57,7 +57,7 @@ struct TestContext : CppContext {
     std::map<std::string, AnyDict> defaults;
 
     using CppContext::CppContext;
-    TestContext(TestContext& parent, realm::Obj& obj, realm::Property const& prop)
+    TestContext(TestContext& parent, tessera::Obj& obj, tessera::Property const& prop)
         : CppContext(parent, obj, prop)
         , defaults(parent.defaults)
     {

@@ -20,13 +20,13 @@
 #include <vector>
 #include <locale>
 
-#include <realm/util/logger.hpp>
-#include <realm/util/hex_dump.hpp>
-#include <realm/binary_data.hpp>
+#include <tessera/util/logger.hpp>
+#include <tessera/util/hex_dump.hpp>
+#include <tessera/binary_data.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 // Test independence and thread-safety
 // -----------------------------------
@@ -88,7 +88,7 @@ TEST(Util_Logger_LevelToFromString)
 
 TEST(Util_Logger_LevelThreshold)
 {
-    using namespace realm::util;
+    using namespace tessera::util;
     auto base_logger = std::make_shared<StderrLogger>();
     auto threadsafe_logger = std::make_shared<ThreadSafeLogger>(base_logger);
     auto prefix_logger =
@@ -149,7 +149,7 @@ TEST(Util_Logger_LevelThreshold)
 
 TEST(Util_Logger_LocalThresholdLogger)
 {
-    using namespace realm::util;
+    using namespace tessera::util;
     // Get the original level
     auto orig_level = LogCategory::realm.get_default_level_threshold();
 

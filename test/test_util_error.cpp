@@ -19,12 +19,12 @@
 #include "testsettings.hpp"
 #ifdef TEST_UTIL_ERROR
 
-#include <realm/util/basic_system_errors.hpp>
+#include <tessera/util/basic_system_errors.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 // Test independence and thread-safety
 // -----------------------------------
@@ -97,7 +97,7 @@ TEST(BasicSystemErrors_Messages)
 #endif
     }
 
-#if !REALM_HAVE_CLANG_FEATURE(undefined_behavior_sanitizer)
+#if !TESSERA_HAVE_CLANG_FEATURE(undefined_behavior_sanitizer)
     // Ensure that if we pass an unknown error code, we get some error reporting
     // This may potentially pass on some operating system. If this test starts
     // failing, simply change the magic number below.
@@ -109,7 +109,7 @@ TEST(BasicSystemErrors_Messages)
         // "Unknown error: <errcode>"
         CHECK(err.message().compare(0, error_message.length(), error_message) == 0);
     }
-#endif // !REALM_HAVE_CLANG_FEATURE(undefined_behavior_sanitizer)
+#endif // !TESSERA_HAVE_CLANG_FEATURE(undefined_behavior_sanitizer)
 }
 
 #endif // TEST_BASIC_SYSTEM_ERRORS

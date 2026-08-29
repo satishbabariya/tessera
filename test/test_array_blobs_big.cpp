@@ -16,12 +16,12 @@
  *
  **************************************************************************/
 
-#include <realm/array_blobs_big.hpp>
-#include <realm/column_integer.hpp>
+#include <tessera/array_blobs_big.hpp>
+#include <tessera/column_integer.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
+using namespace tessera;
 
 
 // Test independence and thread-safety
@@ -322,7 +322,7 @@ TEST(ArrayBigBlobs_get_at)
 
     // This will be store in 3 blobs
     c.add(BinaryData(big_blob.data(), big_blob.size()));
-#ifdef REALM_DEBUG
+#ifdef TESSERA_DEBUG
     c.verify();
 #endif
     BinaryData binary;

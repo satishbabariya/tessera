@@ -18,13 +18,13 @@
 
 #include "testsettings.hpp"
 
-#include <realm.hpp>
-#include <realm/array_mixed.hpp>
+#include <tessera.hpp>
+#include <tessera/array_mixed.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::test_util;
 
 // Test independence and thread-safety
 // -----------------------------------

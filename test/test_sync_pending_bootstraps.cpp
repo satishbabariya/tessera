@@ -1,12 +1,13 @@
-#include "realm/db.hpp"
-#include "realm/sync/noinst/client_history_impl.hpp"
-#include "realm/sync/noinst/pending_bootstrap_store.hpp"
-#include "realm/sync/subscriptions.hpp"
+#include "tessera/db.hpp"
+#include <tessera/transaction.hpp>
+#include "tessera/sync/noinst/client_history_impl.hpp"
+#include "tessera/sync/noinst/pending_bootstrap_store.hpp"
+#include "tessera/sync/subscriptions.hpp"
 
 #include "test.hpp"
 #include "util/test_path.hpp"
 
-namespace realm::sync {
+namespace tessera::sync {
 
 TEST(Sync_PendingBootstrapStoreBatching)
 {
@@ -153,4 +154,4 @@ TEST(Sync_PendingBootstrapStoreClear)
     CHECK_NOT(store.has_pending());
 }
 
-} // namespace realm::sync
+} // namespace tessera::sync

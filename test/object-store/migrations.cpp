@@ -19,16 +19,16 @@
 #include <util/test_file.hpp>
 #include <util/test_utils.hpp>
 
-#include <realm/group.hpp>
-#include <realm/table.hpp>
+#include <tessera/group.hpp>
+#include <tessera/table.hpp>
 
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/object_store.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/schema.hpp>
-#include <realm/object-store/impl/object_accessor_impl.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/object_store.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/schema.hpp>
+#include <tessera/object-store/impl/object_accessor_impl.hpp>
 
-#include <realm/util/scope_exit.hpp>
+#include <tessera/util/scope_exit.hpp>
 
 #include <catch2/catch_all.hpp>
 
@@ -37,7 +37,7 @@
 #endif
 
 
-using namespace realm;
+using namespace tessera;
 using ObjectType = ObjectSchema::ObjectType;
 using util::any_cast;
 
@@ -651,7 +651,7 @@ TEST_CASE("migration: Automatic", "[migration]") {
             auto parent_object = parent_table->create_object();
             ColKey link_col = parent_table->get_column_key("link");
 
-            REALM_ASSERT(link_col.get_type() == col_type_Mixed);
+            TESSERA_ASSERT(link_col.get_type() == col_type_Mixed);
             Mixed child_link = ObjLink{child_table->get_key(), child};
             if (link_col.is_set()) {
                 parent_object.get_set<Mixed>(link_col).insert(child_link);
@@ -663,7 +663,7 @@ TEST_CASE("migration: Automatic", "[migration]") {
                 parent_object.get_dictionary(link_col).insert("foo", child_link);
             }
             else {
-                REALM_ASSERT(!link_col.is_collection());
+                TESSERA_ASSERT(!link_col.is_collection());
                 parent_object.set_any(link_col, child_link);
             }
             realm->commit_transaction();

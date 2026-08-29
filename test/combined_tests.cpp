@@ -26,7 +26,7 @@ extern int run_object_store_tests(int, const char**);
 
 int main(int argc, const char* argv[])
 {
-    if (!realm::test_util::initialize_test_path(argc, argv))
+    if (!tessera::test_util::initialize_test_path(argc, argv))
         return 1;
     int status = test_all();
     if (status) {

@@ -1,16 +1,16 @@
 #include "test.hpp"
 
-#include <realm/util/json_parser.hpp>
+#include <tessera/util/json_parser.hpp>
 #include <iostream>
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 static const char g_basic_object[] = "{\n"
                                      "    \"access\": [\"download\", \"upload\"],\n"
                                      "    \"timestamp\": 1455530614,\n"
                                      "    \"expires\": null,\n"
-                                     "    \"app_id\": \"io.realm.Test\"\n"
+                                     "    \"app_id\": \"io.tessera.Test\"\n"
                                      "}";
 
 using ET = JSONParser::EventType;
@@ -127,7 +127,7 @@ TEST(JSONParser_Basic)
     CHECK_EQUAL(state, in_object);
     CHECK_EQUAL(*timestamp, 1455530614);
     CHECK(!expires);
-    CHECK_EQUAL(*app_id, "io.realm.Test");
+    CHECK_EQUAL(*app_id, "io.tessera.Test");
     CHECK_EQUAL(access.size(), 2);
     CHECK_EQUAL(access[0], "download");
     CHECK_EQUAL(access[1], "upload");

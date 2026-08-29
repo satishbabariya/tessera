@@ -27,8 +27,8 @@
 #include <iomanip>
 #include <thread>
 
-#include <realm.hpp>
-#include <realm/util/file.hpp>
+#include <tessera.hpp>
+#include <tessera/util/file.hpp>
 
 #include "util/crypt_key.hpp"
 #include "util/thread_wrapper.hpp"
@@ -36,9 +36,9 @@
 #include "test.hpp"
 #include "test_table_helper.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using realm::test_util::crypt_key;
+using namespace tessera;
+using namespace tessera::util;
+using tessera::test_util::crypt_key;
 using test_util::unit_test::TestContext;
 
 
@@ -71,7 +71,7 @@ using test_util::unit_test::TestContext;
 // `experiments/testcase.cpp` and then run `sh build.sh
 // check-testcase` (or one of its friends) from the command line.
 
-TEST_IF(Transactions_LargeMappingChange, REALM_ANDROID == 0 && TEST_DURATION > 0)
+TEST_IF(Transactions_LargeMappingChange, TESSERA_ANDROID == 0 && TEST_DURATION > 0)
 {
     SHARED_GROUP_TEST_PATH(path);
     DBRef sg = DB::create(path);
@@ -235,11 +235,11 @@ TEST(Transactions_StateChanges)
     list.add(7);
     CHECK(!writer->is_frozen());
     // verify that we cannot freeze a write transaction
-    CHECK_THROW(writer->freeze(), realm::LogicError);
+    CHECK_THROW(writer->freeze(), tessera::LogicError);
     writer->commit_and_continue_as_read();
     // verify that we cannot modify data in a read transaction
-    CHECK_THROW(writer->add_table("gylle"), realm::LogicError);
-    CHECK_THROW(obj.set(col, 100), realm::LogicError);
+    CHECK_THROW(writer->add_table("gylle"), tessera::LogicError);
+    CHECK_THROW(obj.set(col, 100), tessera::LogicError);
     // verify that we can freeze a read transaction
     TransactionRef frozen = writer->freeze();
     CHECK(frozen->is_frozen());
@@ -253,7 +253,7 @@ TEST(Transactions_StateChanges)
     CHECK_EQUAL(list2.get(0), 5);
     CHECK_EQUAL(list2.get(1), 7);
     // verify that we can't change it
-    CHECK_THROW(frozen_obj.set<int64_t>(col, 47), realm::LogicError);
+    CHECK_THROW(frozen_obj.set<int64_t>(col, 47), tessera::LogicError);
     // verify handover of a list
     // FIXME: no change should be needed here
     auto frozen_list = frozen->import_copy_of(list);
@@ -265,13 +265,13 @@ TEST(Transactions_StateChanges)
     // verify that a fresh read transaction is read only
     TransactionRef reader = db->start_read();
     tr = reader->get_table("hygge");
-    CHECK_THROW(tr->create_object(), realm::LogicError);
+    CHECK_THROW(tr->create_object(), tessera::LogicError);
     // ..but if promoted, becomes writable
     reader->promote_to_write();
     tr->create_object();
     // ..and if rolled back, becomes read-only again
     reader->rollback_and_continue_as_read();
-    CHECK_THROW(tr->create_object(), realm::LogicError);
+    CHECK_THROW(tr->create_object(), tessera::LogicError);
 }
 
 namespace {
@@ -295,7 +295,7 @@ void writer_thread(TestContext& test_context, int runs, DBRef db, TableKey tk)
     catch (std::runtime_error& e) {
         std::cout << "gylle: " << e.what() << std::endl;
     }
-    catch (realm::LogicError& e) {
+    catch (tessera::LogicError& e) {
         std::cout << "gylle2: " << e.what() << std::endl;
     }
     catch (...) {
@@ -351,7 +351,7 @@ TEST_IF(Transactions_Threaded, !running_with_valgrind)
         tk = table->get_key();
         wt->commit();
     }
-#if defined(_WIN32) || REALM_ANDROID || REALM_PLATFORM_APPLE
+#if defined(_WIN32) || TESSERA_ANDROID || TESSERA_PLATFORM_APPLE
     const int num_threads = 2;
 #else
     const int num_threads = 20;
@@ -388,7 +388,7 @@ TEST_IF(Transactions_ThreadedAdvanceRead, !running_with_valgrind)
         tk = table->get_key();
         wt->commit();
     }
-#if defined(_WIN32) || REALM_ANDROID || REALM_PLATFORM_APPLE
+#if defined(_WIN32) || TESSERA_ANDROID || TESSERA_PLATFORM_APPLE
     const int num_threads = 2;
 #else
     const int num_threads = 20;

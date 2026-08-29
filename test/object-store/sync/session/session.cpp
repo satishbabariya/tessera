@@ -20,14 +20,14 @@
 #include <util/test_utils.hpp>
 #include <util/sync/session_util.hpp>
 
-#include <realm/object-store/feature_checks.hpp>
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/object_store.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/schema.hpp>
+#include <tessera/object-store/feature_checks.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/object_store.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/schema.hpp>
 
-#include <realm/util/time.hpp>
-#include <realm/util/scope_exit.hpp>
+#include <tessera/util/time.hpp>
+#include <tessera/util/scope_exit.hpp>
 
 #include <catch2/catch_all.hpp>
 
@@ -38,8 +38,8 @@
 #include <unistd.h>
 #endif
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 TEST_CASE("SyncSession: management by SyncUser", "[sync][session]") {
     if (!EventLoop::has_implementation())
@@ -386,7 +386,7 @@ TEST_CASE("sync: error handling", "[sync][session]") {
     }
 
     // requires test resource files and a server implementation
-#if !(defined(SWIFT_PACKAGE) || REALM_MOBILE)
+#if !(defined(SWIFT_PACKAGE) || TESSERA_MOBILE)
     SECTION("reports TLS error as handshake failed") {
         TestSyncManager ssl_sync_manager({}, {StartImmediately{true}, EnableSSL{true}});
         auto user = ssl_sync_manager.fake_user();
@@ -399,7 +399,7 @@ TEST_CASE("sync: error handling", "[sync][session]") {
             std::chrono::seconds(35));
         REQUIRE(error);
         CHECK(error->status.code() == ErrorCodes::TlsHandshakeFailed);
-#if REALM_HAVE_SECURE_TRANSPORT
+#if TESSERA_HAVE_SECURE_TRANSPORT
         CHECK(error->status.reason() ==
               "TLS handshake failed: SecureTransport error: invalid certificate chain (-9807)");
 #else
@@ -408,9 +408,9 @@ TEST_CASE("sync: error handling", "[sync][session]") {
                    Catch::Matchers::StartsWith("TLS handshake failed: OpenSSL error: certificate verify failed"));
 #endif
     }
-#endif // !defined(SWIFT_PACKAGE) && !REALM_MOBILE
+#endif // !defined(SWIFT_PACKAGE) && !TESSERA_MOBILE
 
-    using ProtocolErrorInfo = realm::sync::ProtocolErrorInfo;
+    using ProtocolErrorInfo = tessera::sync::ProtocolErrorInfo;
 
     SECTION("Doesn't treat unknown system errors as being fatal") {
         auto user = tsm.fake_user();
@@ -506,7 +506,7 @@ TEST_CASE("sync: stop policy behavior", "[sync][session]") {
         SECTION("transitions to Inactive if a fatal error occurs") {
             sync::SessionErrorInfo err{Status{ErrorCodes::SyncProtocolInvariantFailed, "Not a real error message"},
                                        sync::IsFatal{true}};
-            err.server_requests_action = realm::sync::ProtocolErrorInfo::Action::ProtocolViolation;
+            err.server_requests_action = tessera::sync::ProtocolErrorInfo::Action::ProtocolViolation;
             SyncSession::OnlyForTesting::handle_error(*session, std::move(err));
             CHECK(sessions_are_inactive(*session));
             // The session shouldn't report fatal errors when in the dying state.
@@ -517,7 +517,7 @@ TEST_CASE("sync: stop policy behavior", "[sync][session]") {
             // Fire a simulated *non-fatal* error.
             sync::SessionErrorInfo err{Status{ErrorCodes::ConnectionClosed, "Not a real error message"},
                                        sync::IsFatal{false}};
-            err.server_requests_action = realm::sync::ProtocolErrorInfo::Action::Transient;
+            err.server_requests_action = tessera::sync::ProtocolErrorInfo::Action::Transient;
             SyncSession::OnlyForTesting::handle_error(*session, std::move(err));
             REQUIRE(session->state() == SyncSession::State::Dying);
             CHECK(!error_handler_invoked);

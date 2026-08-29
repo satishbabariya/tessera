@@ -13,35 +13,35 @@
 #include <thread>
 #include <tuple>
 
-#include <realm.hpp>
-#include <realm/chunked_binary.hpp>
-#include <realm/data_type.hpp>
-#include <realm/history.hpp>
-#include <realm/impl/simulated_failure.hpp>
-#include <realm/list.hpp>
-#include <realm/sync/binding_callback_thread_observer.hpp>
-#include <realm/sync/changeset.hpp>
-#include <realm/sync/changeset_encoder.hpp>
-#include <realm/sync/client.hpp>
-#include <realm/sync/history.hpp>
-#include <realm/sync/instructions.hpp>
-#include <realm/sync/network/default_socket.hpp>
-#include <realm/sync/network/http.hpp>
-#include <realm/sync/network/network.hpp>
-#include <realm/sync/network/websocket.hpp>
-#include <realm/sync/noinst/protocol_codec.hpp>
-#include <realm/sync/noinst/server/server.hpp>
-#include <realm/sync/noinst/server/server_dir.hpp>
-#include <realm/sync/noinst/server/server_history.hpp>
-#include <realm/sync/object_id.hpp>
-#include <realm/sync/protocol.hpp>
-#include <realm/sync/transform.hpp>
-#include <realm/util/buffer.hpp>
-#include <realm/util/features.h>
-#include <realm/util/logger.hpp>
-#include <realm/util/random.hpp>
-#include <realm/util/uri.hpp>
-#include <realm/version.hpp>
+#include <tessera.hpp>
+#include <tessera/chunked_binary.hpp>
+#include <tessera/data_type.hpp>
+#include <tessera/history.hpp>
+#include <tessera/impl/simulated_failure.hpp>
+#include <tessera/list.hpp>
+#include <tessera/sync/binding_callback_thread_observer.hpp>
+#include <tessera/sync/changeset.hpp>
+#include <tessera/sync/changeset_encoder.hpp>
+#include <tessera/sync/client.hpp>
+#include <tessera/sync/history.hpp>
+#include <tessera/sync/instructions.hpp>
+#include <tessera/sync/network/default_socket.hpp>
+#include <tessera/sync/network/http.hpp>
+#include <tessera/sync/network/network.hpp>
+#include <tessera/sync/network/websocket.hpp>
+#include <tessera/sync/noinst/protocol_codec.hpp>
+#include <tessera/sync/noinst/server/server.hpp>
+#include <tessera/sync/noinst/server/server_dir.hpp>
+#include <tessera/sync/noinst/server/server_history.hpp>
+#include <tessera/sync/object_id.hpp>
+#include <tessera/sync/protocol.hpp>
+#include <tessera/sync/transform.hpp>
+#include <tessera/util/buffer.hpp>
+#include <tessera/util/features.h>
+#include <tessera/util/logger.hpp>
+#include <tessera/util/random.hpp>
+#include <tessera/util/uri.hpp>
+#include <tessera/version.hpp>
 
 #include "sync_fixtures.hpp"
 
@@ -51,10 +51,10 @@
 #include "util/thread_wrapper.hpp"
 #include "util/compare_groups.hpp"
 
-using namespace realm;
-using namespace realm::sync;
-using namespace realm::test_util;
-using namespace realm::fixtures;
+using namespace tessera;
+using namespace tessera::sync;
+using namespace tessera::test_util;
+using namespace tessera::fixtures;
 
 
 // Test independence and thread-safety
@@ -117,7 +117,7 @@ DB::version_type write_transaction(DBRef db, Function&& function)
 ClientReplication& get_replication(DBRef db)
 {
     auto repl = dynamic_cast<ClientReplication*>(db->get_replication());
-    REALM_ASSERT(repl);
+    TESSERA_ASSERT(repl);
     return *repl;
 }
 
@@ -143,7 +143,7 @@ Changeset get_reciprocal_changeset(ClientHistory& hist, version_type version)
     return reciprocal_changeset;
 }
 
-#if !REALM_MOBILE // the server is not implemented on devices
+#if !TESSERA_MOBILE // the server is not implemented on devices
 TEST(Sync_BadVirtualPath)
 {
     // NOTE:  This test is no longer valid after migration to MongoDB Realm
@@ -164,7 +164,7 @@ TEST(Sync_BadVirtualPath)
         config.connection_state_change_listener = [&](ConnectionState state, util::Optional<ErrorInfo> error_info) {
             if (state != ConnectionState::disconnected)
                 return;
-            REALM_ASSERT(error_info);
+            TESSERA_ASSERT(error_info);
             CHECK_EQUAL(error_info->status, ErrorCodes::BadSyncPartitionValue);
             CHECK(error_info->is_fatal);
             ++nerrors;
@@ -174,7 +174,7 @@ TEST(Sync_BadVirtualPath)
         return config;
     };
 
-    Session session_1 = fixture.make_session(db_1, "/test.realm", config());
+    Session session_1 = fixture.make_session(db_1, "/test.tess", config());
     Session session_2 = fixture.make_session(db_2, "/../test", config());
     Session session_3 = fixture.make_session(db_3, "test%abc ", config());
 
@@ -240,7 +240,7 @@ TEST(Sync_AsyncWaitForUploadCompletionNoPendingLocalChanges)
     auto pf = util::make_promise_future<bool>();
     session.async_wait_for_upload_completion(
         [promise = std::move(pf.promise), tr = db->start_read()](Status status) mutable {
-            REALM_ASSERT(status.is_ok());
+            TESSERA_ASSERT(status.is_ok());
             tr->advance_read();
             promise.emplace_value(tr->get_history()->no_pending_local_changes(tr->get_version()));
         });
@@ -580,7 +580,7 @@ TEST(Sync_TokenWithoutExpirationAllowed)
         auto listener = [&](ConnectionState state, util::Optional<ErrorInfo> error_info) {
             if (state != ConnectionState::disconnected)
                 return;
-            REALM_ASSERT(error_info);
+            TESSERA_ASSERT(error_info);
             CHECK_EQUAL(error_info->status, ErrorCodes::SyncPermissionDenied);
             did_fail = true;
             fixture.stop();
@@ -769,7 +769,7 @@ struct ExpectChangesetError {
         }
         if (!error_info)
             return;
-        REALM_ASSERT(error_info);
+        TESSERA_ASSERT(error_info);
         CHECK_EQUAL(error_info->status, ErrorCodes::BadChangeset);
         CHECK(!error_info->is_fatal);
         CHECK_EQUAL(error_info->status.reason(),
@@ -1349,7 +1349,7 @@ TEST(Sync_Randomized)
     std::unique_ptr<DBTestPathGuard> client_path_guards[num_clients];
     DBRef client_shared_groups[num_clients];
     for (size_t i = 0; i < num_clients; ++i) {
-        std::string suffix = util::format(".client_%1.realm", i);
+        std::string suffix = util::format(".client_%1.tess", i);
         std::string test_path = get_test_path(test_context.get_test_name(), suffix);
         client_path_guards[i].reset(new DBTestPathGuard(test_path));
         client_shared_groups[i] = DB::create(make_client_replication(), test_path);
@@ -1396,7 +1396,7 @@ TEST(Sync_Randomized)
 
     log("Everything downloaded");
 
-    REALM_ASSERT(num_clients > 0);
+    TESSERA_ASSERT(num_clients > 0);
     ReadTransaction rt_0(client_shared_groups[0]);
     rt_0.get_group().verify();
     for (size_t i = 1; i < num_clients; ++i) {
@@ -1407,7 +1407,7 @@ TEST(Sync_Randomized)
     }
 }
 
-#ifdef REALM_DEBUG // Failure simulation only works in debug mode
+#ifdef TESSERA_DEBUG // Failure simulation only works in debug mode
 
 TEST(Sync_ReadFailureSimulation)
 {
@@ -1439,7 +1439,7 @@ TEST(Sync_ReadFailureSimulation)
     // the server-side
 }
 
-#endif // REALM_DEBUG
+#endif // TESSERA_DEBUG
 TEST(Sync_FailingReadsOnClientSide)
 {
     TEST_CLIENT_DB(db_1);
@@ -1640,7 +1640,7 @@ TEST(Sync_HTTP404NotFound)
     const HTTPResponse& response = client.get_response();
 
     CHECK(response.status == HTTPStatus::NotFound);
-    CHECK(response.headers.find("Server")->second == "RealmSync/" REALM_VERSION_STRING);
+    CHECK(response.headers.find("Server")->second == "RealmSync/" TESSERA_VERSION_STRING);
 }
 
 
@@ -1761,7 +1761,7 @@ TEST(Sync_ErrorAfterServerRestore_BadServerVersion)
 
     std::string server_path = "/test";
     std::string server_realm_path;
-    std::string backup_realm_path = util::File::resolve("test.realm", backup_dir);
+    std::string backup_realm_path = util::File::resolve("test.tess", backup_dir);
 
     // Create schema and synchronize with server
     {
@@ -1822,7 +1822,7 @@ TEST(Sync_ErrorAfterServerRestore_BadClientVersion)
 
     std::string server_path = "/test";
     std::string server_realm_path;
-    std::string backup_realm_path = util::File::resolve("test.realm", backup_dir);
+    std::string backup_realm_path = util::File::resolve("test.tess", backup_dir);
 
     // Create schema and synchronize client files
     {
@@ -1898,7 +1898,7 @@ TEST(Sync_ErrorAfterServerRestore_BadClientFileIdentSalt)
 
     std::string server_path = "/test";
     std::string server_realm_path;
-    std::string backup_realm_path = util::File::resolve("test.realm", backup_dir);
+    std::string backup_realm_path = util::File::resolve("test.tess", backup_dir);
 
     // Register 1st file with server
     {
@@ -1964,7 +1964,7 @@ TEST(Sync_ErrorAfterServerRestore_BadServerVersionSalt)
 
     std::string server_path = "/test";
     std::string server_realm_path;
-    std::string backup_realm_path = util::File::resolve("test.realm", backup_dir);
+    std::string backup_realm_path = util::File::resolve("test.tess", backup_dir);
 
     // Create schema and synchronize client files
     {
@@ -2054,7 +2054,7 @@ TEST(Sync_MultipleServers)
     TEST_DIR(dir_2);
     auto get_file_path = [&](int server_index, int realm_index, int file_index) {
         std::ostringstream out;
-        out << server_index << "_" << realm_index << "_" << file_index << ".realm";
+        out << server_index << "_" << realm_index << "_" << file_index << ".tess";
         return util::File::resolve(out.str(), dir_2);
     };
     std::atomic<int> id = 0;
@@ -2160,7 +2160,7 @@ TEST(Sync_MultipleServers)
     }
     for (size_t i = 0; i < num_servers; ++i) {
         for (size_t j = 0; j < num_realms_per_server; ++j) {
-            REALM_ASSERT(num_files_per_realm > 0);
+            TESSERA_ASSERT(num_files_per_realm > 0);
             int file_index_0 = 0;
             std::string path_0 = get_file_path(int(i), int(j), file_index_0);
             std::unique_ptr<Replication> history_0 = make_client_replication();
@@ -2706,7 +2706,7 @@ TEST(Sync_SSL_Certificate_3)
 }
 
 
-#if REALM_HAVE_SECURE_TRANSPORT
+#if TESSERA_HAVE_SECURE_TRANSPORT
 
 // This test checks that the client can also use a certificate in DER format.
 TEST(Sync_SSL_Certificate_DER)
@@ -2734,10 +2734,10 @@ TEST(Sync_SSL_Certificate_DER)
     session.wait_for_download_complete_or_client_stopped();
 }
 
-#endif // REALM_HAVE_SECURE_TRANSPORT
+#endif // TESSERA_HAVE_SECURE_TRANSPORT
 
 
-#if REALM_HAVE_OPENSSL
+#if TESSERA_HAVE_OPENSSL
 
 // This test checks that the SSL connection is accepted if the verify callback
 // always returns true.
@@ -2927,7 +2927,7 @@ TEST_IF(Sync_SSL_Certificate_Verify_Callback_External, false)
     client.shutdown_and_wait();
 }
 
-#endif // REALM_HAVE_OPENSSL
+#endif // TESSERA_HAVE_OPENSSL
 
 
 // This test has a single client connected to a server with
@@ -3861,13 +3861,13 @@ TEST(Sync_CancelReconnectDelay)
 }
 
 
-#ifndef REALM_PLATFORM_WIN32
+#ifndef TESSERA_PLATFORM_WIN32
 
 // This test checks that it is possible to create, upload, download, and merge
 // changesets larger than 16 MB.
 //
 // Fails with 'bad alloc' around 1 GB mem usage on 32-bit Windows + 32-bit Linux
-TEST_IF(Sync_MergeLargeBinary, !(REALM_ARCHITECTURE_X86_32))
+TEST_IF(Sync_MergeLargeBinary, !(TESSERA_ARCHITECTURE_X86_32))
 {
     // Two binaries are inserted in each transaction such that the total size
     // of the changeset exceeds 16 MB. A single set_binary operation does not
@@ -4333,7 +4333,7 @@ TEST(Sync_MergeMultipleChangesets)
 }
 
 
-#endif // REALM_PLATFORM_WIN32
+#endif // TESSERA_PLATFORM_WIN32
 
 
 TEST(Sync_PingTimesOut)
@@ -4451,7 +4451,7 @@ TEST(Sync_Quadratic_Merge)
 {
     size_t num_instructions_1 = 100;
     size_t num_instructions_2 = 200;
-    REALM_ASSERT(num_instructions_1 >= 3 && num_instructions_2 >= 3);
+    TESSERA_ASSERT(num_instructions_1 >= 3 && num_instructions_2 >= 3);
 
     TEST_DIR(server_dir);
     TEST_CLIENT_DB(db_1);
@@ -4961,9 +4961,9 @@ TEST_IF(Sync_SSL_Certificates, false)
     TEST_CLIENT_DB(db);
 
     const char* server_address[] = {
-        "morten-krogh.us1.cloud.realm.io",
-        "fantastic-cotton-shoes.us1.cloud.realm.io",
-        "www.realm.io",
+        "morten-krogh.us1.cloud.tess.io",
+        "fantastic-cotton-shoes.us1.cloud.tess.io",
+        "www.tess.io",
         "www.yahoo.com",
         "www.nytimes.com",
         "www.ibm.com",
@@ -5068,7 +5068,7 @@ TEST(Sync_BadChangeset)
                                                               const util::Optional<ErrorInfo>& error_info) {
             if (state != ConnectionState::disconnected)
                 return;
-            REALM_ASSERT(error_info);
+            TESSERA_ASSERT(error_info);
             CHECK_EQUAL(error_info->status, ErrorCodes::BadChangeset);
             CHECK(error_info->is_fatal);
             did_fail = true;
@@ -5153,8 +5153,8 @@ TEST_IF(Sync_Issue2104, false)
     TEST_DIR(dir);
 
     // Save a snapshot of the server Realm file.
-    std::string realm_path = "issue_2104_server.realm";
-    std::string realm_path_copy = util::File::resolve("issue_2104.realm", dir);
+    std::string realm_path = "issue_2104_server.tess";
+    std::string realm_path_copy = util::File::resolve("issue_2104.tess", dir);
     util::File::copy(realm_path, realm_path_copy);
 
     std::string changeset_hex = "3F 00 07 41 42 43 44 61 74 61 3F 01 02 69 64 3F 02 09 41 6C 69 67 6E 6D 65 6E 74 3F "
@@ -5308,7 +5308,7 @@ TEST_IF(Sync_Issue2104, false)
         int n;
         in >> std::hex >> n;
         while (in) {
-            REALM_ASSERT(n >= 0 && n <= 255);
+            TESSERA_ASSERT(n >= 0 && n <= 255);
             changeset_vec.push_back(n);
             in >> std::hex >> n;
         }
@@ -5546,7 +5546,7 @@ TEST(Sync_CreateDeleteCreateTableWithPrimaryKey)
 template <typename T>
 T sequence_next()
 {
-    REALM_UNREACHABLE();
+    TESSERA_UNREACHABLE();
 }
 
 template <>
@@ -6756,7 +6756,7 @@ TEST(Sync_DifferentUsersMultiplexing)
 
         SessionBundle(unit_test::TestContext& ctx, ClientServerFixture& fixture, std::string name,
                       std::string signed_token, std::string user_id)
-            : path_guard(realm::test_util::get_test_path(ctx.get_test_name(), "." + name + ".realm"))
+            : path_guard(tessera::test_util::get_test_path(ctx.get_test_name(), "." + name + ".tess"))
             , db(DB::create(make_client_replication(), path_guard))
         {
             Session::Config config;
@@ -6868,14 +6868,14 @@ TEST(Sync_TransformAgainstEmptyReciprocalChangeset)
     CHECK(compare_groups(rt_1, rt_2));
 }
 
-#endif // !REALM_MOBILE
+#endif // !TESSERA_MOBILE
 
 // Tests that an empty reciprocal changesets is set and retrieved correctly.
 TEST(Sync_SetAndGetEmptyReciprocalChangeset)
 {
-    using namespace realm;
-    using namespace realm::sync::instr;
-    using realm::sync::Changeset;
+    using namespace tessera;
+    using namespace tessera::sync::instr;
+    using tessera::sync::Changeset;
 
     TEST_CLIENT_DB(db);
 
@@ -6949,9 +6949,9 @@ TEST(Sync_SetAndGetEmptyReciprocalChangeset)
 
 TEST(Sync_SetEmptyReciprocalChangesetAfterNonEmptyReciprocalChangeset)
 {
-    using namespace realm;
-    using namespace realm::sync::instr;
-    using realm::sync::Changeset;
+    using namespace tessera;
+    using namespace tessera::sync::instr;
+    using tessera::sync::Changeset;
 
     TEST_CLIENT_DB(db);
 
@@ -7038,9 +7038,9 @@ TEST(Sync_SetEmptyReciprocalChangesetAfterNonEmptyReciprocalChangeset)
 
 TEST(Sync_GetEmptyReciprocalChangesetFromCache)
 {
-    using namespace realm;
-    using namespace realm::sync::instr;
-    using realm::sync::Changeset;
+    using namespace tessera;
+    using namespace tessera::sync::instr;
+    using tessera::sync::Changeset;
 
     TEST_CLIENT_DB(db);
 
@@ -7168,9 +7168,9 @@ TEST(Sync_GetEmptyReciprocalChangesetFromCache)
 
 TEST(Sync_GetEmptyReciprocalChangesetFromArray)
 {
-    using namespace realm;
-    using namespace realm::sync::instr;
-    using realm::sync::Changeset;
+    using namespace tessera;
+    using namespace tessera::sync::instr;
+    using tessera::sync::Changeset;
 
     TEST_CLIENT_DB(db);
 
@@ -7463,7 +7463,7 @@ TEST(Sync_DanglingLinksCountInPriorSize)
 {
     SHARED_GROUP_TEST_PATH(path);
     ClientReplication repl;
-    auto local_db = realm::DB::create(repl, path);
+    auto local_db = tessera::DB::create(repl, path);
     auto& history = repl.get_history();
     history.set_client_file_ident(sync::SaltedFileIdent{1, 123456}, true);
 
@@ -7474,10 +7474,10 @@ TEST(Sync_DanglingLinksCountInPriorSize)
         version_type locked_server_version = 0;
         history.find_uploadable_changesets(upload_cursor, last_version, changesets_to_upload, locked_server_version);
         CHECK_EQUAL(changesets_to_upload.size(), static_cast<size_t>(1));
-        realm::sync::Changeset parsed_changeset;
+        tessera::sync::Changeset parsed_changeset;
         auto unparsed_changeset = changesets_to_upload[0].changeset.get_first_chunk();
-        realm::util::SimpleInputStream changeset_stream(unparsed_changeset);
-        realm::sync::parse_changeset(changeset_stream, parsed_changeset);
+        tessera::util::SimpleInputStream changeset_stream(unparsed_changeset);
+        tessera::sync::parse_changeset(changeset_stream, parsed_changeset);
         test_context.logger->info("changeset at version %1: %2", last_version, parsed_changeset);
         last_version_observed = last_version;
         return parsed_changeset;

@@ -16,17 +16,17 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_SUPER_INT_HPP
-#define REALM_TEST_UTIL_SUPER_INT_HPP
+#ifndef TESSERA_TEST_UTIL_SUPER_INT_HPP
+#define TESSERA_TEST_UTIL_SUPER_INT_HPP
 
 #include <cstdint>
 #include <limits>
 #include <ostream>
 
-#include <realm/util/features.h>
-#include <realm/util/safe_int_ops.hpp>
+#include <tessera/util/features.h>
+#include <tessera/util/safe_int_ops.hpp>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 
@@ -257,6 +257,6 @@ inline bool super_int::subtract_with_overflow_detect(super_int v) noexcept
 }
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_SUPER_INT_HPP
+#endif // TESSERA_TEST_UTIL_SUPER_INT_HPP

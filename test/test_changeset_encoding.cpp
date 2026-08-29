@@ -1,20 +1,20 @@
 #include "test.hpp"
 
-#include <realm/sync/changeset.hpp>
-#include <realm/sync/changeset_encoder.hpp>
-#include <realm/sync/changeset_parser.hpp>
-#include <realm/sync/instructions.hpp>
-#include <realm/sync/noinst/integer_codec.hpp>
+#include <tessera/sync/changeset.hpp>
+#include <tessera/sync/changeset_encoder.hpp>
+#include <tessera/sync/changeset_parser.hpp>
+#include <tessera/sync/instructions.hpp>
+#include <tessera/sync/noinst/integer_codec.hpp>
 
-using namespace realm;
-using namespace realm::sync::instr;
-using realm::sync::Changeset;
-using realm::sync::Instruction;
+using namespace tessera;
+using namespace tessera::sync::instr;
+using tessera::sync::Changeset;
+using tessera::sync::Instruction;
 
 namespace {
 Changeset encode_then_parse(const Changeset& changeset)
 {
-    using realm::util::SimpleInputStream;
+    using tessera::util::SimpleInputStream;
 
     sync::ChangesetEncoder::Buffer buffer;
     encode_changeset(changeset, buffer);
@@ -291,7 +291,7 @@ TEST(ChangesetEncoding_AccentWords)
     encoder.intern_string("Program");
     auto& buffer = encoder.buffer();
 
-    using realm::util::SimpleInputStream;
+    using tessera::util::SimpleInputStream;
     SimpleInputStream stream{buffer};
     Changeset parsed;
     // This will throw if a string is interned twice.

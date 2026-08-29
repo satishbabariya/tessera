@@ -7,14 +7,14 @@
 #include "util/compare_groups.hpp"
 #include "util/dump_changesets.hpp"
 
-#include <realm/binary_data.hpp>
-#include <realm/db.hpp>
-#include <realm/disable_sync_to_disk.hpp>
-#include <realm/list.hpp>
-#include <realm/replication.hpp>
-#include <realm/set.hpp>
-#include <realm/sync/transform.hpp>
-#include <realm/util/features.h>
+#include <tessera/binary_data.hpp>
+#include <tessera/db.hpp>
+#include <tessera/disable_sync_to_disk.hpp>
+#include <tessera/list.hpp>
+#include <tessera/replication.hpp>
+#include <tessera/set.hpp>
+#include <tessera/sync/transform.hpp>
+#include <tessera/util/features.h>
 
 #include <algorithm>
 #include <cstddef>
@@ -33,9 +33,9 @@ extern unsigned int unit_test_random_seed;
 
 namespace {
 
-using namespace realm;
-using namespace realm::sync;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::sync;
+using namespace tessera::test_util;
 using unit_test::TestContext;
 
 // Test independence and thread-safety
@@ -975,7 +975,7 @@ TEST_IF(Transform_Randomized, get_disable_sync_to_disk())
     // FIXME: Unfortunately these rounds are terribly slow, presumable due to
     // sync-to-disk. Can we use "in memory" mode too boost them?
     // also, they are disproportionately slower, espesially in debug and under simulator
-#ifndef REALM_DEBUG
+#ifndef TESSERA_DEBUG
     int num_major_rounds = TEST_DURATION >= 1 ? 100 : 10;
 #else
     int num_major_rounds = TEST_DURATION >= 1 ? 32 : 4;
@@ -1469,9 +1469,9 @@ TEST(Transform_ArrayInsert_EraseObject)
 
     client_1->transaction([k0, k1](Peer& c) {
         TableRef source = c.table("class_source");
-        REALM_ASSERT(source);
+        TESSERA_ASSERT(source);
         TableRef target = c.table("class_target");
-        REALM_ASSERT(target);
+        TESSERA_ASSERT(target);
         auto ll = source->begin()->get_linklist(source->get_column_key("ll"));
         ll.add(k0);
         ll.add(k1);
@@ -1481,7 +1481,7 @@ TEST(Transform_ArrayInsert_EraseObject)
 
     client_2->transaction([](Peer& c) {
         TableRef target = c.table("class_target");
-        REALM_ASSERT(target);
+        TESSERA_ASSERT(target);
         target->begin()->remove();
     });
 
@@ -2190,11 +2190,11 @@ TEST(Transform_Set)
         auto obj = table->get_object_with_primary_key(0);
         auto set = obj.get_set<Mixed>("set");
         CHECK_EQUAL(set.size(), 4);
-        CHECK_NOT_EQUAL(set.find("Hello"), realm::npos);
-        CHECK_NOT_EQUAL(set.find(123.f), realm::npos);
-        CHECK_NOT_EQUAL(set.find("World"), realm::npos);
-        CHECK_NOT_EQUAL(set.find(456.f), realm::npos);
-        CHECK_EQUAL(set.find(999), realm::npos);
+        CHECK_NOT_EQUAL(set.find("Hello"), tessera::npos);
+        CHECK_NOT_EQUAL(set.find(123.f), tessera::npos);
+        CHECK_NOT_EQUAL(set.find("World"), tessera::npos);
+        CHECK_NOT_EQUAL(set.find(456.f), tessera::npos);
+        CHECK_EQUAL(set.find(999), tessera::npos);
     });
 }
 

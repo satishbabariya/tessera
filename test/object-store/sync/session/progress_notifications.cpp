@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <realm/object-store/sync/sync_session.hpp>
+#include <tessera/object-store/sync/sync_session.hpp>
 
-#include <realm/util/scope_exit.hpp>
+#include <tessera/util/scope_exit.hpp>
 
 
 #include <catch2/catch_all.hpp>
@@ -27,7 +27,7 @@ using namespace Catch::Matchers;
 
 #include <iomanip>
 
-using namespace realm;
+using namespace tessera;
 using NotifierType = SyncSession::ProgressDirection;
 
 struct ProgressEntry {

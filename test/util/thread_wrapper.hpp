@@ -16,15 +16,15 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_THREAD_WRAPPER_HPP
-#define REALM_TEST_UTIL_THREAD_WRAPPER_HPP
+#ifndef TESSERA_TEST_UTIL_THREAD_WRAPPER_HPP
+#define TESSERA_TEST_UTIL_THREAD_WRAPPER_HPP
 
 #include <exception>
 #include <string>
 #include <iostream>
 #include <thread>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 
@@ -95,6 +95,6 @@ private:
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_THREAD_WRAPPER_HPP
+#endif // TESSERA_TEST_UTIL_THREAD_WRAPPER_HPP

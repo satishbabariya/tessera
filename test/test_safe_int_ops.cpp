@@ -26,15 +26,15 @@
 
 #include <cstdint>
 
-#include <realm/util/safe_int_ops.hpp>
+#include <tessera/util/safe_int_ops.hpp>
 
 #include "util/demangle.hpp"
 #include "util/super_int.hpp"
 
 #include "test.hpp"
 
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera::util;
+using namespace tessera::test_util;
 using unit_test::TestContext;
 
 
@@ -68,7 +68,7 @@ using unit_test::TestContext;
 // check-testcase` (or one of its friends) from the command line.
 
 
-// FIXME: Test T -> realm::test_util::super_int -> T using min/max
+// FIXME: Test T -> tessera::test_util::super_int -> T using min/max
 // values for each fundamental standard type, and also using 0 and -1
 // for signed types.
 

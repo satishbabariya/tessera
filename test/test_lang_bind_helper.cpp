@@ -26,20 +26,20 @@
 #include "testsettings.hpp"
 #ifdef TEST_LANG_BIND_HELPER
 
-#include <realm.hpp>
-#include <realm/util/encrypted_file_mapping.hpp>
-#include <realm/util/to_string.hpp>
-#include <realm/replication.hpp>
-#include <realm/util/backtrace.hpp>
+#include <tessera.hpp>
+#include <tessera/util/encrypted_file_mapping.hpp>
+#include <tessera/util/to_string.hpp>
+#include <tessera/replication.hpp>
+#include <tessera/util/backtrace.hpp>
 
 #include "test.hpp"
 #include "test_table_helper.hpp"
 #include "util/misc.hpp"
 #include "util/spawned_process.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 using unit_test::TestContext;
 
 // Test independence and thread-safety
@@ -129,7 +129,7 @@ TEST(Transactions_Frozen)
 
 TEST(Transactions_ConcurrentFrozenTableGetByName)
 {
-#if REALM_VALGRIND
+#if TESSERA_VALGRIND
     // This test is slow under valgrind. Additionally, there is
     // a --max-threads config of 5000 for all (concurrent) tests
     constexpr int num_threads = 3;
@@ -223,7 +223,7 @@ TEST(Transactions_ReclaimFrozen)
 
 TEST(Transactions_ConcurrentFrozenTableGetByKey)
 {
-#if REALM_VALGRIND
+#if TESSERA_VALGRIND
     // This test is slow under valgrind. Additionally, there is
     // a --max-threads config of 5000 for all (concurrent) tests
     constexpr int num_threads = 3;
@@ -308,7 +308,7 @@ TEST(Transactions_ConcurrentFrozenQueryAndObj)
 // **           THIS TEST MAY CRASH OCCASIONALLY          **
 // ** if so, disable it and run it in a different setting **
 #if 0 // it actually fails occationally
-TEST_IF(Transactions_ConcurrentFrozenQueryAndObjAndTransactionClose, !REALM_TSAN)
+TEST_IF(Transactions_ConcurrentFrozenQueryAndObjAndTransactionClose, !TESSERA_TSAN)
 {
     SHARED_GROUP_TEST_PATH(path);
     std::unique_ptr<Replication> hist_w(make_in_realm_history());
@@ -408,9 +408,9 @@ public:
         for (size_t i = 0; i < n; ++i) {
             uint_fast64_t version = begin_version + i + 1;
             auto j = m_changesets.find(version);
-            REALM_ASSERT(j != m_changesets.end());
+            TESSERA_ASSERT(j != m_changesets.end());
             const ChangeSet& changeset = j->second;
-            REALM_ASSERT(changeset.finalized); // Must have been finalized
+            TESSERA_ASSERT(changeset.finalized); // Must have been finalized
             buffer[i] = BinaryData(changeset.changes.data(), changeset.changes.size());
         }
     }
@@ -461,13 +461,13 @@ public:
 
     bool is_upgradable_history_schema(int) const noexcept override
     {
-        REALM_ASSERT(false);
+        TESSERA_ASSERT(false);
         return false;
     }
 
     void upgrade_history_schema(int) override
     {
-        REALM_ASSERT(false);
+        TESSERA_ASSERT(false);
     }
 
 
@@ -698,7 +698,7 @@ TEST(LangBindHelper_AdvanceReadTransact_AddTableWithFreshSharedGroup)
 
     // Add the first table
     {
-        std::unique_ptr<Replication> hist_w(realm::make_in_realm_history());
+        std::unique_ptr<Replication> hist_w(tessera::make_in_realm_history());
         DBRef sg_w = DB::create(*hist_w, path, DBOptions(crypt_key()));
         WriteTransaction wt(sg_w);
         wt.add_table("table_1");
@@ -706,13 +706,13 @@ TEST(LangBindHelper_AdvanceReadTransact_AddTableWithFreshSharedGroup)
     }
 
     // Create a SharedGroup to which we can apply a foreign transaction
-    std::unique_ptr<Replication> hist(realm::make_in_realm_history());
+    std::unique_ptr<Replication> hist(tessera::make_in_realm_history());
     DBRef sg = DB::create(*hist, path, DBOptions(crypt_key()));
     TransactionRef rt = sg->start_read();
 
     // Add the second table in a "foreign" transaction
     {
-        std::unique_ptr<Replication> hist_w(realm::make_in_realm_history());
+        std::unique_ptr<Replication> hist_w(tessera::make_in_realm_history());
         DBRef sg_w = DB::create(*hist_w, path, DBOptions(crypt_key()));
         WriteTransaction wt(sg_w);
         wt.add_table("table_2");
@@ -735,7 +735,7 @@ TEST(LangBindHelper_AdvanceReadTransact_RemoveTableWithFreshSharedGroup)
 
     // Add the table
     {
-        std::unique_ptr<Replication> hist_w(realm::make_in_realm_history());
+        std::unique_ptr<Replication> hist_w(tessera::make_in_realm_history());
         DBRef sg_w = DB::create(*hist_w, path, DBOptions(crypt_key()));
         WriteTransaction wt(sg_w);
         wt.add_table("table");
@@ -743,13 +743,13 @@ TEST(LangBindHelper_AdvanceReadTransact_RemoveTableWithFreshSharedGroup)
     }
 
     // Create a SharedGroup to which we can apply a foreign transaction
-    std::unique_ptr<Replication> hist(realm::make_in_realm_history());
+    std::unique_ptr<Replication> hist(tessera::make_in_realm_history());
     DBRef sg = DB::create(*hist, path, DBOptions(crypt_key()));
     TransactionRef rt = sg->start_read();
 
     // remove the table in a "foreign" transaction
     {
-        std::unique_ptr<Replication> hist_w(realm::make_in_realm_history());
+        std::unique_ptr<Replication> hist_w(tessera::make_in_realm_history());
         DBRef sg_w = DB::create(*hist_w, path, DBOptions(crypt_key()));
         WriteTransaction wt(sg_w);
         wt.get_group().remove_table("table");
@@ -766,14 +766,14 @@ NONCONCURRENT_TEST_IF(LangBindHelper_AdvanceReadTransact_CreateManyTables, testi
     SHARED_GROUP_TEST_PATH(path2);
 
     if (SpawnedProcess::is_parent()) {
-        std::unique_ptr<Replication> hist_w(realm::make_in_realm_history());
+        std::unique_ptr<Replication> hist_w(tessera::make_in_realm_history());
         DBRef sg_w = DB::create(*hist_w, path, DBOptions(crypt_key()));
         WriteTransaction wt(sg_w);
         wt.add_table("table");
         wt.commit();
     }
 
-    std::unique_ptr<Replication> hist(realm::make_in_realm_history());
+    std::unique_ptr<Replication> hist(tessera::make_in_realm_history());
     DBRef sg = DB::create(*hist, path, DBOptions(crypt_key()));
     TransactionRef rt = sg->start_read();
 
@@ -781,7 +781,7 @@ NONCONCURRENT_TEST_IF(LangBindHelper_AdvanceReadTransact_CreateManyTables, testi
     if (process->is_child()) {
         size_t free_space, used_space;
         {
-            std::unique_ptr<Replication> hist_w(realm::make_in_realm_history());
+            std::unique_ptr<Replication> hist_w(tessera::make_in_realm_history());
             DBRef sg_w = DB::create(*hist_w, path, DBOptions(crypt_key()));
 
             WriteTransaction wt(sg_w);
@@ -792,7 +792,7 @@ NONCONCURRENT_TEST_IF(LangBindHelper_AdvanceReadTransact_CreateManyTables, testi
             sg_w->get_stats(free_space, used_space);
         }
         {
-            std::unique_ptr<Replication> hist_w2(realm::make_in_realm_history());
+            std::unique_ptr<Replication> hist_w2(tessera::make_in_realm_history());
             DBRef sg_w2 = DB::create(*hist_w2, path2, DBOptions(crypt_key()));
             WriteTransaction wt(sg_w2);
             auto table = wt.add_table("stats");
@@ -808,7 +808,7 @@ NONCONCURRENT_TEST_IF(LangBindHelper_AdvanceReadTransact_CreateManyTables, testi
     }
     size_t reported_used_space = 0;
     {
-        std::unique_ptr<Replication> hist(realm::make_in_realm_history());
+        std::unique_ptr<Replication> hist(tessera::make_in_realm_history());
         DBRef sg = DB::create(*hist, path2, DBOptions(crypt_key()));
         WriteTransaction wt(sg);
         auto table = wt.get_table("stats");
@@ -830,7 +830,7 @@ TEST(LangBindHelper_AdvanceReadTransact_PinnedSize)
     constexpr int iterations = 10;
     constexpr int rows_per_iteration = num_rows / iterations;
 
-    std::unique_ptr<Replication> hist(realm::make_in_realm_history());
+    std::unique_ptr<Replication> hist(tessera::make_in_realm_history());
     auto sg = DB::create(*hist, path, DBOptions(crypt_key()));
     ObjKeys keys;
 
@@ -906,7 +906,7 @@ NONCONCURRENT_TEST_IF(LangBindHelper_AdvanceReadTransact_InsertTable, testing_su
     SHARED_GROUP_TEST_PATH(path);
 
     if (test_util::SpawnedProcess::is_parent()) {
-        std::unique_ptr<Replication> hist_w(realm::make_in_realm_history());
+        std::unique_ptr<Replication> hist_w(tessera::make_in_realm_history());
         DBRef sg_w = DB::create(*hist_w, path, DBOptions(crypt_key()));
         WriteTransaction wt(sg_w);
 
@@ -920,7 +920,7 @@ NONCONCURRENT_TEST_IF(LangBindHelper_AdvanceReadTransact_InsertTable, testing_su
         wt.commit();
     }
 
-    std::unique_ptr<Replication> hist(realm::make_in_realm_history());
+    std::unique_ptr<Replication> hist(tessera::make_in_realm_history());
     DBRef sg = DB::create(*hist, path, DBOptions(crypt_key()));
     TransactionRef rt = sg->start_read();
 
@@ -930,7 +930,7 @@ NONCONCURRENT_TEST_IF(LangBindHelper_AdvanceReadTransact_InsertTable, testing_su
     auto process = test_util::spawn_process(test_context.test_details.test_name, "add_table");
     if (process->is_child()) {
         {
-            std::unique_ptr<Replication> hist_w(realm::make_in_realm_history());
+            std::unique_ptr<Replication> hist_w(tessera::make_in_realm_history());
             DBRef sg_w = DB::create(*hist_w, path, DBOptions(crypt_key()));
             WriteTransaction wt(sg_w);
             wt.get_group().add_table("new table");
@@ -1882,7 +1882,7 @@ TEST(LangBindHelper_AdvanceReadTransact_IntIndex)
     target->add_search_index(col);
 
     std::vector<ObjKey> obj_keys;
-    target->create_objects(REALM_MAX_BPNODE_SIZE + 1, obj_keys);
+    target->create_objects(TESSERA_MAX_BPNODE_SIZE + 1, obj_keys);
 
     g->commit_and_continue_as_read();
 
@@ -2331,11 +2331,11 @@ TEST(LangBindHelper_RollbackAndContinueAsRead)
             group->promote_to_write();
             group->get_or_add_table("nullermand");
             TableRef o2 = group->get_table("nullermand");
-            REALM_ASSERT(o2);
+            TESSERA_ASSERT(o2);
             group->rollback_and_continue_as_read();
             TableRef o3 = group->get_table("nullermand");
-            REALM_ASSERT(!o3);
-            REALM_ASSERT(!o2);
+            TESSERA_ASSERT(!o3);
+            TESSERA_ASSERT(!o2);
         }
 
         TableRef origin = group->get_table("origin");
@@ -2384,13 +2384,13 @@ TEST(LangBindHelper_RollbackAndContinueAsReadGroupLevelTableRemoval)
         // rollback of group level table delete
         reader->promote_to_write();
         TableRef o2 = reader->get_table("a_table");
-        REALM_ASSERT(o2);
+        TESSERA_ASSERT(o2);
         reader->remove_table("a_table");
         TableRef o3 = reader->get_table("a_table");
-        REALM_ASSERT(!o3);
+        TESSERA_ASSERT(!o3);
         reader->rollback_and_continue_as_read();
         TableRef o4 = reader->get_table("a_table");
-        REALM_ASSERT(o4);
+        TESSERA_ASSERT(o4);
     }
     reader->verify();
 }
@@ -2812,14 +2812,14 @@ TEST(LangBindHelper_RollbackAndContinueAsRead_IntIndex)
     target->add_search_index(col);
 
     std::vector<ObjKey> keys;
-    target->create_objects(REALM_MAX_BPNODE_SIZE + 1, keys);
+    target->create_objects(TESSERA_MAX_BPNODE_SIZE + 1, keys);
     g->commit_and_continue_as_read();
     g->promote_to_write();
 
     // Ensure that the index has a different bptree layout so that failing to
     // refresh it will do bad things
     auto it = target->begin();
-    for (int i = 0; i < REALM_MAX_BPNODE_SIZE + 1; ++i) {
+    for (int i = 0; i < TESSERA_MAX_BPNODE_SIZE + 1; ++i) {
         it->set<int64_t>(col, i);
         ++it;
     }
@@ -2948,7 +2948,7 @@ void multiple_trackers_reader_thread(TestContext& test_context, DBRef db)
             // if there is a fatal problem with a writer process we don't want the
             // readers to wait forever as a spawned background processs
             constexpr bool reader_process_timed_out = false;
-            REALM_ASSERT(reader_process_timed_out);
+            TESSERA_ASSERT(reader_process_timed_out);
         }
     }
 }
@@ -3012,7 +3012,7 @@ TEST(LangBindHelper_ImplicitTransactions_MultipleTrackers)
 // dispatch_queue_t in ReclaimerThreadStopper. This could possibly be fixed if
 // we need more tests like this.
 
-#if !REALM_ANDROID && !REALM_IOS
+#if !TESSERA_ANDROID && !TESSERA_IOS
 
 // fork should not be used on android or ios.
 // This test must be non-concurrant due to fork. If a child process
@@ -3049,7 +3049,7 @@ NONCONCURRENT_TEST_IF(LangBindHelper_ImplicitTransactions_InterProcess, testing_
             wt.commit();
         }
         catch (const std::exception& e) {
-            REALM_ASSERT_EX(false, e.what());
+            TESSERA_ASSERT_EX(false, e.what());
             static_cast<void>(e); // e is unused without assertions on
         }
         exit(0);
@@ -3118,7 +3118,7 @@ NONCONCURRENT_TEST_IF(LangBindHelper_ImplicitTransactions_InterProcess, testing_
     }
 }
 
-#endif // !REALM_ANDROID && !REALM_IOS
+#endif // !TESSERA_ANDROID && !TESSERA_IOS
 
 TEST(LangBindHelper_ImplicitTransactions_NoExtremeFileSpaceLeaks)
 {
@@ -3134,7 +3134,7 @@ TEST(LangBindHelper_ImplicitTransactions_NoExtremeFileSpaceLeaks)
 
 // the miminum filesize (after a commit) is one or two pages, depending on the
 // page size.
-#if REALM_ENABLE_ENCRYPTION
+#if TESSERA_ENABLE_ENCRYPTION
     if (crypt_key())
         // Encrypted files are always at least a 4096 byte header plus payload
         CHECK_LESS_EQUAL(File(path).get_size(), 2 * page_size() + 4096);
@@ -3142,7 +3142,7 @@ TEST(LangBindHelper_ImplicitTransactions_NoExtremeFileSpaceLeaks)
         CHECK_LESS_EQUAL(File(path).get_size(), 2 * page_size());
 #else
     CHECK_LESS_EQUAL(File(path).get_size(), 2 * page_size());
-#endif // REALM_ENABLE_ENCRYPTION
+#endif // TESSERA_ENABLE_ENCRYPTION
 }
 
 
@@ -3424,7 +3424,7 @@ TEST(LangBindHelper_SubqueryHandoverDependentViews)
             CHECK_EQUAL(51, tv1.size());
         }
         {
-            realm::TableView tv = qq2->equal(col1, true).find_all();
+            tessera::TableView tv = qq2->equal(col1, true).find_all();
 
             CHECK(tv.is_in_sync());
             CHECK(tv.is_attached());
@@ -4120,20 +4120,20 @@ void do_read_verify(std::string path)
                 return;
             }
             else {
-                REALM_ASSERT_EX(c.size() == 1, c.size());
+                TESSERA_ASSERT_EX(c.size() == 1, c.size());
             }
-            REALM_ASSERT_EX(t->get_name() == StringData("class_Table_Emulation_Name"), t->get_name().data());
-            REALM_ASSERT_EX(t->get_column_name(0) == StringData("count"), t->get_column_name(0).data());
-            REALM_ASSERT_EX(t->get_column_name(1) == StringData("char"), t->get_column_name(1).data());
-            REALM_ASSERT_EX(t->get_column_name(2) == StringData("payload"), t->get_column_name(2).data());
+            TESSERA_ASSERT_EX(t->get_name() == StringData("class_Table_Emulation_Name"), t->get_name().data());
+            TESSERA_ASSERT_EX(t->get_column_name(0) == StringData("count"), t->get_column_name(0).data());
+            TESSERA_ASSERT_EX(t->get_column_name(1) == StringData("char"), t->get_column_name(1).data());
+            TESSERA_ASSERT_EX(t->get_column_name(2) == StringData("payload"), t->get_column_name(2).data());
             std::string std_validator(static_cast<unsigned int>(num_chars), c[0]);
             StringData validator(std_validator);
             StringData s = t->get_string(2, r);
-            REALM_ASSERT_EX(s.size() == validator.size(), r, s.size(), validator.size());
+            TESSERA_ASSERT_EX(s.size() == validator.size(), r, s.size(), validator.size());
             for (size_t i = 0; i < s.size(); ++i) {
-                REALM_ASSERT_EX(s[i] == validator[i], r, i, s[i], validator[i]);
+                TESSERA_ASSERT_EX(s[i] == validator[i], r, i, s[i], validator[i]);
             }
-            REALM_ASSERT_EX(s == validator, r, s.size(), validator.size());
+            TESSERA_ASSERT_EX(s == validator, r, s.size(), validator.size());
         }
     }
 }
@@ -4149,7 +4149,7 @@ TEST_IF(Thread_AsynchronousIODataConsistency, false)
     SHARED_GROUP_TEST_PATH(path);
     const int num_writer_threads = 2;
     const int num_reader_threads = 2;
-    const int num_rows = 200; // 2 + REALM_MAX_BPNODE_SIZE;
+    const int num_rows = 200; // 2 + TESSERA_MAX_BPNODE_SIZE;
     const char* key = crypt_key(true);
     std::unique_ptr<Replication> hist(make_in_realm_history());
     DBRef sg = DB::create(*hist, path, DBOptions(key));
@@ -4490,8 +4490,8 @@ TEST(LangBindHelper_HandoverWithLinkQueries)
     // Do a query (which will have zero results) and export it twice.
     // To test separation, we'll later modify state at the exporting side,
     // and verify that the two different imports still get identical results
-    realm::Query query = table1->link(col_link2).column<String>(col_str) == "nabil";
-    realm::TableView tv4 = query.find_all();
+    tessera::Query query = table1->link(col_link2).column<String>(col_str) == "nabil";
+    tessera::TableView tv4 = query.find_all();
 
     auto rec1 = group_w->duplicate();
     auto q1 = rec1->import_copy_of(query, PayloadPolicy::Copy);
@@ -4499,7 +4499,7 @@ TEST(LangBindHelper_HandoverWithLinkQueries)
     auto q2 = rec2->import_copy_of(query, PayloadPolicy::Copy);
 
     {
-        realm::TableView tv = q1->find_all();
+        tessera::TableView tv = q1->find_all();
         CHECK_EQUAL(0, tv.size());
     }
 
@@ -4513,7 +4513,7 @@ TEST(LangBindHelper_HandoverWithLinkQueries)
     {
         // Import query and evaluate in the old context. This should *not* be
         // affected by the change done above on the exporting side.
-        realm::TableView tv2 = q2->find_all();
+        tessera::TableView tv2 = q2->find_all();
         CHECK_EQUAL(0, tv2.size());
     }
 }
@@ -4645,7 +4645,7 @@ TEST(LangBindHelper_HandoverQuerySubQuery)
 
         group_w->commit_and_continue_as_read();
 
-        realm::Query query_2 = source->column<Link>(col_link, target->column<String>(col_name) == "C").count() == 1;
+        tessera::Query query_2 = source->column<Link>(col_link, target->column<String>(col_name) == "C").count() == 1;
         reader = group_w->duplicate();
         query = reader->import_copy_of(query_2, PayloadPolicy::Copy);
     }
@@ -4870,7 +4870,7 @@ TEST(LangBindHelper_CompactLargeEncryptedFile)
 {
     SHARED_GROUP_TEST_PATH(path);
 
-    std::vector<char> data(realm::util::page_size());
+    std::vector<char> data(tessera::util::page_size());
     const size_t N = 32;
 
     {
@@ -5012,7 +5012,7 @@ TEST_IF(LangBindHelper_HandoverFuzzyTest, TEST_DURATION > 0)
         }
         rt->verify();
         {
-            realm::Query query = dog->link(c3).column<String>(c0) == "owner" + to_string(rand() % numberOfOwner);
+            tessera::Query query = dog->link(c3).column<String>(c0) == "owner" + to_string(rand() % numberOfOwner);
             query.find_all(); // <-- fails
         }
         rt->commit();
@@ -5033,7 +5033,7 @@ TEST_IF(LangBindHelper_HandoverFuzzyTest, TEST_DURATION > 0)
                 qs.erase(qs.begin());
                 vector_mutex.unlock();
 
-                realm::TableView tv = q->find_all();
+                tessera::TableView tv = q->find_all();
             }
             else {
                 vector_mutex.unlock();
@@ -5046,7 +5046,7 @@ TEST_IF(LangBindHelper_HandoverFuzzyTest, TEST_DURATION > 0)
     // Create and export query
     TableRef dog = rt->get_table("Dog");
 
-    realm::Query query = dog->link(c3).column<String>(c0) == "owner" + to_string(rand() % numberOfOwner);
+    tessera::Query query = dog->link(c3).column<String>(c0) == "owner" + to_string(rand() % numberOfOwner);
     query.find_all(); // <-- fails
 
     std::thread slaves[threads];
@@ -5180,7 +5180,7 @@ TEST(LangBindHelper_SessionHistoryConsistency)
         DBRef sg = DB::create(path, DBOptions(crypt_key()));
 
         // Out-of-Realm history
-        std::unique_ptr<Replication> hist = realm::make_in_realm_history();
+        std::unique_ptr<Replication> hist = tessera::make_in_realm_history();
         CHECK_RUNTIME_ERROR(DB::create(*hist, path, DBOptions(crypt_key())), ErrorCodes::IncompatibleSession);
     }
 }
@@ -5429,7 +5429,7 @@ TEST(LangbindHelper_GroupWriter_EdgeCaseAssert)
     g_w->add_table("pnsidlijqeddnsgaesiijrrqedkdktmfekftogjccerhpeil");
     g_r->close();
     g_w->commit();
-    REALM_ASSERT_RELEASE(sg->compact());
+    TESSERA_ASSERT_RELEASE(sg->compact());
     g_w = sg->start_write();
     g_r = sg->start_read();
     g_r->verify();
@@ -5454,7 +5454,7 @@ TEST(LangBindHelper_Bug2321)
         Group& group = wt.get_group();
         TableRef target = group.add_table("target");
         target->add_column(type_Int, "data");
-        target->create_objects(REALM_MAX_BPNODE_SIZE + 2, target_keys);
+        target->create_objects(TESSERA_MAX_BPNODE_SIZE + 2, target_keys);
         TableRef origin = group.add_table("origin");
         col = origin->add_column_list(*target, "_link");
         origin->create_objects(2, origin_keys);
@@ -5466,7 +5466,7 @@ TEST(LangBindHelper_Bug2321)
         Group& group = wt.get_group();
         TableRef origin = group.get_table("origin");
         auto lv0 = origin->begin()->get_linklist(col);
-        for (i = 0; i < (REALM_MAX_BPNODE_SIZE - 1); i++) {
+        for (i = 0; i < (TESSERA_MAX_BPNODE_SIZE - 1); i++) {
             lv0.add(target_keys[i]);
         }
         wt.commit();
@@ -5505,7 +5505,7 @@ TEST(LangBindHelper_Bug2295)
         Group& group = wt.get_group();
         TableRef target = group.add_table("target");
         target->add_column(type_Int, "data");
-        target->create_objects(REALM_MAX_BPNODE_SIZE + 2, target_keys);
+        target->create_objects(TESSERA_MAX_BPNODE_SIZE + 2, target_keys);
         TableRef origin = group.add_table("origin");
         col = origin->add_column_list(*target, "_link");
         origin->create_objects(2, origin_keys);
@@ -5517,7 +5517,7 @@ TEST(LangBindHelper_Bug2295)
         Group& group = wt.get_group();
         TableRef origin = group.get_table("origin");
         auto lv0 = origin->begin()->get_linklist(col);
-        for (i = 0; i < (REALM_MAX_BPNODE_SIZE - 1); i++) {
+        for (i = 0; i < (TESSERA_MAX_BPNODE_SIZE - 1); i++) {
             lv0.add(target_keys[i]);
         }
         wt.commit();
@@ -5642,7 +5642,7 @@ TEST(LangBindHelper_BinaryReallocOverMax)
 
 // This test verifies that small unencrypted files are treated correctly if
 // opened as encrypted.
-#if REALM_ENABLE_ENCRYPTION
+#if TESSERA_ENABLE_ENCRYPTION
 TEST(LangBindHelper_OpenAsEncrypted)
 {
     SHARED_GROUP_TEST_PATH(path);
@@ -5901,7 +5901,7 @@ TEST(LangBindHelper_ArrayXoverMapping)
             tbl->create_object().set_all(s);
         tr->commit();
     }
-    REALM_ASSERT(db->compact());
+    TESSERA_ASSERT(db->compact());
     {
         auto tr = db->start_read();
         auto tbl = tr->get_table("my_table");
@@ -5909,7 +5909,7 @@ TEST(LangBindHelper_ArrayXoverMapping)
             auto o = tbl->get_object(i);
             StringData str = o.get<String>(my_col);
             for (auto j = 0; j < 1'000'000; ++j)
-                REALM_ASSERT(str[j] == 'a');
+                TESSERA_ASSERT(str[j] == 'a');
         }
     }
 }

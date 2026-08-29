@@ -16,8 +16,8 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_CHECK_SYSTEM_ERROR_HPP
-#define REALM_TEST_UTIL_CHECK_SYSTEM_ERROR_HPP
+#ifndef TESSERA_TEST_UTIL_CHECK_SYSTEM_ERROR_HPP
+#define TESSERA_TEST_UTIL_CHECK_SYSTEM_ERROR_HPP
 
 #include <system_error>
 
@@ -25,4 +25,4 @@
 
 #define CHECK_SYSTEM_ERROR(expr, error_code) CHECK_THROW_EX(expr, std::system_error, e.code() == error_code)
 
-#endif // REALM_TEST_UTIL_CHECK_SYSTEM_ERROR_HPP
+#endif // TESSERA_TEST_UTIL_CHECK_SYSTEM_ERROR_HPP

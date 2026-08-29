@@ -16,9 +16,9 @@
  *
  **************************************************************************/
 
-#include <realm.hpp>
-#include <realm/disable_sync_to_disk.hpp>
-#include <realm/util/scope_exit.hpp>
+#include <tessera.hpp>
+#include <tessera/disable_sync_to_disk.hpp>
+#include <tessera/util/scope_exit.hpp>
 #include "test.hpp"
 
 #include <iostream>
@@ -38,9 +38,9 @@
 
 using namespace std::chrono;
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 using unit_test::TestContext;
 
 TEST(Compaction_WhileGrowing)
@@ -60,7 +60,7 @@ TEST(Compaction_WhileGrowing)
     for (int i = 0; i < 5000; ++i) {
         w[i] = '0' + (i % 64);
     }
-    int num = (REALM_MAX_BPNODE_SIZE == 1000) ? 1400 : 1300;
+    int num = (TESSERA_MAX_BPNODE_SIZE == 1000) ? 1400 : 1300;
     tr->promote_to_write();
     CHECK(db->get_evacuation_stage() == DB::EvacStage::idle);
     for (int j = 0; j < num; ++j) {

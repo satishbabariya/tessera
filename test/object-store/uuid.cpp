@@ -18,12 +18,12 @@
 
 #include <catch2/catch_all.hpp>
 
-#include <realm/object-store/util/uuid.hpp>
+#include <tessera/object-store/util/uuid.hpp>
 
 #include <algorithm>
 #include <cctype>
 
-using namespace realm;
+using namespace tessera;
 
 TEST_CASE("uuid") {
     auto isxdigit = [](char c) {

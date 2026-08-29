@@ -1,14 +1,14 @@
-#include <realm/string_data.hpp>
-#include <realm/util/sha_crypto.hpp>
-#include <realm/sync/noinst/server/crypto_server.hpp>
+#include <tessera/string_data.hpp>
+#include <tessera/util/sha_crypto.hpp>
+#include <tessera/sync/noinst/server/crypto_server.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::sync;
+using namespace tessera;
+using namespace tessera::sync;
 
 // testing sync server features on mobile is not supported
-#if !REALM_MOBILE
+#if !TESSERA_MOBILE
 
 static const char test_crypto_pubkey[] = "test_pubkey.pem";
 
@@ -76,7 +76,7 @@ TEST(Crypto_Verify_WithKeyFromBuffer)
     BinaryData sig{test_signature, sizeof test_signature - 1};
     CHECK(key.verify(msg, sig));
 }
-#endif // REALM_MOBILE
+#endif // TESSERA_MOBILE
 
 TEST(Crypto_SHA1)
 {

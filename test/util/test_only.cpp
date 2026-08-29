@@ -36,7 +36,7 @@ TestOnly& access_test_only()
 
 } // anonymous namespace
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 SetTestOnly::SetTestOnly(const char* test_name)
@@ -52,4 +52,4 @@ const char* get_test_only()
 }
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera

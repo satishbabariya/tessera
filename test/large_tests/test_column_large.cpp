@@ -22,9 +22,9 @@
 #include <algorithm>
 #include <vector>
 
-#include <realm/column_integer.hpp>
-#include <realm/array_integer_tpl.hpp>
-#include <realm/query_conditions.hpp>
+#include <tessera/column_integer.hpp>
+#include <tessera/array_integer_tpl.hpp>
+#include <tessera/query_conditions.hpp>
 
 #include "../util/verified_integer.hpp"
 
@@ -33,8 +33,8 @@
 #define LL_MAX (9223372036854775807LL)
 #define LL_MIN (-LL_MAX - 1)
 
-using namespace realm;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::test_util;
 
 
 // Test independence and thread-safety
@@ -68,7 +68,7 @@ using namespace realm::test_util;
 
 
 // These tests take ~5 min in release mode with
-// REALM_MAX_BPNODE_SIZE=1000
+// TESSERA_MAX_BPNODE_SIZE=1000
 
 
 TEST_IF(ColumnLarge_Less, TEST_DURATION >= 3)

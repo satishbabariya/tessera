@@ -16,10 +16,10 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_RESOURCE_LIMITS_HPP
-#define REALM_TEST_UTIL_RESOURCE_LIMITS_HPP
+#ifndef TESSERA_TEST_UTIL_RESOURCE_LIMITS_HPP
+#define TESSERA_TEST_UTIL_RESOURCE_LIMITS_HPP
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 
@@ -43,6 +43,6 @@ void set_soft_rlimit(Resource, long value);
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_RESOURCE_LIMITS_HPP
+#endif // TESSERA_TEST_UTIL_RESOURCE_LIMITS_HPP

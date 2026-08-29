@@ -16,14 +16,14 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_TIMER_HPP
-#define REALM_TEST_UTIL_TIMER_HPP
+#ifndef TESSERA_TEST_UTIL_TIMER_HPP
+#define TESSERA_TEST_UTIL_TIMER_HPP
 
 #include <cstdint>
 #include <ostream>
 #include <string>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 
@@ -104,6 +104,6 @@ inline std::ostream& operator<<(std::ostream& out, const Timer& timer)
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_TIMER_HPP
+#endif // TESSERA_TEST_UTIL_TIMER_HPP

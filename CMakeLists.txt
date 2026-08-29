@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 3.25)
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 
 set(CMAKE_BUILD_TYPE Debug CACHE STRING "")
-project(RealmCore)
+project(Tessera)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tools/cmake")
 
-if(NOT DEFINED REALM_CORE_SUBMODULE_BUILD AND NOT CMAKE_SOURCE_DIR STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+if(NOT DEFINED TESSERA_CORE_SUBMODULE_BUILD AND NOT CMAKE_SOURCE_DIR STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
     # Realm Core is being built as part of another project, likely an SDK
-    set(REALM_CORE_SUBMODULE_BUILD ON)
+    set(TESSERA_CORE_SUBMODULE_BUILD ON)
 endif()
 
 # Include general CMake modules
@@ -25,10 +25,10 @@ include(CheckCXXSourceRuns)
 
 include(CodeCoverage)
 
-if(NOT DEFINED REALM_VERSION)
+if(NOT DEFINED TESSERA_VERSION)
     # Get accurate git-describe version
     include(GetGitRevisionDescription)
-    git_describe(REALM_VERSION)
+    git_describe(TESSERA_VERSION)
 endif()
 set(PROJECT_VERSION ${DEP_VERSION})
 
@@ -112,7 +112,7 @@ function(use_faster_linker)
         check_cxx_source_compiles("int main() {}" HAVE_LINKER_${LINKER})
         if(HAVE_LINKER_${LINKER})
             message(STATUS "Using linker ${LINKER}")
-            set(REALM_USE_FAST_LINKER "-fuse-ld=${LINKER}" PARENT_SCOPE)
+            set(TESSERA_USE_FAST_LINKER "-fuse-ld=${LINKER}" PARENT_SCOPE)
             return()
         endif()
     endforeach()
@@ -176,7 +176,7 @@ if(ANDROID)
     add_compile_options(-fdata-sections -ffunction-sections -fomit-frame-pointer -fsigned-char -fstrict-aliasing -funwind-tables -no-canonical-prefixes $<$<CONFIG:Release>:-Oz>)
 endif()
 
-if(EMSCRIPTEN AND NOT REALM_CORE_SUBMODULE_BUILD)
+if(EMSCRIPTEN AND NOT TESSERA_CORE_SUBMODULE_BUILD)
     add_compile_options(-fwasm-exceptions)
     add_link_options(-fwasm-exceptions -sALLOW_MEMORY_GROWTH=1)
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
@@ -247,29 +247,29 @@ if(UNIX)
     add_compile_definitions("_LARGEFILE_SOURCE" "_LARGEFILE64_SOURCE")
     set(CMAKE_REQUIRED_DEFINITIONS "-D_LARGEFILE_SOURCE" "-D_LARGEFILE64_SOURCE")
     # Use readdir64 if available.
-    check_symbol_exists(readdir64 "dirent.h" REALM_HAVE_READDIR64)
+    check_symbol_exists(readdir64 "dirent.h" TESSERA_HAVE_READDIR64)
     cmake_reset_check_state()
     set(CMAKE_REQUIRED_DEFINITIONS "-D_POSIX_C_SOURCE=200112L")
-    check_symbol_exists(posix_fallocate "fcntl.h" REALM_HAVE_POSIX_FALLOCATE)
-    if(REALM_HAVE_POSIX_FALLOCATE)
+    check_symbol_exists(posix_fallocate "fcntl.h" TESSERA_HAVE_POSIX_FALLOCATE)
+    if(TESSERA_HAVE_POSIX_FALLOCATE)
         add_compile_definitions("_POSIX_C_SOURCE=200112L")
     endif()
     cmake_pop_check_state()
 endif()
 
 # Options (passed to CMake)
-option(REALM_ENABLE_SYNC "Enable synchronized realms." ON)
-option(REALM_BUILD_TEST_CLIENT "Build the test client" OFF)
-option(REALM_ENABLE_ASSERTIONS "Enable assertions in release mode." OFF)
-option(REALM_ENABLE_ALLOC_SET_ZERO "Zero all allocations." OFF)
+option(TESSERA_ENABLE_SYNC "Enable synchronized realms." ON)
+option(TESSERA_BUILD_TEST_CLIENT "Build the test client" OFF)
+option(TESSERA_ENABLE_ASSERTIONS "Enable assertions in release mode." OFF)
+option(TESSERA_ENABLE_ALLOC_SET_ZERO "Zero all allocations." OFF)
 if(NOT EMSCRIPTEN)
-    option(REALM_ENABLE_ENCRYPTION "Enable encryption." ON)
+    option(TESSERA_ENABLE_ENCRYPTION "Enable encryption." ON)
 endif()
-option(REALM_ENABLE_MEMDEBUG "Add additional memory checks" OFF)
-option(REALM_VALGRIND "Tell the test suite we are running with valgrind" OFF)
-option(REALM_SYNC_MULTIPLEXING "Enables/disables sync session multiplexing by default" ON)
-set(REALM_MAX_BPNODE_SIZE "1000" CACHE STRING "Max B+ tree node size.")
-option(REALM_ENABLE_GEOSPATIAL "Enable geospatial types and queries." ON)
+option(TESSERA_ENABLE_MEMDEBUG "Add additional memory checks" OFF)
+option(TESSERA_VALGRIND "Tell the test suite we are running with valgrind" OFF)
+option(TESSERA_SYNC_MULTIPLEXING "Enables/disables sync session multiplexing by default" ON)
+set(TESSERA_MAX_BPNODE_SIZE "1000" CACHE STRING "Max B+ tree node size.")
+option(TESSERA_ENABLE_GEOSPATIAL "Enable geospatial types and queries." ON)
 
 # Find dependencies
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -278,26 +278,26 @@ find_package(Threads REQUIRED)
 # Threads library is pthread-compatible
 # Check for these explicitly because older versions of musl define only one or the other
 if(CMAKE_USE_PTHREADS_INIT)
-    check_symbol_exists(pthread_getname_np "pthread.h" REALM_HAVE_PTHREAD_GETNAME)
-    check_symbol_exists(pthread_setname_np "pthread.h" REALM_HAVE_PTHREAD_SETNAME)
+    check_symbol_exists(pthread_getname_np "pthread.h" TESSERA_HAVE_PTHREAD_GETNAME)
+    check_symbol_exists(pthread_setname_np "pthread.h" TESSERA_HAVE_PTHREAD_SETNAME)
 endif()
 
 find_package(Backtrace)
-set(REALM_HAVE_BACKTRACE ${Backtrace_FOUND})
+set(TESSERA_HAVE_BACKTRACE ${Backtrace_FOUND})
 
-if(REALM_ENABLE_SYNC)
-    option(REALM_FORCE_OPENSSL "Always use OpenSSL for SSL needs, regardless of target platform." OFF)
+if(TESSERA_ENABLE_SYNC)
+    option(TESSERA_FORCE_OPENSSL "Always use OpenSSL for SSL needs, regardless of target platform." OFF)
     if(CMAKE_SYSTEM_NAME MATCHES "^Windows|Linux|Android")
-        set(REALM_NEEDS_OPENSSL TRUE)
+        set(TESSERA_NEEDS_OPENSSL TRUE)
     endif()
-    if(REALM_NEEDS_OPENSSL OR REALM_FORCE_OPENSSL)
-        option(REALM_INCLUDE_CERTS "Include a list of trust certificates in the build for OpenSSL certificate verification" ON)
+    if(TESSERA_NEEDS_OPENSSL OR TESSERA_FORCE_OPENSSL)
+        option(TESSERA_INCLUDE_CERTS "Include a list of trust certificates in the build for OpenSSL certificate verification" ON)
     endif()
-elseif(REALM_ENABLE_ENCRYPTION AND CMAKE_SYSTEM_NAME MATCHES "Linux|Android")
-    set(REALM_NEEDS_OPENSSL TRUE)
+elseif(TESSERA_ENABLE_ENCRYPTION AND CMAKE_SYSTEM_NAME MATCHES "Linux|Android")
+    set(TESSERA_NEEDS_OPENSSL TRUE)
 endif()
 
-if(REALM_NEEDS_OPENSSL OR REALM_FORCE_OPENSSL)
+if(TESSERA_NEEDS_OPENSSL OR TESSERA_FORCE_OPENSSL)
     # Tessera: OpenSSL is always supplied by the environment (system package,
     # toolchain, or integrator-provided). The former alternative -- downloading
     # a prebuilt tarball from static.realm.io -- made every build depend on
@@ -308,14 +308,14 @@ if(REALM_NEEDS_OPENSSL OR REALM_FORCE_OPENSSL)
     # configures through a Perl script. Integrators cross-compiling for Android
     # or Windows must therefore provide OpenSSL themselves and point CMake at
     # it via OPENSSL_ROOT_DIR.
-    set(_REALM_USE_OPENSSL_DEFAULT_VERIFY_PATHS ON)
+    set(_TESSERA_USE_OPENSSL_DEFAULT_VERIFY_PATHS ON)
 
     find_package(OpenSSL ${DEP_OPENSSL_MIN_VERSION} REQUIRED)
-    set(REALM_HAVE_OPENSSL ON)
-    option(REALM_USE_SYSTEM_OPENSSL_PATHS "Use the system OpenSSL certificate store (specified by the OPENSSLDIR environment variable) at runtime for TLS handshake." ${_REALM_USE_OPENSSL_DEFAULT_VERIFY_PATHS})
+    set(TESSERA_HAVE_OPENSSL ON)
+    option(TESSERA_USE_SYSTEM_OPENSSL_PATHS "Use the system OpenSSL certificate store (specified by the OPENSSLDIR environment variable) at runtime for TLS handshake." ${_TESSERA_USE_OPENSSL_DEFAULT_VERIFY_PATHS})
     string(REGEX MATCH "^([0-9]+)\\.([0-9]+)" OPENSSL_VERSION_MAJOR_MINOR "${OPENSSL_VERSION}")
 elseif(APPLE)
-    set(REALM_HAVE_SECURE_TRANSPORT "1")
+    set(TESSERA_HAVE_SECURE_TRANSPORT "1")
 endif()
 
 # Use Zlib for Sync, but allow integrators to override it
@@ -339,12 +339,12 @@ if(NOT APPLE AND NOT EMSCRIPTEN AND NOT TARGET ZLIB::ZLIB)
 endif()
 
 # Store configuration in header file
-configure_file(src/realm/util/config.h.in src/realm/util/config.h)
+configure_file(src/tessera/util/config.h.in src/tessera/util/config.h)
 
 # Configure source code to use right version number
-configure_file(src/realm/version_numbers.hpp.in src/realm/version_numbers.hpp)
+configure_file(src/tessera/version_numbers.hpp.in src/tessera/version_numbers.hpp)
 
-set(DEPRECATED_CONFIG_FILE "${RealmCore_SOURCE_DIR}/src/realm/util/config.h")
+set(DEPRECATED_CONFIG_FILE "${Tessera_SOURCE_DIR}/src/tessera/util/config.h")
 if(EXISTS "${DEPRECATED_CONFIG_FILE}")
     message(FATAL_ERROR "${DEPRECATED_CONFIG_FILE} exists in the source directory, and will take precedence over the generated configuration in the build directory. Please remove this file before continuing. Alternatively, you can also clean your realm-core to remove this and other stale files: git clean -xfd")
 endif()
@@ -361,47 +361,47 @@ add_subdirectory(src)
 install(FILES LICENSE CHANGELOG.md DESTINATION "doc/realm" COMPONENT devel)
 
 # Only prepare test/install/package targets if we're not a submodule
-if(REALM_CORE_SUBMODULE_BUILD)
+if(TESSERA_CORE_SUBMODULE_BUILD)
     return()
 endif()
 
 # Make the project importable from the build directory
-set(REALM_EXPORTED_TARGETS
+set(TESSERA_EXPORTED_TARGETS
         Storage
         QueryParser
         ObjectStore
         )
-if(REALM_ENABLE_SYNC)
-    list(APPEND REALM_EXPORTED_TARGETS Sync)
+if(TESSERA_ENABLE_SYNC)
+    list(APPEND TESSERA_EXPORTED_TARGETS Sync)
 endif()
-export(TARGETS ${REALM_EXPORTED_TARGETS} NAMESPACE Realm:: FILE RealmTargets.cmake)
-configure_file(tools/cmake/RealmConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/RealmConfig.cmake @ONLY)
+export(TARGETS ${TESSERA_EXPORTED_TARGETS} NAMESPACE Tessera:: FILE TesseraTargets.cmake)
+configure_file(tools/cmake/TesseraConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/TesseraConfig.cmake @ONLY)
 
 # Make the project importable from the install directory
 install(EXPORT realm
-        NAMESPACE Realm::
-        FILE RealmTargets.cmake
+        NAMESPACE Tessera::
+        FILE TesseraTargets.cmake
         DESTINATION share/cmake/Realm
         COMPONENT devel
         )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/RealmConfig.cmake
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TesseraConfig.cmake
         DESTINATION share/cmake/Realm
         COMPONENT devel
         )
 
-if(NOT REALM_BUILD_LIB_ONLY AND NOT REALM_NO_TESTS)
+if(NOT TESSERA_BUILD_LIB_ONLY AND NOT TESSERA_NO_TESTS)
     enable_testing()
     add_subdirectory(test)
 endif()
 
-if (REALM_BUILD_TEST_CLIENT)
+if (TESSERA_BUILD_TEST_CLIENT)
     add_subdirectory(test/client)
 endif()
 
 # CPack
 set(CPACK_GENERATOR "TGZ")
-set(CPACK_PACKAGE_VERSION ${REALM_VERSION})
+set(CPACK_PACKAGE_VERSION ${TESSERA_VERSION})
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
 # Generators that don't support build-time configuration selection.

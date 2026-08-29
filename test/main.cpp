@@ -21,7 +21,7 @@
 
 int main(int argc, const char* argv[])
 {
-    if (!realm::test_util::initialize_test_path(argc, argv))
+    if (!tessera::test_util::initialize_test_path(argc, argv))
         return 1;
     return test_all();
 }

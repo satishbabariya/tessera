@@ -5,13 +5,13 @@
 #include <thread>
 #include <type_traits>
 
-#include "realm/util/features.h"
-#include "realm/util/future.hpp"
-#include "realm/utilities.hpp"
+#include "tessera/util/features.h"
+#include "tessera/util/future.hpp"
+#include "tessera/utilities.hpp"
 
 #include "test.hpp"
 
-namespace realm::util {
+namespace tessera::util {
 namespace {
 
 static_assert(std::is_same_v<FutureContinuationResult<std::function<void()>>, void>);
@@ -52,7 +52,7 @@ Future<Result> async(Func&& func)
     auto pf = make_promise_future<Result>();
 
     std::thread([promise = std::move(pf.promise), func = std::forward<Func>(func)]() mutable {
-#if !REALM_SANITIZE_THREAD
+#if !TESSERA_SANITIZE_THREAD
         // TSAN works better without this sleep, but it is useful for testing correctness.
         millisleep(100); // Try to wait until after the Future has been handled.
 #endif
@@ -130,7 +130,7 @@ void FUTURE_FAIL_TEST(const TestFunc& test) noexcept
     { // async future
         test(async([&]() -> CompletionType {
             throw Exception(fail_status);
-            REALM_UNREACHABLE();
+            TESSERA_UNREACHABLE();
         }));
     }
 }
@@ -2247,6 +2247,6 @@ TEST(Future_PromiseUpdatesSharedStateBeforeCompletingCallbacks)
 }
 
 } // namespace
-} // namespace realm::util
+} // namespace tessera::util
 
 #endif

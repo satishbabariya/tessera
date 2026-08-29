@@ -16,23 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_TEST_COLLECTION_FIXTURES_HPP
-#define REALM_TEST_COLLECTION_FIXTURES_HPP
+#ifndef TESSERA_TEST_COLLECTION_FIXTURES_HPP
+#define TESSERA_TEST_COLLECTION_FIXTURES_HPP
 
 #include <catch2/catch_all.hpp>
 
-#include <realm/object-store/list.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/results.hpp>
+#include <tessera/object-store/list.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/results.hpp>
 
-#include <realm/db.hpp>
-#include <realm/util/any.hpp>
-#include <realm/util/functional.hpp>
+#include <tessera/db.hpp>
+#include <tessera/util/any.hpp>
+#include <tessera/util/functional.hpp>
 
 #include <string>
 #include <type_traits>
 
-namespace realm::collection_fixtures {
+namespace tessera::collection_fixtures {
 
 template <typename T>
 constexpr bool always_false = false;
@@ -236,7 +236,7 @@ struct Date : Base<PropertyType::Date, Timestamp> {
     }
 };
 
-struct MixedVal : Base<PropertyType::Mixed, realm::Mixed> {
+struct MixedVal : Base<PropertyType::Mixed, tessera::Mixed> {
     constexpr static const char* name = "mixed";
     using AvgType = Decimal128;
     constexpr static bool is_optional = true;
@@ -245,12 +245,12 @@ struct MixedVal : Base<PropertyType::Mixed, realm::Mixed> {
     constexpr static bool can_minmax = true;
     constexpr static PropertyType property_type = PropertyType::Mixed | PropertyType::Nullable;
 
-    static std::vector<realm::Mixed> values()
+    static std::vector<tessera::Mixed> values()
     {
         return {
-            Mixed{realm::UUID()},
+            Mixed{tessera::UUID()},
             Mixed{},
-            Mixed{realm::ObjectId()},
+            Mixed{tessera::ObjectId()},
 
             // Mixed sorting considers all numerics to be the same time, so
             // ensure we have some interleaved values to test that
@@ -310,12 +310,12 @@ struct OID : Base<PropertyType::ObjectId, ObjectId> {
     }
 };
 
-struct UUID : Base<PropertyType::UUID, realm::UUID> {
+struct UUID : Base<PropertyType::UUID, tessera::UUID> {
     constexpr static const char* name = "uuid";
-    static std::vector<realm::UUID> values()
+    static std::vector<tessera::UUID> values()
     {
-        return {realm::UUID("3b241101-e2bb-4255-8caf-4136c566a962"),
-                realm::UUID("3b241101-a2b3-4255-8caf-4136c566a999")};
+        return {tessera::UUID("3b241101-e2bb-4255-8caf-4136c566a962"),
+                tessera::UUID("3b241101-a2b3-4255-8caf-4136c566a999")};
     }
 };
 
@@ -391,7 +391,7 @@ struct UnboxedOptional : BaseT {
         auto ret = BaseT::values();
         if constexpr (std::is_same_v<BaseT, collection_fixtures::Decimal>) {
             // The default Decimal128 ctr is 0, but we want a null value
-            ret.push_back(Decimal128(realm::null()));
+            ret.push_back(Decimal128(tessera::null()));
         }
         else {
             ret.push_back(typename BaseT::Type());
@@ -405,7 +405,7 @@ std::vector<Obj> get_linked_objects(T collection)
 {
     std::vector<Obj> links;
     auto group = collection.get_obj().get_table()->get_parent_group();
-    REALM_ASSERT(group);
+    TESSERA_ASSERT(group);
 
     for (size_t i = 0; i < collection.size(); ++i) {
         Mixed value = collection.get_any(i);
@@ -413,7 +413,7 @@ std::vector<Obj> get_linked_objects(T collection)
             ObjLink lnk = value.get_link();
             if (lnk && !lnk.is_unresolved()) {
                 auto dst_table = group->get_table(lnk.get_table_key());
-                REALM_ASSERT(dst_table);
+                TESSERA_ASSERT(dst_table);
                 links.push_back(dst_table->get_object(lnk.get_obj_key()));
             }
         }
@@ -421,7 +421,7 @@ std::vector<Obj> get_linked_objects(T collection)
             ObjKey lnk = value.get<ObjKey>();
             if (lnk && !lnk.is_unresolved()) {
                 auto dst_table = collection.get_obj().get_table()->get_opposite_table(collection.get_col_key());
-                REALM_ASSERT(dst_table);
+                TESSERA_ASSERT(dst_table);
                 links.push_back(dst_table->get_object(lnk));
             }
         }
@@ -444,9 +444,9 @@ struct LinkedCollectionBase {
 
     ColKey get_link_col_key(TableRef source_table)
     {
-        REALM_ASSERT(source_table);
+        TESSERA_ASSERT(source_table);
         ColKey collection_col_key = source_table->get_column_key(m_prop_name);
-        REALM_ASSERT(collection_col_key);
+        TESSERA_ASSERT(collection_col_key);
         return collection_col_key;
     }
     virtual void add_link(Obj from, ObjLink to) = 0;
@@ -507,7 +507,7 @@ struct ListOfObjects : public LinkedCollectionBase {
         ColKey col = get_link_col_key(from.get_table());
         auto coll = from.get_linklist(col);
         size_t ndx = coll.find_first(to.get_obj_key());
-        if (ndx != realm::not_found) {
+        if (ndx != tessera::not_found) {
             coll.remove(ndx);
             return true;
         }
@@ -583,7 +583,7 @@ struct ListOfMixedLinks : public LinkedCollectionBase {
         ColKey col = get_link_col_key(from.get_table());
         auto coll = from.get_list<Mixed>(col);
         size_t ndx = coll.find_first(Mixed{to});
-        if (ndx != realm::not_found) {
+        if (ndx != tessera::not_found) {
             coll.remove(ndx);
             return true;
         }
@@ -895,9 +895,9 @@ struct DictionaryOfMixedLinks : public LinkedCollectionBase {
 };
 
 
-} // namespace realm::collection_fixtures
+} // namespace tessera::collection_fixtures
 
-namespace realm {
+namespace tessera {
 template <typename T>
 bool operator==(List const& list, std::vector<T> const& values)
 {
@@ -924,6 +924,6 @@ bool operator==(Results const& results, std::vector<T> const& values)
     return true;
 }
 
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_COLLECTION_FIXTURES_HPP
+#endif // TESSERA_TEST_COLLECTION_FIXTURES_HPP

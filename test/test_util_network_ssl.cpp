@@ -1,7 +1,7 @@
 #include <thread>
 
-#include <realm/sync/network/network_ssl.hpp>
-#include <realm/util/future.hpp>
+#include <tessera/sync/network/network_ssl.hpp>
+#include <tessera/util/future.hpp>
 
 #include "test.hpp"
 #include "util/semaphore.hpp"
@@ -10,10 +10,10 @@
 #include <wincrypt.h>
 #endif
 
-using namespace realm;
-using namespace realm::sync;
-using namespace realm::test_util;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::sync;
+using namespace tessera::test_util;
+using namespace tessera::util;
 
 // Test independence and thread-safety
 // -----------------------------------
@@ -44,7 +44,7 @@ using namespace realm::util;
 // `experiments/testcase.cpp` and then run `sh build.sh
 // check-testcase` (or one of its friends) from the command line.
 
-#if !REALM_MOBILE
+#if !TESSERA_MOBILE
 namespace {
 
 network::Endpoint bind_acceptor(network::Acceptor& acceptor)
@@ -65,11 +65,11 @@ void connect_sockets(network::Socket& server_socket, network::Socket& client_soc
     network::Endpoint ep = bind_acceptor(acceptor);
     bool accept_occurred = false, connect_occurred = false;
     auto accept_handler = [&](std::error_code ec) {
-        REALM_ASSERT(!ec);
+        TESSERA_ASSERT(!ec);
         accept_occurred = true;
     };
     auto connect_handler = [&](std::error_code ec) {
-        REALM_ASSERT(!ec);
+        TESSERA_ASSERT(!ec);
         connect_occurred = true;
     };
     server_service.post([&](Status status) {
@@ -92,8 +92,8 @@ void connect_sockets(network::Socket& server_socket, network::Socket& client_soc
         client_service.run();
         thread.join();
     }
-    REALM_ASSERT(accept_occurred);
-    REALM_ASSERT(connect_occurred);
+    TESSERA_ASSERT(accept_occurred);
+    TESSERA_ASSERT(connect_occurred);
 }
 
 void configure_server_ssl_context_for_test(network::ssl::Context& ssl_context)
@@ -111,11 +111,11 @@ void connect_ssl_streams(network::ssl::Stream& server_stream, network::ssl::Stre
     network::Service& client_service = client_socket.get_service();
     bool server_handshake_occurred = false, client_handshake_occurred = false;
     auto server_handshake_handler = [&](std::error_code ec) {
-        REALM_ASSERT(!ec);
+        TESSERA_ASSERT(!ec);
         server_handshake_occurred = true;
     };
     auto client_handshake_handler = [&](std::error_code ec) {
-        REALM_ASSERT(!ec);
+        TESSERA_ASSERT(!ec);
         client_handshake_occurred = true;
     };
     server_service.post([&](Status status) {
@@ -138,8 +138,8 @@ void connect_ssl_streams(network::ssl::Stream& server_stream, network::ssl::Stre
         client_service.run();
         thread.join();
     }
-    REALM_ASSERT(server_handshake_occurred);
-    REALM_ASSERT(client_handshake_occurred);
+    TESSERA_ASSERT(server_handshake_occurred);
+    TESSERA_ASSERT(client_handshake_occurred);
 }
 
 
@@ -425,14 +425,14 @@ TEST(Util_Network_SSL_PrematureEndOfInputOnHandshakeRead)
         do {
             socket_1.read_some(buffer.get(), size, ec);
         } while (!ec);
-        REALM_ASSERT(ec == MiscExtErrors::end_of_input);
+        TESSERA_ASSERT(ec == MiscExtErrors::end_of_input);
     };
 
     std::thread thread(std::move(consumer));
 
-#if REALM_HAVE_OPENSSL
+#if TESSERA_HAVE_OPENSSL
     CHECK_SYSTEM_ERROR(ssl_stream_2.handshake(), MiscExtErrors::premature_end_of_input);
-#elif REALM_HAVE_SECURE_TRANSPORT
+#elif TESSERA_HAVE_SECURE_TRANSPORT
     // We replace the CHECK_SYSTEM_ERROR check for "premature end of input"
     // with a check for any error code, Mac OS occasionally reports another
     // system error. We can revisit the details of the error code later. The
@@ -470,16 +470,16 @@ TEST(Util_Network_SSL_BrokenPipeOnHandshakeWrite)
     do {
         socket_2.write_some(buffer.get(), size, ec);
     } while (!ec);
-#if REALM_PLATFORM_APPLE
+#if TESSERA_PLATFORM_APPLE
     // Which error we get from writing to a closed socket seems to depend on
     // some asynchronous kernel state. If it notices that the socket is closed
     // before sending any data we get EPIPE, and if it's after trying to send
     // data it's ECONNRESET. EHOSTDOWN is not documented as an error code from
     // send() and may be worth investigating once the macOS 12 XNU source is
     // released.
-    REALM_ASSERT(ec == error::broken_pipe || ec == error::connection_reset || ec.value() == EHOSTDOWN);
+    TESSERA_ASSERT(ec == error::broken_pipe || ec == error::connection_reset || ec.value() == EHOSTDOWN);
 #else
-    REALM_ASSERT(ec == error::broken_pipe);
+    TESSERA_ASSERT(ec == error::broken_pipe);
 #endif
 
     CHECK_SYSTEM_ERROR(ssl_stream_2.handshake(), error::broken_pipe);
@@ -549,10 +549,10 @@ TEST(Util_Network_SSL_BrokenPipeOnWrite)
     do {
         socket_2.write_some(buffer.get(), size, ec);
     } while (!ec);
-#if REALM_PLATFORM_APPLE
-    REALM_ASSERT(ec == error::broken_pipe || ec == error::connection_reset || ec.value() == EHOSTDOWN);
+#if TESSERA_PLATFORM_APPLE
+    TESSERA_ASSERT(ec == error::broken_pipe || ec == error::connection_reset || ec.value() == EHOSTDOWN);
 #else
-    REALM_ASSERT(ec == error::broken_pipe);
+    TESSERA_ASSERT(ec == error::broken_pipe);
 #endif
 
     char ch = 0;
@@ -583,10 +583,10 @@ TEST(Util_Network_SSL_BrokenPipeOnShutdown)
     do {
         socket_2.write_some(buffer.get(), size, ec);
     } while (!ec);
-#if REALM_PLATFORM_APPLE
-    REALM_ASSERT(ec == error::broken_pipe || ec == error::connection_reset || ec.value() == EHOSTDOWN);
+#if TESSERA_PLATFORM_APPLE
+    TESSERA_ASSERT(ec == error::broken_pipe || ec == error::connection_reset || ec.value() == EHOSTDOWN);
 #else
-    REALM_ASSERT(ec == error::broken_pipe);
+    TESSERA_ASSERT(ec == error::broken_pipe);
 #endif
 
     CHECK_SYSTEM_ERROR(ssl_stream_2.shutdown(), error::broken_pipe);
@@ -697,7 +697,7 @@ TEST(Util_Network_SSL_BasicSendAndReceive)
 }
 
 
-#if REALM_HAVE_SECURE_TRANSPORT
+#if TESSERA_HAVE_SECURE_TRANSPORT
 
 template <typename ReadHandler, typename ReadError>
 void run_ssl_nonzero_length_test(test_util::unit_test::TestContext& test_context, ReadHandler&& read_handler,
@@ -855,7 +855,7 @@ TEST(Util_Network_SSL_StressTest)
         bool read_done = false, write_done = false;
         UniqueFunction<void()> shedule_cancellation = [&] {
             cancellation_timer.async_wait(std::chrono::microseconds(10), [&](Status status) {
-                REALM_ASSERT(status.is_ok() || status == ErrorCodes::OperationAborted);
+                TESSERA_ASSERT(status.is_ok() || status == ErrorCodes::OperationAborted);
                 if (status == ErrorCodes::OperationAborted)
                     return;
                 if (read_done && write_done)
@@ -885,7 +885,7 @@ TEST(Util_Network_SSL_StressTest)
                 read_end = read_buffer.get() + original_size;
             }
             auto handler = [&](std::error_code ec, size_t n) {
-                REALM_ASSERT(!ec || ec == error::operation_aborted);
+                TESSERA_ASSERT(!ec || ec == error::operation_aborted);
                 ++stats.num_reads;
                 if (ec == error::operation_aborted) {
                     ++stats.num_canceled_reads;
@@ -895,7 +895,7 @@ TEST(Util_Network_SSL_StressTest)
                 }
                 if (delayed_read_write_dist(prng) == 0) {
                     read_timer.async_wait(std::chrono::microseconds(100), [&](Status status) {
-                        REALM_ASSERT(status.is_ok());
+                        TESSERA_ASSERT(status.is_ok());
                         read();
                     });
                 }
@@ -929,7 +929,7 @@ TEST(Util_Network_SSL_StressTest)
                 write_end = write_original + original_size;
             }
             auto handler = [&](std::error_code ec, size_t n) {
-                REALM_ASSERT(!ec || ec == error::operation_aborted);
+                TESSERA_ASSERT(!ec || ec == error::operation_aborted);
                 ++stats.num_writes;
                 if (ec == error::operation_aborted) {
                     ++stats.num_canceled_writes;
@@ -939,7 +939,7 @@ TEST(Util_Network_SSL_StressTest)
                 }
                 if (delayed_read_write_dist(prng) == 0) {
                     write_timer.async_wait(std::chrono::microseconds(100), [&](Status status) {
-                        REALM_ASSERT(status.is_ok());
+                        TESSERA_ASSERT(status.is_ok());
                         write();
                     });
                 }
@@ -1074,7 +1074,7 @@ TEST(Util_Network_SSL_Certificate_SAN)
 
 // FIXME: Verification of peer against Common Name is no longer supported in
 // Catalina (macOS).
-#if REALM_HAVE_OPENSSL || !REALM_HAVE_SECURE_TRANSPORT
+#if TESSERA_HAVE_OPENSSL || !TESSERA_HAVE_SECURE_TRANSPORT
 
 // The host name www.example.com is contained in Common Name but not in SAN.
 TEST(Util_Network_SSL_Certificate_CN)
@@ -1118,7 +1118,7 @@ TEST(Util_Network_SSL_Certificate_CN)
     thread_2.join();
 }
 
-#endif // REALM_HAVE_OPENSSL || !REALM_HAVE_SECURE_TRANSPORT
+#endif // TESSERA_HAVE_OPENSSL || !TESSERA_HAVE_SECURE_TRANSPORT
 
 // The ip address is contained in the IP SAN section
 // of the certificate. For OpenSSL, we expect failure because we only
@@ -1152,18 +1152,18 @@ TEST(Util_Network_SSL_Certificate_IP)
     auto connector = [&] {
         std::error_code ec;
         ssl_stream_2.handshake(ec);
-#if REALM_HAVE_OPENSSL
+#if TESSERA_HAVE_OPENSSL
         CHECK_NOT_EQUAL(std::error_code(), ec);
-#elif REALM_HAVE_SECURE_TRANSPORT
+#elif TESSERA_HAVE_SECURE_TRANSPORT
         CHECK_EQUAL(std::error_code(), ec);
 #endif
     };
     auto acceptor = [&] {
         std::error_code ec;
         ssl_stream_1.handshake(ec);
-#if REALM_HAVE_OPENSSL
+#if TESSERA_HAVE_OPENSSL
         CHECK_NOT_EQUAL(std::error_code(), ec);
-#elif REALM_HAVE_SECURE_TRANSPORT
+#elif TESSERA_HAVE_SECURE_TRANSPORT
         CHECK_EQUAL(std::error_code(), ec);
 #endif
     };
@@ -1289,4 +1289,4 @@ TEST_IF(Util_Network_SSL_Certificate_From_Windows_Cert_Store, IsDebuggerPresent(
 
 #endif // _WIN32
 
-#endif // !REALM_MOBILE
+#endif // !TESSERA_MOBILE

@@ -24,19 +24,19 @@
 #include "../util/test_path.hpp"
 #include "util/sync/sync_test_utils.hpp"
 
-#include <realm/db.hpp>
-#include <realm/disable_sync_to_disk.hpp>
-#include <realm/history.hpp>
-#include <realm/string_data.hpp>
-#include <realm/object-store/impl/realm_coordinator.hpp>
-#include <realm/util/base64.hpp>
-#include <realm/util/file.hpp>
+#include <tessera/db.hpp>
+#include <tessera/disable_sync_to_disk.hpp>
+#include <tessera/history.hpp>
+#include <tessera/string_data.hpp>
+#include <tessera/object-store/impl/realm_coordinator.hpp>
+#include <tessera/util/base64.hpp>
+#include <tessera/util/file.hpp>
 
-#if REALM_ENABLE_SYNC
-#include <realm/object-store/sync/sync_manager.hpp>
-#include <realm/object-store/sync/sync_session.hpp>
-#include <realm/object-store/sync/sync_user.hpp>
-#include <realm/object-store/schema.hpp>
+#if TESSERA_ENABLE_SYNC
+#include <tessera/object-store/sync/sync_manager.hpp>
+#include <tessera/object-store/sync/sync_session.hpp>
+#include <tessera/object-store/sync/sync_user.hpp>
+#include <tessera/object-store/schema.hpp>
 #endif
 
 #include <cstdlib>
@@ -54,14 +54,14 @@ inline static int mkstemp(char* _template)
 #include <unistd.h>
 #endif
 
-#if REALM_HAVE_CLANG_FEATURE(thread_sanitizer)
+#if TESSERA_HAVE_CLANG_FEATURE(thread_sanitizer)
 #include <condition_variable>
 #include <functional>
 #include <thread>
 #include <map>
 #endif
 
-using namespace realm;
+using namespace tessera;
 
 TestFile::TestFile()
 {
@@ -123,7 +123,7 @@ DBOptions InMemoryTestFile::options() const
     return options;
 }
 
-#if REALM_ENABLE_SYNC
+#if TESSERA_ENABLE_SYNC
 
 static const std::string fake_refresh_token = ENCODE_FAKE_JWT("not_a_real_token");
 static const std::string fake_access_token = ENCODE_FAKE_JWT("also_not_real");
@@ -137,8 +137,8 @@ SyncTestFile::SyncTestFile(TestSyncManager& tsm, std::string name, std::string u
 
 SyncTestFile::SyncTestFile(std::shared_ptr<SyncUser> user, bson::Bson partition, util::Optional<Schema> schema)
 {
-    REALM_ASSERT(user);
-    sync_config = std::make_shared<realm::SyncConfig>(user, partition);
+    TESSERA_ASSERT(user);
+    sync_config = std::make_shared<tessera::SyncConfig>(user, partition);
     sync_config->stop_policy = SyncSessionStopPolicy::Immediately;
     sync_config->error_handler = [](std::shared_ptr<SyncSession>, SyncError error) {
         util::format(std::cerr, "An unexpected sync error was caught by the default SyncTestFile handler: '%1'\n",
@@ -151,11 +151,11 @@ SyncTestFile::SyncTestFile(std::shared_ptr<SyncUser> user, bson::Bson partition,
 }
 
 SyncTestFile::SyncTestFile(std::shared_ptr<SyncUser> user, bson::Bson partition,
-                           realm::util::Optional<realm::Schema> schema,
+                           tessera::util::Optional<tessera::Schema> schema,
                            std::function<SyncSessionErrorHandler>&& error_handler)
 {
-    REALM_ASSERT(user);
-    sync_config = std::make_shared<realm::SyncConfig>(user, partition);
+    TESSERA_ASSERT(user);
+    sync_config = std::make_shared<tessera::SyncConfig>(user, partition);
     sync_config->stop_policy = SyncSessionStopPolicy::Immediately;
     sync_config->error_handler = std::move(error_handler);
     schema_version = 1;
@@ -163,10 +163,10 @@ SyncTestFile::SyncTestFile(std::shared_ptr<SyncUser> user, bson::Bson partition,
     schema_mode = SchemaMode::AdditiveExplicit;
 }
 
-SyncTestFile::SyncTestFile(std::shared_ptr<realm::SyncUser> user, realm::Schema _schema, SyncConfig::FLXSyncEnabled)
+SyncTestFile::SyncTestFile(std::shared_ptr<tessera::SyncUser> user, tessera::Schema _schema, SyncConfig::FLXSyncEnabled)
 {
-    REALM_ASSERT(user);
-    sync_config = std::make_shared<realm::SyncConfig>(user, SyncConfig::FLXSyncEnabled{});
+    TESSERA_ASSERT(user);
+    sync_config = std::make_shared<tessera::SyncConfig>(user, SyncConfig::FLXSyncEnabled{});
     sync_config->stop_policy = SyncSessionStopPolicy::Immediately;
     sync_config->error_handler = [](std::shared_ptr<SyncSession> session, SyncError error) {
         util::format(std::cerr,
@@ -220,7 +220,7 @@ SyncServer::~SyncServer()
 
 void SyncServer::start()
 {
-    REALM_ASSERT(!m_thread.joinable());
+    TESSERA_ASSERT(!m_thread.joinable());
     m_thread = std::thread([this] {
         m_server.run();
     });
@@ -330,9 +330,9 @@ std::shared_ptr<TestUser> TestSyncManager::fake_user(const std::string& name)
     return user;
 }
 
-#endif // REALM_ENABLE_SYNC
+#endif // TESSERA_ENABLE_SYNC
 
-#if REALM_HAVE_CLANG_FEATURE(thread_sanitizer)
+#if TESSERA_HAVE_CLANG_FEATURE(thread_sanitizer)
 // MARK: - TsanNotifyWorker
 // A helper which synchronously runs on_change() on a fixed background thread
 // so that ThreadSanitizer can potentially detect issues
@@ -407,7 +407,7 @@ void advance_and_notify(Realm& realm)
     realm.notify();
 }
 
-#else // REALM_HAVE_CLANG_FEATURE(thread_sanitizer)
+#else // TESSERA_HAVE_CLANG_FEATURE(thread_sanitizer)
 
 void on_change_but_no_notify(Realm& realm)
 {

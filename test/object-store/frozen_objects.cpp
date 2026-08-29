@@ -22,28 +22,28 @@
 #include "util/test_file.hpp"
 #include "util/test_utils.hpp"
 
-#include <realm/object-store/binding_context.hpp>
-#include <realm/object-store/object_accessor.hpp>
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/object_store.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/results.hpp>
-#include <realm/object-store/schema.hpp>
-#include <realm/object-store/thread_safe_reference.hpp>
+#include <tessera/object-store/binding_context.hpp>
+#include <tessera/object-store/object_accessor.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/object_store.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/results.hpp>
+#include <tessera/object-store/schema.hpp>
+#include <tessera/object-store/thread_safe_reference.hpp>
 
-#include <realm/object-store/impl/object_accessor_impl.hpp>
-#include <realm/object-store/impl/realm_coordinator.hpp>
+#include <tessera/object-store/impl/object_accessor_impl.hpp>
+#include <tessera/object-store/impl/realm_coordinator.hpp>
 
-#include <realm/db.hpp>
-#include <realm/query_expression.hpp>
+#include <tessera/db.hpp>
+#include <tessera/query_expression.hpp>
 
-#if REALM_ENABLE_SYNC
-#include <realm/object-store/sync/async_open_task.hpp>
+#if TESSERA_ENABLE_SYNC
+#include <tessera/object-store/sync/async_open_task.hpp>
 #endif
 
-#include <realm/util/scope_exit.hpp>
+#include <tessera/util/scope_exit.hpp>
 
-using namespace realm;
+using namespace tessera;
 using util::any_cast;
 
 TEST_CASE("Construct frozen Realm", "[frozen]") {
@@ -390,7 +390,7 @@ TEST_CASE("Freeze Results", "[frozen]") {
         }
 
         // FIXME? the test itself passes but crashes on teardown in notifier thread
-        //       with realm::NoSuchTable on Query constructor through import_copy_of
+        //       with tessera::NoSuchTable on Query constructor through import_copy_of
         /* SECTION("Results on query") {
             results = Results(realm, table->column<Int>(value_col) > 0, DescriptorOrdering());
             do_remove = [&] {
@@ -478,7 +478,7 @@ TEST_CASE("Freeze List", "[frozen]") {
 
 TEST_CASE("Reclaim Frozen", "[frozen]") {
 
-#ifdef REALM_DEBUG
+#ifdef TESSERA_DEBUG
     constexpr int num_pending_transactions = 10;
     constexpr int num_iterations = 100;
     constexpr int num_objects = 5;
@@ -525,11 +525,11 @@ TEST_CASE("Reclaim Frozen", "[frozen]") {
         // refresh chosen transaction so as to trigger notifications.
         if (entry.realm && !entry.realm->is_frozen()) {
             auto& r = entry.realm;
-            REALM_ASSERT(r->is_in_read_transaction());
+            TESSERA_ASSERT(r->is_in_read_transaction());
             auto before = r->current_transaction_version();
             r->refresh();
             auto after = r->current_transaction_version();
-            REALM_ASSERT(before != after);
+            TESSERA_ASSERT(before != after);
         }
 
         // set up and save a new realm for later refresh, replacing the old one

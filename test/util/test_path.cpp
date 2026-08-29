@@ -21,15 +21,15 @@
 #include "misc.hpp"
 #include "spawned_process.hpp"
 
-#include <realm/util/file.hpp>
-#include <realm/db.hpp>
-#include <realm/history.hpp>
+#include <tessera/util/file.hpp>
+#include <tessera/db.hpp>
+#include <tessera/history.hpp>
 
 #include <algorithm>
 #include <string>
 
-#if REALM_PLATFORM_APPLE
-#include <realm/util/cf_ptr.hpp>
+#if TESSERA_PLATFORM_APPLE
+#include <tessera/util/cf_ptr.hpp>
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <sys/mount.h>
@@ -44,7 +44,7 @@
 #include <libgen.h>
 #endif
 
-using namespace realm::util;
+using namespace tessera::util;
 
 namespace {
 
@@ -72,7 +72,7 @@ std::string sanitize_for_file_name(const std::string& str)
 }
 #endif
 
-#if REALM_PLATFORM_APPLE
+#if TESSERA_PLATFORM_APPLE
 std::string url_to_path(CFURLRef url)
 {
     auto absolute = adoptCF(CFURLCopyAbsoluteURL(url));
@@ -83,7 +83,7 @@ std::string url_to_path(CFURLRef url)
     CFIndex bytes_written;
     CFStringGetBytes(path.get(), {0, length}, kCFStringEncodingUTF8, 0, false, reinterpret_cast<uint8_t*>(ret.data()),
                      ret.size(), &bytes_written);
-    REALM_ASSERT(bytes_written);
+    TESSERA_ASSERT(bytes_written);
     ret.resize(bytes_written);
     return ret;
 }
@@ -91,7 +91,7 @@ std::string url_to_path(CFURLRef url)
 
 } // anonymous namespace
 
-namespace realm::test_util {
+namespace tessera::test_util {
 
 void keep_test_files()
 {
@@ -110,11 +110,11 @@ std::string get_test_path_prefix()
 
 bool initialize_test_path(int argc, const char* argv[])
 {
-#if REALM_PLATFORM_APPLE
+#if TESSERA_PLATFORM_APPLE
     // On Apple platforms we copy everything into a read-only bundle containing
     // the test executable and resource files, and have to create test files in
     // a temporary directory.
-#if REALM_APPLE_DEVICE || TARGET_OS_SIMULATOR
+#if TESSERA_APPLE_DEVICE || TARGET_OS_SIMULATOR
     auto home = adoptCF(CFCopyHomeDirectoryURL());
     g_path_prefix = url_to_path(home.get()) + "Documents/";
 #else
@@ -164,13 +164,13 @@ bool initialize_test_path(int argc, const char* argv[])
 
 bool test_dir_is_exfat()
 {
-#if REALM_PLATFORM_APPLE
+#if TESSERA_PLATFORM_APPLE
     if (test_util::get_test_path_prefix().empty())
         return false;
 
     struct statfs fsbuf;
     int ret = statfs(test_util::get_test_path_prefix().c_str(), &fsbuf);
-    REALM_ASSERT_RELEASE(ret == 0);
+    TESSERA_ASSERT_RELEASE(ret == 0);
     // The documentation and headers helpfully don't list any of the values of
     // f_type or provide constants for them
     std::string fs_typename = fsbuf.f_fstypename;
@@ -324,7 +324,7 @@ std::string TestDirNameGenerator::next()
 std::shared_ptr<DB> get_test_db(const std::string& path, const char* crypt_key)
 {
     const char* str = getenv("UNITTEST_LOG_LEVEL");
-    realm::util::Logger::Level core_log_level = realm::util::Logger::Level::off;
+    tessera::util::Logger::Level core_log_level = tessera::util::Logger::Level::off;
     if (str && strlen(str) != 0) {
         std::istringstream in(str);
         in.imbue(std::locale::classic());
@@ -338,4 +338,4 @@ std::shared_ptr<DB> get_test_db(const std::string& path, const char* crypt_key)
     return DB::create(make_in_realm_history(), path, options);
 }
 
-} // namespace realm::test_util
+} // namespace tessera::test_util

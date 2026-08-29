@@ -16,16 +16,16 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_UTIL_CRYPT_KEY_HPP
-#define REALM_TEST_UTIL_CRYPT_KEY_HPP
+#ifndef TESSERA_TEST_UTIL_CRYPT_KEY_HPP
+#define TESSERA_TEST_UTIL_CRYPT_KEY_HPP
 
 #include <string>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 /// Returns a non-null encryption key if encryption is enabled at compile-time
-/// (REALM_ENABLE_ENCRYPTION), and either \a always is true or global mode
+/// (TESSERA_ENABLE_ENCRYPTION), and either \a always is true or global mode
 /// "always encrypt" is enabled. Otherwise it returns null. The global mode
 /// "always encrypt" can be enabled by calling always_encrypt(), but pay
 /// attention to the rules governing its use.
@@ -50,6 +50,6 @@ void enable_always_encrypt();
 
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_UTIL_CRYPT_KEY_HPP
+#endif // TESSERA_TEST_UTIL_CRYPT_KEY_HPP

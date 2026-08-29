@@ -21,16 +21,16 @@
 #include <memory>
 #include <iostream>
 
-#include <realm.hpp>
+#include <tessera.hpp>
 
 #include "../util/timer.hpp"
 #include "../util/random.hpp"
 #include "../util/benchmark_results.hpp"
 #include "../util/test_path.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 using OrderVec = std::vector<ObjKey>;
 
@@ -116,7 +116,7 @@ int benchmark_crud_main()
     int_fast64_t dummy = 0;
 
     int max_lead_text_size = 26;
-    std::string results_file_stem = realm::test_util::get_test_path_prefix();
+    std::string results_file_stem = tessera::test_util::get_test_path_prefix();
     std::cout << "Results path: " << results_file_stem << std::endl;
     results_file_stem += "results";
     BenchmarkResults results(max_lead_text_size, "benchmark-crud", results_file_stem.c_str());

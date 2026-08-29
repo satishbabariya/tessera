@@ -23,29 +23,29 @@
 #include "util/test_file.hpp"
 #include "util/test_utils.hpp"
 
-#include <realm/object-store/impl/object_accessor_impl.hpp>
-#include <realm/object-store/impl/realm_coordinator.hpp>
-#include <realm/object-store/impl/results_notifier.hpp>
-#include <realm/object-store/binding_context.hpp>
-#include <realm/object-store/keypath_helpers.hpp>
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/results.hpp>
-#include <realm/object-store/schema.hpp>
-#include <realm/object-store/util/scheduler.hpp>
+#include <tessera/object-store/impl/object_accessor_impl.hpp>
+#include <tessera/object-store/impl/realm_coordinator.hpp>
+#include <tessera/object-store/impl/results_notifier.hpp>
+#include <tessera/object-store/binding_context.hpp>
+#include <tessera/object-store/keypath_helpers.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/results.hpp>
+#include <tessera/object-store/schema.hpp>
+#include <tessera/object-store/util/scheduler.hpp>
 
-#include <realm/db.hpp>
-#include <realm/group.hpp>
-#include <realm/query_expression.hpp>
+#include <tessera/db.hpp>
+#include <tessera/group.hpp>
+#include <tessera/query_expression.hpp>
 
-#if REALM_ENABLE_SYNC
-#include <realm/object-store/sync/sync_manager.hpp>
-#include <realm/object-store/sync/sync_session.hpp>
+#if TESSERA_ENABLE_SYNC
+#include <tessera/object-store/sync/sync_manager.hpp>
+#include <tessera/object-store/sync/sync_session.hpp>
 #endif
 
 #include <random>
 
-namespace realm {
+namespace tessera {
 class TestHelper {
 public:
     static DBRef& get_shared_group(SharedRealm const& shared_realm)
@@ -53,26 +53,26 @@ public:
         return Realm::Internal::get_db(*shared_realm);
     }
 };
-} // namespace realm
+} // namespace tessera
 
 namespace Catch {
 template <>
 struct StringMaker<std::any> {
     static std::string convert(std::any const& any)
     {
-        return realm::util::format("Any<%1>", any.type().name());
+        return tessera::util::format("Any<%1>", any.type().name());
     }
 };
 template <>
-struct StringMaker<realm::util::Optional<std::any>> {
-    static std::string convert(realm::util::Optional<std::any> any)
+struct StringMaker<tessera::util::Optional<std::any>> {
+    static std::string convert(tessera::util::Optional<std::any> any)
     {
-        return any ? realm::util::format("some(Any<%1>)", any->type().name()) : "none";
+        return any ? tessera::util::format("some(Any<%1>)", any->type().name()) : "none";
     }
 };
 } // namespace Catch
 
-using namespace realm;
+using namespace tessera;
 using namespace std::string_literals;
 using util::any_cast;
 
@@ -85,7 +85,7 @@ struct TestContext : CppContext {
     std::map<std::string, AnyDict> defaults;
 
     using CppContext::CppContext;
-    TestContext(TestContext& parent, realm::Obj& obj, realm::Property const& prop)
+    TestContext(TestContext& parent, tessera::Obj& obj, tessera::Property const& prop)
         : CppContext(parent, obj, prop)
         , defaults(parent.defaults)
     {
@@ -1422,7 +1422,7 @@ TEST_CASE("notifications: TableView delivery", "[notifications]") {
 }
 
 
-#if REALM_ENABLE_SYNC
+#if TESSERA_ENABLE_SYNC
 TEST_CASE("notifications: sync", "[sync][pbs][notifications]") {
     _impl::RealmCoordinator::assert_no_open_realms();
 
@@ -4279,12 +4279,12 @@ TEST_CASE("results: list of primitives indexes", "[results]") {
             REQUIRE(results.index_of(Mixed(int64_t(i))) == i);
     }
     SECTION("index_of(null)") {
-        REQUIRE(results.index_of(Mixed{}) == realm::not_found);
+        REQUIRE(results.index_of(Mixed{}) == tessera::not_found);
     }
     SECTION("index_of() with type checking") {
         SECTION("double does not match") {
             for (size_t i = 0; i < num_items; ++i)
-                REQUIRE(results.index_of(Mixed(double(i))) == realm::not_found);
+                REQUIRE(results.index_of(Mixed(double(i))) == tessera::not_found);
         }
     }
 }
@@ -4318,10 +4318,10 @@ TEST_CASE("results: dictionary keys", "[results][dictionary]") {
         }
     }
     SECTION("index_of() non existant key") {
-        REQUIRE(results.index_of(Mixed("foo")) == realm::npos);
+        REQUIRE(results.index_of(Mixed("foo")) == tessera::npos);
     }
     SECTION("index_of() wrong key type") {
-        REQUIRE(results.index_of(Mixed(int64_t(0))) == realm::npos);
+        REQUIRE(results.index_of(Mixed(int64_t(0))) == tessera::npos);
     }
 }
 
@@ -4755,7 +4755,7 @@ TEST_CASE("results: nullable list of primitives", "[results]") {
     auto obj = table->create_object_with_primary_key(1);
     List nullable_decimal_list(realm, obj, nullable_decimal_col);
     List non_nullable_decimal_list(realm, obj, non_nullable_decimal_col);
-    nullable_decimal_list.add(Decimal128{realm::null()});
+    nullable_decimal_list.add(Decimal128{tessera::null()});
     non_nullable_decimal_list.add(Decimal128{});
     List nullable_oid_list(realm, obj, nullable_oid_col);
     List non_nullable_oid_list(realm, obj, non_nullable_oid_col);
@@ -4769,7 +4769,7 @@ TEST_CASE("results: nullable list of primitives", "[results]") {
         Results r_non_nullable = non_nullable_decimal_list.as_results();
         CHECK(r_nullable.size() == 1);
         CHECK(r_non_nullable.size() == 1);
-        CHECK(r_nullable.get<Decimal128>(0) == Decimal128(realm::null()));
+        CHECK(r_nullable.get<Decimal128>(0) == Decimal128(tessera::null()));
         CHECK(r_non_nullable.get<Decimal128>(0) == Decimal128(0));
     }
 

@@ -18,13 +18,13 @@
 
 #include <catch2/catch_all.hpp>
 
-#include <realm/object-store/impl/collection_notifier.hpp>
+#include <tessera/object-store/impl/collection_notifier.hpp>
 
 #include "util/index_helpers.hpp"
 
 #include <limits>
 
-using namespace realm;
+using namespace tessera;
 
 TEST_CASE("collection_change: insert()", "[collection change]") {
     _impl::CollectionChangeBuilder c;

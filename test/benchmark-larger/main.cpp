@@ -21,8 +21,8 @@
 #include <memory>
 #include <iostream>
 
-#include <realm.hpp>
-#include <realm/disable_sync_to_disk.hpp>
+#include <tessera.hpp>
+#include <tessera/disable_sync_to_disk.hpp>
 
 #include "../util/timer.hpp"
 #include "../util/random.hpp"
@@ -30,12 +30,12 @@
 #include "../test.hpp"
 #include "../test_table_helper.hpp"
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 using unit_test::TestContext;
 
-#ifdef REALM_CLUSTER_IF
+#ifdef TESSERA_CLUSTER_IF
 using OrderVec = std::vector<ObjKey>;
 #else
 using OrderVec = std::vector<size_t>;
@@ -54,7 +54,7 @@ int main()
     auto run_steps = [&](int num_steps, int step_size, step_type st, const char* step_layout,
                          std::vector<int> rw_probes = {}) {
         bool test_rw = rw_probes.size() != 0;
-        TestPathGuard guard("benchmark-insertion.realm");
+        TestPathGuard guard("benchmark-insertion.tess");
         std::string path(guard);
         auto history = make_in_realm_history();
         DBOptions options;
@@ -210,7 +210,7 @@ int main()
         }
     };
 
-    REALM_ASSERT_RELEASE(realm::get_disable_sync_to_disk() == false);
+    TESSERA_ASSERT_RELEASE(tessera::get_disable_sync_to_disk() == false);
     // insertion tests
     run_type(DIRECT);
     run_type(INDEXED_BEST);

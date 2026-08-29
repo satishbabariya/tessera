@@ -16,14 +16,14 @@
  *
  **************************************************************************/
 
-#include <realm/global_key.hpp>
+#include <tessera/global_key.hpp>
 
 #include "test.hpp"
 
-#include <realm/mixed.hpp>
-#include <realm/string_data.hpp>
+#include <tessera/mixed.hpp>
+#include <tessera/string_data.hpp>
 
-using namespace realm;
+using namespace tessera;
 
 TEST(GlobalKey_ToString)
 {

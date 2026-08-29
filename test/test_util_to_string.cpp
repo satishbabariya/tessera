@@ -19,15 +19,15 @@
 #include "testsettings.hpp"
 #ifdef TEST_UTIL_TO_STRING
 
-#include <realm/util/to_string.hpp>
+#include <tessera/util/to_string.hpp>
 
-#include <realm/column_type.hpp>
-#include <realm/data_type.hpp>
+#include <tessera/column_type.hpp>
+#include <tessera/data_type.hpp>
 
 #include "test.hpp"
 
-using namespace realm;
-using namespace realm::util;
+using namespace tessera;
+using namespace tessera::util;
 
 // Test independence and thread-safety
 // -----------------------------------
@@ -164,7 +164,7 @@ struct ExplicitlyConvertibleToPrintableAndStreamable {
         return "conversion to printable";
     }
 };
-std::ostream& operator<<(std::ostream&, const ExplicitlyConvertibleToPrintableAndStreamable&) REALM_UNUSED;
+std::ostream& operator<<(std::ostream&, const ExplicitlyConvertibleToPrintableAndStreamable&) TESSERA_UNUSED;
 std::ostream& operator<<(std::ostream&, const ExplicitlyConvertibleToPrintableAndStreamable&)
 {
     throw std::runtime_error("called stream operator instead of conversion");

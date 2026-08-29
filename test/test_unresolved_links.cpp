@@ -19,17 +19,17 @@
 #include "testsettings.hpp"
 #ifdef TEST_LINKS
 
-#include <realm.hpp>
-#include <realm/util/file.hpp>
-#include <realm/array_key.hpp>
+#include <tessera.hpp>
+#include <tessera/util/file.hpp>
+#include <tessera/array_key.hpp>
 
 #include "test.hpp"
 
 #include <chrono>
 
-using namespace realm;
-using namespace realm::util;
-using namespace realm::test_util;
+using namespace tessera;
+using namespace tessera::util;
+using namespace tessera::test_util;
 
 // #include <valgrind/callgrind.h>
 
@@ -264,7 +264,7 @@ TEST(Unresolved_LinkList)
     CHECK_EQUAL(stock2.size(), 3);
 
     stock1.add(mercedes.get_key());
-    // If REALM_MAX_BPNODE_SIZE is 4, we test that context flag is copied over when replacing root
+    // If TESSERA_MAX_BPNODE_SIZE is 4, we test that context flag is copied over when replacing root
     CHECK_EQUAL(stock1.size(), 4);
     CHECK_EQUAL(stock2.size(), 4);
 
@@ -329,7 +329,7 @@ TEST(Unresolved_LinkSet)
     check_sorted(stock1, {skoda, volvo, bmw});
 
     stock1.insert(mercedes.get_key());
-    // If REALM_MAX_BPNODE_SIZE is 4, we test that context flag is copied over when replacing root
+    // If TESSERA_MAX_BPNODE_SIZE is 4, we test that context flag is copied over when replacing root
     CHECK_EQUAL(stock1.size(), 4);
     CHECK_EQUAL(stock2.size(), 4);
     check_sorted(stock1, {skoda, volvo, bmw, mercedes});
@@ -381,7 +381,7 @@ TEST(Unresolved_Dictionary)
     CHECK_EQUAL(stock2.get_any(1), Mixed());
 
     stock1.insert("5", mercedes);
-    // If REALM_MAX_BPNODE_SIZE is 4, we test that context flag is copied over when replacing root
+    // If TESSERA_MAX_BPNODE_SIZE is 4, we test that context flag is copied over when replacing root
     CHECK_EQUAL(stock1.size(), 5);
     CHECK_EQUAL(stock2.size(), 5);
 

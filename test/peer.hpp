@@ -16,23 +16,23 @@
  *
  **************************************************************************/
 
-#ifndef REALM_TEST_PEER_HPP
-#define REALM_TEST_PEER_HPP
+#ifndef TESSERA_TEST_PEER_HPP
+#define TESSERA_TEST_PEER_HPP
 
 #include <fstream>
 
-#include <realm/db.hpp>
-#include <realm/replication.hpp>
+#include <tessera/db.hpp>
+#include <tessera/replication.hpp>
 
-#include <realm/sync/history.hpp>
-#include <realm/sync/protocol.hpp>
-#include <realm/sync/transform.hpp>
-#include <realm/sync/instruction_replication.hpp>
-#include <realm/sync/instruction_applier.hpp>
-#include <realm/sync/changeset.hpp>
-#include <realm/sync/changeset_parser.hpp>
-#include <realm/sync/noinst/protocol_codec.hpp>
-#include <realm/util/file.hpp>
+#include <tessera/sync/history.hpp>
+#include <tessera/sync/protocol.hpp>
+#include <tessera/sync/transform.hpp>
+#include <tessera/sync/instruction_replication.hpp>
+#include <tessera/sync/instruction_applier.hpp>
+#include <tessera/sync/changeset.hpp>
+#include <tessera/sync/changeset_parser.hpp>
+#include <tessera/sync/noinst/protocol_codec.hpp>
+#include <tessera/util/file.hpp>
 
 #include "util/test_path.hpp"
 #include "util/compare_groups.hpp"
@@ -41,13 +41,13 @@
 #include <fstream>
 #include <numeric>
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
-using realm::sync::HistoryEntry;
-using realm::sync::RemoteChangeset;
-using realm::sync::SyncReplication;
-using realm::sync::TransformHistory;
+using tessera::sync::HistoryEntry;
+using tessera::sync::RemoteChangeset;
+using tessera::sync::SyncReplication;
+using tessera::sync::TransformHistory;
 
 
 class ShortCircuitHistory : public SyncReplication {
@@ -82,7 +82,7 @@ public:
 
     version_type prepare_changeset(const char* data, std::size_t size, version_type orig_version) override
     {
-        REALM_ASSERT(orig_version == s_initial_version + m_core_entries.size());
+        TESSERA_ASSERT(orig_version == s_initial_version + m_core_entries.size());
         version_type new_version = orig_version + 1;
         m_incoming_core_changeset.reset(new char[size]); // Throws
         std::copy(data, data + size, m_incoming_core_changeset.get());
@@ -143,13 +143,13 @@ public:
 
     bool is_upgradable_history_schema(int) const noexcept override
     {
-        REALM_ASSERT(false);
+        TESSERA_ASSERT(false);
         return false;
     }
 
     void upgrade_history_schema(int) override
     {
-        REALM_ASSERT(false);
+        TESSERA_ASSERT(false);
     }
 
     _impl::History* _get_history_write() override
@@ -178,11 +178,11 @@ public:
                 bool is_server = (m_local_file_ident == servers_file_ident());
                 bool from_remote;
                 if (is_server) {
-                    REALM_ASSERT(remote_file_ident != servers_file_ident());
+                    TESSERA_ASSERT(remote_file_ident != servers_file_ident());
                     from_remote = (entry.origin_file_ident == remote_file_ident);
                 }
                 else {
-                    REALM_ASSERT(remote_file_ident == servers_file_ident());
+                    TESSERA_ASSERT(remote_file_ident == servers_file_ident());
                     from_remote = (entry.origin_file_ident != 0);
                 }
                 if (!from_remote)
@@ -247,7 +247,7 @@ private:
 
         void get_changesets(version_type, version_type, BinaryIterator*) const noexcept override final
         {
-            REALM_ASSERT(false);
+            TESSERA_ASSERT(false);
         }
     };
     friend struct History;
@@ -451,18 +451,18 @@ inline auto ShortCircuitHistory::integrate_remote_changesets(file_ident_type rem
                                                              size_t num_changesets, util::Logger& logger)
     -> version_type
 {
-    REALM_ASSERT(num_changesets != 0);
+    TESSERA_ASSERT(num_changesets != 0);
 
     TempDisableReplication tdr(sg);
     TransactionRef transact = sg.start_write(); // Throws
     version_type local_version = transact->get_version_of_current_transaction().version;
-    REALM_ASSERT(local_version == s_initial_version + m_entries.size());
+    TESSERA_ASSERT(local_version == s_initial_version + m_entries.size());
 
     std::vector<Changeset> changesets;
     changesets.resize(num_changesets);
 
     for (size_t i = 0; i < num_changesets; ++i) {
-        REALM_ASSERT(incoming_changesets[i].last_integrated_local_version <= local_version);
+        TESSERA_ASSERT(incoming_changesets[i].last_integrated_local_version <= local_version);
         sync::parse_remote_changeset(incoming_changesets[i], changesets[i]); // Throws
     }
 
@@ -491,7 +491,7 @@ inline auto ShortCircuitHistory::integrate_remote_changesets(file_ident_type rem
     entry.remote_version = last_changeset.version;
     entry.changeset = BinaryData(assembled_transformed_changeset.data(), assembled_transformed_changeset.size());
     m_entries.push_back(entry); // Throws
-    REALM_ASSERT(m_entries.size() == m_core_entries.size() + 1);
+    TESSERA_ASSERT(m_entries.size() == m_core_entries.size() + 1);
     m_entries_data_owner.push_back(
         assembled_transformed_changeset.release().release()); // Ownership successfully handed over
     return transact->commit();                                // Throws
@@ -523,7 +523,7 @@ public:
     {
         file_ident_type client_file_ident = ShortCircuitHistory::servers_file_ident();
         std::ostringstream out;
-        out << ".server" << path_add_on << ".realm";
+        out << ".server" << path_add_on << ".tess";
         std::string suffix = out.str();
         std::string test_path = get_test_path(test_context.get_test_name(), suffix);
         return std::unique_ptr<Peer>(
@@ -536,10 +536,10 @@ public:
                                                TestDirNameGenerator* changeset_dump_dir_gen,
                                                const std::string path_add_on = "")
     {
-        REALM_ASSERT(client_file_ident != 0);
-        REALM_ASSERT(client_file_ident != ShortCircuitHistory::servers_file_ident());
+        TESSERA_ASSERT(client_file_ident != 0);
+        TESSERA_ASSERT(client_file_ident != ShortCircuitHistory::servers_file_ident());
         std::ostringstream out;
-        out << ".client_" << client_file_ident << path_add_on << ".realm";
+        out << ".client_" << client_file_ident << path_add_on << ".tess";
         std::string suffix = out.str();
         std::string test_path = get_test_path(test_context.get_test_name(), suffix);
         return std::unique_ptr<Peer>(
@@ -570,7 +570,7 @@ public:
 
     TableRef table(StringData name)
     {
-        REALM_ASSERT(group); // Must be in transaction
+        TESSERA_ASSERT(group); // Must be in transaction
         return group->get_table(name);
     }
 
@@ -598,11 +598,11 @@ public:
         if (num_changesets == 0)
             return false; // Nothing to do.
 
-        REALM_ASSERT(local_file_ident != remote.local_file_ident);
+        TESSERA_ASSERT(local_file_ident != remote.local_file_ident);
         // Star shaped topology required
-        REALM_ASSERT((local_file_ident == ShortCircuitHistory::servers_file_ident()) !=
+        TESSERA_ASSERT((local_file_ident == ShortCircuitHistory::servers_file_ident()) !=
                      (remote.local_file_ident == ShortCircuitHistory::servers_file_ident()));
-        REALM_ASSERT(!group); // A transaction must not be in progress
+        TESSERA_ASSERT(!group); // A transaction must not be in progress
         version_type& last_remote_version = last_remote_versions_integrated[remote.local_file_ident];
         if (last_remote_version == 0)
             last_remote_version = 1;
@@ -627,9 +627,9 @@ public:
 
     size_t count_outstanding_changesets_from(const Peer& remote) const
     {
-        REALM_ASSERT(local_file_ident != remote.local_file_ident);
+        TESSERA_ASSERT(local_file_ident != remote.local_file_ident);
         // Star shaped topology required
-        REALM_ASSERT((local_file_ident == ShortCircuitHistory::servers_file_ident()) !=
+        TESSERA_ASSERT((local_file_ident == ShortCircuitHistory::servers_file_ident()) !=
                      (remote.local_file_ident == ShortCircuitHistory::servers_file_ident()));
         version_type last_remote_version = 0;
         auto i = last_remote_versions_integrated.find(remote.local_file_ident);
@@ -654,7 +654,7 @@ private:
                                         RemoteChangeset* out_changesets, size_t num_changesets) const
     {
         // At least one transaction can be assumed to have been performed
-        REALM_ASSERT(current_version != 0);
+        TESSERA_ASSERT(current_version != 0);
 
         // Find next changeset not received from the remote
         version_type version = last_version_integrated_by_remote + 1;
@@ -773,7 +773,7 @@ struct Associativity {
             : test_context(test_context)
             , sync_order(std::move(sync_order))
         {
-            REALM_ASSERT(this->sync_order.size() == num_clients);
+            TESSERA_ASSERT(this->sync_order.size() == num_clients);
             server = Peer::create_server(test_context, dump_dir_gen, path_add_on);
             for (size_t i = 0; i < num_clients; ++i) {
                 clients.push_back(Peer::create_client(test_context, 2 + i, dump_dir_gen, path_add_on));
@@ -823,7 +823,7 @@ struct Associativity {
         , num_clients(num_clients)
         , dump_dir_gen(std::move(dump_dir_gen))
     {
-        REALM_ASSERT(num_clients != 0);
+        TESSERA_ASSERT(num_clients != 0);
     }
 
     template <class F>
@@ -870,6 +870,6 @@ struct Associativity {
 };
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera
 
-#endif // REALM_TEST_PEER_HPP
+#endif // TESSERA_TEST_PEER_HPP

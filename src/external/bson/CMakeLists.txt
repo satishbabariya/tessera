@@ -50,7 +50,7 @@ configure_file (
 )
 
 add_library(Bson STATIC ${BSON_SRC})
-add_library(Realm::Bson ALIAS Bson)
+add_library(Tessera::Bson ALIAS Bson)
 target_compile_definitions(Bson PRIVATE _GNU_SOURCE _XOPEN_SOURCE=700 BSON_COMPILATION)
 if (CMAKE_SYSTEM_NAME MATCHES "Darwin")
   target_compile_definitions(Bson PRIVATE _DARWIN_C_SOURCE)

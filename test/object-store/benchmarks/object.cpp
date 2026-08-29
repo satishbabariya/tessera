@@ -22,30 +22,30 @@
 #include <util/test_file.hpp>
 #include <util/test_utils.hpp>
 
-#include <realm/db.hpp>
-#include <realm/query_expression.hpp>
+#include <tessera/db.hpp>
+#include <tessera/query_expression.hpp>
 
-#include <realm/object-store/binding_context.hpp>
-#include <realm/object-store/object_schema.hpp>
-#include <realm/object-store/property.hpp>
-#include <realm/object-store/results.hpp>
-#include <realm/object-store/schema.hpp>
-#include <realm/object-store/impl/object_accessor_impl.hpp>
-#include <realm/object-store/impl/realm_coordinator.hpp>
-#include <realm/object-store/util/scheduler.hpp>
+#include <tessera/object-store/binding_context.hpp>
+#include <tessera/object-store/object_schema.hpp>
+#include <tessera/object-store/property.hpp>
+#include <tessera/object-store/results.hpp>
+#include <tessera/object-store/schema.hpp>
+#include <tessera/object-store/impl/object_accessor_impl.hpp>
+#include <tessera/object-store/impl/realm_coordinator.hpp>
+#include <tessera/object-store/util/scheduler.hpp>
 
 #include <memory>
 #include <random>
 #include <vector>
 
-using namespace realm;
+using namespace tessera;
 using std::any;
 
 struct TestContext : CppContext {
     std::map<std::string, AnyDict> defaults;
 
     using CppContext::CppContext;
-    TestContext(TestContext& parent, Obj obj, realm::Property const& prop)
+    TestContext(TestContext& parent, Obj obj, tessera::Property const& prop)
         : CppContext(parent, obj, prop)
         , defaults(parent.defaults)
     {

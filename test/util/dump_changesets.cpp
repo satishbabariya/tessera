@@ -4,12 +4,12 @@
 #include <sstream>
 #include <utility>
 
-#include <realm/string_data.hpp>
-#include <realm/util/file.hpp>
+#include <tessera/string_data.hpp>
+#include <tessera/util/file.hpp>
 
 #include "unit_test.hpp"
 
-namespace realm {
+namespace tessera {
 namespace test_util {
 
 std::unique_ptr<TestDirNameGenerator> get_changeset_dump_dir_generator(const unit_test::TestContext& test_context,
@@ -34,4 +34,4 @@ std::unique_ptr<TestDirNameGenerator> get_changeset_dump_dir_generator(const uni
 }
 
 } // namespace test_util
-} // namespace realm
+} // namespace tessera

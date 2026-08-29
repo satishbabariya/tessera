@@ -1,12 +1,12 @@
-#ifndef REALM_TEST_UTIL_COMPARE_GROUPS_HPP
-#define REALM_TEST_UTIL_COMPARE_GROUPS_HPP
+#ifndef TESSERA_TEST_UTIL_COMPARE_GROUPS_HPP
+#define TESSERA_TEST_UTIL_COMPARE_GROUPS_HPP
 
-#include <realm/util/functional.hpp>
-#include <realm/util/logger.hpp>
-#include <realm/transaction.hpp>
-#include <realm/table.hpp>
+#include <tessera/util/functional.hpp>
+#include <tessera/util/logger.hpp>
+#include <tessera/transaction.hpp>
+#include <tessera/table.hpp>
 
-namespace realm::test_util {
+namespace tessera::test_util {
 
 bool compare_tables(const Table& table_1, const Table& table_2, util::Logger&);
 
@@ -32,6 +32,6 @@ inline bool compare_groups(const Transaction& group_1, const Transaction& group_
         logger);
 }
 
-} // namespace realm::test_util
+} // namespace tessera::test_util
 
-#endif // REALM_TEST_UTIL_COMPARE_GROUPS_HPP
+#endif // TESSERA_TEST_UTIL_COMPARE_GROUPS_HPP

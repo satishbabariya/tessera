@@ -19,7 +19,7 @@
 #ifndef TEST_TEST_TABLE_HELPER_HPP_
 #define TEST_TEST_TABLE_HELPER_HPP_
 
-namespace realm {
+namespace tessera {
 
 class ObjKeyVector : public std::vector<ObjKey> {
 public:
@@ -32,7 +32,7 @@ public:
     }
 };
 
-} // namespace realm
+} // namespace tessera
 
 enum Days { Mon, Tue, Wed, Thu, Fri, Sat, Sun };
 
