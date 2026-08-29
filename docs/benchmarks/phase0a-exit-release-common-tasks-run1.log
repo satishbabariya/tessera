@@ -1,0 +1,246 @@
+Results path: /private/tmp/claude-503/-Users-satishbabariya-Documents-reimagine/dcfaa602-c670-4af2-8cfe-80552136b6b8/scratchpad/tessera-tmp/realm_vJVEaH/
+Req runs: 1000  EmptyCommit (Full   , EncryptionOff):       min    225us     max    782us     median    264us     avg    301us     stddev     83us
+Req runs: 1000  EmptyCommit (Full   , EncryptionOn):        min    251us     max   1.60ms     median    345us     avg    361us     stddev    102us
+
+Req runs: 1000  EmptyCommit (MemOnly, EncryptionOff):       min     22us     max     36us     median     23us     avg     24us     stddev      2us
+
+Req runs:   90  NonInitiatorOpen (Full   , EncryptionOff):   min  21.67ms     max  26.61ms     median  23.55ms     avg  23.70ms     stddev    978us
+Req runs:   90  NonInitiatorOpen (Full   , EncryptionOn):    min  19.09ms     max  43.77ms     median  23.66ms     avg  23.34ms     stddev   3.04ms
+
+Req runs:  131  InitiatorOpen (Full   , EncryptionOff):      min  20.68ms     max  42.41ms     median  25.73ms     avg  27.18ms     stddev   3.82ms
+Req runs:   68  InitiatorOpen (Full   , EncryptionOn):       min  28.09ms     max  36.77ms     median  31.03ms     avg  31.29ms     stddev   1.89ms
+
+Req runs: 1000  AddTable (Full   , EncryptionOff):           min    229us     max   1.58ms     median    267us     avg    300us     stddev     83us
+Req runs: 1000  AddTable (Full   , EncryptionOn):            min    242us     max    798us     median    306us     avg    314us     stddev     63us
+
+Req runs: 1000  AddTable (MemOnly, EncryptionOff):           min     26us     max    185us     median     38us     avg     39us     stddev      8us
+
+Req runs:   10  IterateTableByIndexNoPrimaryKey (MemOnly, EncryptionOff):   min  40.38ms     max  48.96ms     median  41.03ms     avg  41.89ms     stddev   2.57ms
+
+Req runs:   12  IterateTableByIndexIntPrimaryKey (MemOnly, EncryptionOff):   min  38.31ms     max  44.89ms     median  42.88ms     avg  41.89ms     stddev   2.48ms
+
+Req runs:   12  IterateTableByIndexStringPrimaryKey (MemOnly, EncryptionOff):   min  36.64ms     max  40.22ms     median  39.26ms     avg  38.93ms     stddev   1.31ms
+
+Req runs:  966  IterateTableByIterator (MemOnly, EncryptionOff):                min    485us     max    559us     median    513us     avg    509us     stddev     11us
+
+Req runs:  647  IterateTableByIteratorIndex (MemOnly, EncryptionOff):           min    746us     max    918us     median    773us     avg    773us     stddev     19us
+
+Req runs:    9  Sort (MemOnly, EncryptionOff):                                  min  50.17ms     max  51.54ms     median  51.07ms     avg  51.02ms     stddev    429us
+
+Req runs:   23  SortInt (MemOnly, EncryptionOff):                               min  20.93ms     max  21.45ms     median  21.20ms     avg  21.22ms     stddev    132us
+
+Req runs:    5  SortIntList (MemOnly, EncryptionOff):                           min  95.59ms     max 130.01ms     median 114.48ms     avg 115.20ms     stddev  13.83ms
+
+Req runs:   28  SortIntDictionary (MemOnly, EncryptionOff):                     min  17.41ms     max  18.40ms     median  17.79ms     avg  17.80ms     stddev    257us
+
+Req runs:  764  SortThenLimit (MemOnly, EncryptionOff):                         min    638us     max   1.07ms     median    749us     avg    767us     stddev     97us
+
+Req runs:  113  UnorderedTableViewClear (MemOnly, EncryptionOff):               min   4.22ms     max   4.85ms     median   4.39ms     avg   4.40ms     stddev     79us
+
+Req runs:   54  UnorderedTableViewClearIndexed (MemOnly, EncryptionOff):        min   8.34ms     max  10.72ms     median   9.13ms     avg   9.20ms     stddev    575us
+
+Req runs:  205  GetString (MemOnly, EncryptionOff):                             min   2.32ms     max   2.64ms     median   2.39ms     avg   2.43ms     stddev     81us
+
+Req runs:   75  SetString (MemOnly, EncryptionOff):                             min   6.40ms     max   6.71ms     median   6.60ms     avg   6.59ms     stddev     59us
+
+Req runs:   26  GetLinkList (MemOnly, EncryptionOff):                           min  18.46ms     max  19.71ms     median  19.08ms     avg  19.10ms     stddev    291us
+
+Req runs:  593  Insert (MemOnly, EncryptionOff):                                min    781us     max   4.66ms     median    833us     avg    843us     stddev    177us
+
+Req runs:   17  CreateIndex (Full   , EncryptionOff):                           min  27.49ms     max  29.10ms     median  27.72ms     avg  27.85ms     stddev    381us
+Req runs:   17  CreateIndex (Full   , EncryptionOn):                            min  27.90ms     max  28.61ms     median  28.20ms     avg  28.20ms     stddev    161us
+
+Req runs:   18  CreateIndex (MemOnly, EncryptionOff):                           min  27.39ms     max  28.06ms     median  27.74ms     avg  27.75ms     stddev    214us
+
+Req runs:  214  GetLongString (MemOnly, EncryptionOff):                         min   2.23ms     max   2.46ms     median   2.35ms     avg   2.34ms     stddev     39us
+
+Req runs:   40  SetLongString (MemOnly, EncryptionOff):                         min  12.20ms     max  12.68ms     median  12.42ms     avg  12.42ms     stddev    114us
+
+Req runs: 1000  FindAllStringFewDupes (MemOnly, EncryptionOff):                 min      0us     max      0us     median      0us     avg      0us     stddev      0us
+
+Req runs: 1000  FindAllStringManyDupes (MemOnly, EncryptionOff):                min      6us     max     12us     median      6us     avg      6us     stddev      0us
+
+Req runs:  909  FindAllFulltextStringManyDupes (MemOnly, EncryptionOff):        min    491us     max    670us     median    563us     avg    560us     stddev     27us
+
+Req runs: 1000  FindFirstStringFewDupes (MemOnly, EncryptionOff):               min     43us     max     69us     median     47us     avg     47us     stddev      2us
+
+Req runs: 1000  FindFirstStringManyDupes (MemOnly, EncryptionOff):              min      4us     max     10us     median      4us     avg      4us     stddev      0us
+
+Req runs:  104  CountStringManyDupesNonIndexed (MemOnly, EncryptionOff):        min   4.74ms     max   5.34ms     median   4.78ms     avg   4.84ms     stddev    146us
+
+Req runs: 1000  CountStringManyDupesIndexed (MemOnly, EncryptionOff):           min      4us     max     26us     median      4us     avg      4us     stddev      1us
+
+Req runs:  952  Query (MemOnly, EncryptionOff):                                 min    514us     max    634us     median    518us     avg    526us     stddev     18us
+
+Req runs: 1000  QueryNot (MemOnly, EncryptionOff):                              min    385us     max    458us     median    412us     avg    409us     stddev     10us
+
+Req runs: 1000  QueryLongString (MemOnly, EncryptionOff):                       min     52us     max     77us     median     57us     avg     57us     stddev      2us
+
+Req runs:    5  QueryInsensitiveString (MemOnly, EncryptionOff):                min 631.95ms     max 655.47ms     median 641.92ms     avg 643.57ms     stddev  10.23ms
+
+Req runs:  370  QueryInsensitiveStringIndexed (MemOnly, EncryptionOff):         min    602us     max  12.34ms     median   1.20ms     avg   1.34ms     stddev   1.27ms
+
+Req runs:  226  QueryChainedOrStrings (MemOnly, EncryptionOff):                 min   2.16ms     max   2.35ms     median   2.18ms     avg   2.20ms     stddev     30us
+
+Req runs:  519  QueryChainedOrStringsIndexed (MemOnly, EncryptionOff):          min    943us     max   1.09ms     median    964us     avg    968us     stddev     17us
+
+Req runs:   32  QueryChainedOrStringsViewFilterPredicate (MemOnly, EncryptionOff):   min  14.30ms     max  16.81ms     median  14.84ms     avg  15.13ms     stddev    731us
+
+Req runs:  139  QueryNotChainedOrStrings (MemOnly, EncryptionOff):                   min   3.49ms     max   3.83ms     median   3.60ms     avg   3.61ms     stddev     69us
+
+Req runs:  138  QueryNotChainedOrStringsIndexed (MemOnly, EncryptionOff):            min   3.52ms     max   3.77ms     median   3.60ms     avg   3.61ms     stddev     59us
+
+Req runs:  925  QueryChainedOrInts (MemOnly, EncryptionOff):                         min    476us     max    645us     median    521us     avg    528us     stddev     31us
+
+Req runs:  928  QueryChainedOrIntsIndexed (MemOnly, EncryptionOff):                  min    477us     max    616us     median    529us     avg    534us     stddev     22us
+
+Req runs:  931  QueryChainedOrIntsCount (MemOnly, EncryptionOff):                    min    462us     max    659us     median    529us     avg    522us     stddev     21us
+
+Req runs:    7  QueryIntEquality (MemOnly, EncryptionOff):                           min  66.39ms     max  67.85ms     median  66.76ms     avg  66.99ms     stddev    585us
+
+Req runs: 1000  QueryIntEqualityIndexed (MemOnly, EncryptionOff):                    min    276us     max    345us     median    289us     avg    290us     stddev      7us
+
+Req runs:   27  QueryWithForeignAggAvg (MemOnly, EncryptionOff):                     min  18.04ms     max  19.01ms     median  18.17ms     avg  18.33ms     stddev    302us
+
+Req runs: 1000  QueryIntsVsDoubleColumns (MemOnly, EncryptionOff):                   min      0us     max      0us     median      0us     avg      0us     stddev      0us
+
+Req runs: 1000  QueryStringOverLinks (MemOnly, EncryptionOff):                       min    116us     max    135us     median    118us     avg    119us     stddev      2us
+
+Req runs:   40  SubqueryStrings (MemOnly, EncryptionOff):                            min  11.54ms     max  12.92ms     median  12.13ms     avg  12.11ms     stddev    301us
+
+Req runs:  935  QueryEqual<mixed><NonNullable><Indexed> (MemOnly, EncryptionOff):    min    506us     max    836us     median    552us     avg    546us     stddev     23us
+
+Req runs:    8  QueryEqual<mixed><NonNullable><NonIndexed> (MemOnly, EncryptionOff):   min  56.88ms     max  58.88ms     median  57.47ms     avg  57.59ms     stddev    700us
+
+Req runs: 1000  QueryEqual<uuid><NonNullable><Indexed> (MemOnly, EncryptionOff):       min     24us     max     42us     median     25us     avg     25us     stddev      1us
+
+Req runs:   77  QueryEqual<uuid><NonNullable><NonIndexed> (MemOnly, EncryptionOff):    min   6.34ms     max   6.62ms     median   6.39ms     avg   6.42ms     stddev     73us
+
+Req runs: 1000  QueryEqual<objectId><NonNullable><Indexed> (MemOnly, EncryptionOff):   min     25us     max     48us     median     26us     avg     26us     stddev      1us
+
+Req runs:   80  QueryEqual<objectId><NonNullable><NonIndexed> (MemOnly, EncryptionOff):   min   6.16ms     max   6.44ms     median   6.20ms     avg   6.25ms     stddev     76us
+
+Req runs: 1000  QueryEqual<timestamp><NonNullable><Indexed> (MemOnly, EncryptionOff):     min     27us     max     49us     median     28us     avg     28us     stddev      1us
+
+Req runs:  116  QueryEqual<timestamp><NonNullable><NonIndexed> (MemOnly, EncryptionOff):   min   4.17ms     max   4.42ms     median   4.21ms     avg   4.24ms     stddev     56us
+
+Req runs: 1000  QueryEqual<int><NonNullable><Indexed> (MemOnly, EncryptionOff):            min     23us     max     42us     median     24us     avg     24us     stddev      1us
+
+Req runs: 1000  QueryEqual<string><NonNullable><Indexed> (MemOnly, EncryptionOff):         min     24us     max     49us     median     27us     avg     27us     stddev      1us
+
+Req runs:   39  QueryEqual<bool><NonNullable><Indexed> (MemOnly, EncryptionOff):           min  12.58ms     max  13.93ms     median  12.66ms     avg  12.76ms     stddev    285us
+
+Req runs:   13  QueryEqual<bool><NonNullable><NonIndexed> (MemOnly, EncryptionOff):        min  35.11ms     max  36.33ms     median  36.03ms     avg  35.89ms     stddev    402us
+
+Req runs:    5  QueryInsensitiveEqual<mixed><NonNullable><NonIndexed> (MemOnly, EncryptionOff):   min 101.70ms     max 102.82ms     median 102.05ms     avg 102.16ms     stddev    431us
+
+Req runs:  968  QueryInsensitiveEqual<mixed><NonNullable><Indexed> (MemOnly, EncryptionOff):      min    476us     max    622us     median    507us     avg    507us     stddev     14us
+
+Req runs:   13  QueryInsensitiveEqual<string><NonNullable><NonIndexed> (MemOnly, EncryptionOff):   min  35.63ms     max  36.34ms     median  35.90ms     avg  35.98ms     stddev    239us
+
+Req runs: 1000  QueryInsensitiveEqual<string><NonNullable><Indexed> (MemOnly, EncryptionOff):      min     35us     max     70us     median     40us     avg     40us     stddev      3us
+
+Req runs:   29  QueryChainedOrEquality_5000<uuid><NonNullable><Indexed> (MemOnly, EncryptionOff):   min  16.39ms     max  17.30ms     median  16.55ms     avg  16.61ms     stddev    194us
+
+Req runs:   27  QueryChainedOrEquality_5000<objectId><NonNullable><Indexed> (MemOnly, EncryptionOff):   min  17.38ms     max  18.66ms     median  17.84ms     avg  17.81ms     stddev    273us
+
+Req runs:   36  QueryChainedOrEquality_5000<uuid><NonNullable><NonIndexed> (MemOnly, EncryptionOff):    min  13.43ms     max  14.24ms     median  13.78ms     avg  13.81ms     stddev    232us
+
+Req runs:   36  QueryChainedOrEquality_5000<objectId><NonNullable><NonIndexed> (MemOnly, EncryptionOff):   min  13.57ms     max  14.44ms     median  13.83ms     avg  13.85ms     stddev    184us
+
+Req runs:   44  QueryParsedIN_5000<uuid><NonNullable><Indexed> (MemOnly, EncryptionOff):                   min  10.53ms     max  12.14ms     median  11.43ms     avg  11.21ms     stddev    434us
+
+Req runs:   42  QueryParsedIN_5000<objectId><NonNullable><Indexed> (MemOnly, EncryptionOff):               min  11.50ms     max  12.26ms     median  11.73ms     avg  11.78ms     stddev    181us
+
+Req runs:   64  QueryParsedIN_5000<uuid><NonNullable><NonIndexed> (MemOnly, EncryptionOff):                min   7.44ms     max  10.52ms     median   7.65ms     avg   7.86ms     stddev    553us
+
+Req runs:   63  QueryParsedIN_5000<objectId><NonNullable><NonIndexed> (MemOnly, EncryptionOff):            min   7.58ms     max   8.18ms     median   7.80ms     avg   7.82ms     stddev    134us
+
+Req runs:  350  QueryParsedIN_5<uuid><NonNullable><Indexed> (MemOnly, EncryptionOff):                      min   1.33ms     max   1.49ms     median   1.43ms     avg   1.42ms     stddev     36us
+
+Req runs:  305  QueryParsedIN_5<objectId><NonNullable><Indexed> (MemOnly, EncryptionOff):                  min   1.55ms     max   1.80ms     median   1.64ms     avg   1.63ms     stddev     43us
+
+Req runs:  362  QueryParsedIN_5<uuid><NonNullable><NonIndexed> (MemOnly, EncryptionOff):                   min   1.30ms     max   1.44ms     median   1.39ms     avg   1.38ms     stddev     35us
+
+Req runs:  314  QueryParsedIN_5<objectId><NonNullable><NonIndexed> (MemOnly, EncryptionOff):               min   1.51ms     max   1.70ms     median   1.60ms     avg   1.59ms     stddev     42us
+
+Req runs:   57  QueryRange<int><NonNullable><NonIndexed> (MemOnly, EncryptionOff):                         min   8.34ms     max  10.07ms     median   8.49ms     avg   8.53ms     stddev    226us
+
+Req runs:   35  QueryRange<timestamp><NonNullable><NonIndexed> (MemOnly, EncryptionOff):                   min  13.76ms     max  14.81ms     median  14.10ms     avg  14.13ms     stddev    211us
+
+Req runs:    9  CreateIndexFor<string><Nullable><Indexed> (MemOnly, EncryptionOff):                        min  51.40ms     max  52.36ms     median  51.58ms     avg  51.74ms     stddev    360us
+
+Req runs:   15  CreateIndexFor<int><Nullable><Indexed> (MemOnly, EncryptionOff):                           min  30.97ms     max  31.47ms     median  31.13ms     avg  31.16ms     stddev    147us
+
+Req runs:   14  CreateIndexFor<timestamp><Nullable><Indexed> (MemOnly, EncryptionOff):                     min  33.36ms     max  33.69ms     median  33.49ms     avg  33.50ms     stddev    110us
+
+Req runs:    5  InsertWithIndex<string><Nullable><Indexed> (MemOnly, EncryptionOff):                       min 109.68ms     max 111.06ms     median 110.09ms     avg 110.15ms     stddev    537us
+
+Req runs:    5  InsertWithIndex<int><Nullable><Indexed> (MemOnly, EncryptionOff):                          min 102.76ms     max 105.51ms     median 103.12ms     avg 103.91ms     stddev   1.30ms
+
+Req runs:    5  InsertWithIndex<timestamp><Nullable><Indexed> (MemOnly, EncryptionOff):                    min 117.28ms     max 120.63ms     median 118.56ms     avg 118.78ms     stddev   1.53ms
+
+Req runs:    6  InsertPK<string><Nullable><Indexed> (MemOnly, EncryptionOff):                              min  73.39ms     max  88.87ms     median  74.20ms     avg  77.08ms     stddev   6.06ms
+
+Req runs:    7  InsertPK<int><Nullable><Indexed> (MemOnly, EncryptionOff):                                 min  57.22ms     max  66.66ms     median  66.18ms     avg  63.16ms     stddev   4.30ms
+
+Req runs:   12  EraseObject<string><NonNullable><NonIndexed> (MemOnly, EncryptionOff):                     min  40.51ms     max  41.97ms     median  40.98ms     avg  41.08ms     stddev    398us
+
+Req runs:   13  EraseObject<int><NonNullable><NonIndexed> (MemOnly, EncryptionOff):                        min  38.07ms     max  44.63ms     median  39.28ms     avg  39.82ms     stddev   1.76ms
+
+Req runs:    7  EraseObject<timestamp><NonNullable><NonIndexed> (MemOnly, EncryptionOff):                  min  62.94ms     max  65.03ms     median  63.75ms     avg  63.85ms     stddev    838us
+
+Req runs:    5  EraseObject<string><Nullable><Indexed> (MemOnly, EncryptionOff):                           min 125.88ms     max 133.52ms     median 127.51ms     avg 128.69ms     stddev   3.29ms
+
+Req runs:    5  EraseObject<int><Nullable><Indexed> (MemOnly, EncryptionOff):                              min  89.66ms     max  92.95ms     median  90.09ms     avg  90.69ms     stddev   1.33ms
+
+Req runs:    5  EraseObject<timestamp><Nullable><Indexed> (MemOnly, EncryptionOff):                        min 123.44ms     max 125.49ms     median 123.78ms     avg 124.18ms     stddev    810us
+
+Req runs:   38  QueryTimestampGreaterOverLinks (MemOnly, EncryptionOff):                                   min  13.06ms     max  13.72ms     median  13.42ms     avg  13.40ms     stddev    166us
+
+Req runs:  804  QueryTimestampGreater (MemOnly, EncryptionOff):                                            min    550us     max   1.12ms     median    606us     avg    615us     stddev     60us
+
+Req runs:  804  QueryTimestampGreaterEqual (MemOnly, EncryptionOff):                                       min    553us     max    761us     median    607us     avg    604us     stddev     28us
+
+Req runs:  859  QueryTimestampLess (MemOnly, EncryptionOff):                                               min    553us     max    797us     median    601us     avg    603us     stddev     28us
+
+Req runs:  851  QueryTimestampLessEqual (MemOnly, EncryptionOff):                                          min    550us     max    651us     median    580us     avg    581us     stddev     18us
+
+Req runs: 1000  QueryTimestampEqual (MemOnly, EncryptionOff):                                              min     79us     max    455us     median     85us     avg     89us     stddev     24us
+
+Req runs:  666  QueryTimestampNotEqual (MemOnly, EncryptionOff):                                           min    622us     max   1.64ms     median    725us     avg    747us     stddev     93us
+
+Req runs:  484  QueryTimestampNotNull (MemOnly, EncryptionOff):                                            min    974us     max   2.19ms     median   1.05ms     avg   1.07ms     stddev    102us
+
+Req runs: 1000  QueryTimestampEqualNull (MemOnly, EncryptionOff):                                          min    253us     max    347us     median    275us     avg    275us     stddev     12us
+
+Req runs:   30  QueryListOfPrimitiveIntsSize (MemOnly, EncryptionOff):                                     min  15.97ms     max  16.36ms     median  16.19ms     avg  16.17ms     stddev    109us
+
+Req runs:   59  IntUIDsRandomOrderSeqAccess (MemOnly, EncryptionOff):                                      min   8.22ms     max   8.71ms     median   8.42ms     avg   8.42ms     stddev    105us
+
+Req runs:   58  IntUIDsRandomOrderRandomAccess (MemOnly, EncryptionOff):                                   min   8.21ms     max   8.91ms     median   8.40ms     avg   8.43ms     stddev    126us
+
+Req runs:  184  IntUIDsRandomOrderRandomDelete (MemOnly, EncryptionOff):                                   min   2.57ms     max   2.92ms     median   2.68ms     avg   2.68ms     stddev     62us
+
+Req runs:  206  IntUIDsRandomOrderRandomCreate (MemOnly, EncryptionOff):                                   min   2.34ms     max   3.78ms     median   2.48ms     avg   2.52ms     stddev    164us
+
+Req runs:  606  TransactionDuplicate (MemOnly, EncryptionOff):                                             min    748us     max    995us     median    817us     avg    824us     stddev     37us
+
+Req runs:    5  AssignGeoPoints (MemOnly, EncryptionOff):                                                  min 125.22ms     max 129.51ms     median 127.21ms     avg 127.51ms     stddev   1.76ms
+
+Req runs:    5  AssignGeoPointsFromNull (MemOnly, EncryptionOff):                                          min 176.74ms     max 180.01ms     median 178.41ms     avg 178.15ms     stddev   1.37ms
+
+Req runs:    5  FetchGeoPoints (MemOnly, EncryptionOff):                                                   min 119.69ms     max 121.89ms     median 120.54ms     avg 120.73ms     stddev   1.05ms
+
+Req runs:   20  GeoPointsWithinBox (MemOnly, EncryptionOff):                                               min  23.89ms     max  24.81ms     median  24.14ms     avg  24.22ms     stddev    285us
+
+Req runs:   19  GeoPointsWithinBoxRQL (MemOnly, EncryptionOff):                                            min  25.45ms     max  26.03ms     median  25.67ms     avg  25.72ms     stddev    187us
+
+Req runs:   22  GeoPointsWithinCircle (MemOnly, EncryptionOff):                                            min  21.59ms     max  22.19ms     median  21.81ms     avg  21.84ms     stddev    155us
+
+Req runs:   21  GeoPointsWithinCircleRQL (MemOnly, EncryptionOff):                                         min  22.82ms     max  23.33ms     median  22.97ms     avg  23.03ms     stddev    135us
+
+Req runs:   20  GeoPointsWithinPolygon (MemOnly, EncryptionOff):                                           min  24.20ms     max  24.73ms     median  24.47ms     avg  24.50ms     stddev    136us
+
+Req runs:   19  GeoPointsWithinPolygonRQL (MemOnly, EncryptionOff):                                        min  25.60ms     max  26.10ms     median  25.73ms     avg  25.76ms     stddev    115us
+
