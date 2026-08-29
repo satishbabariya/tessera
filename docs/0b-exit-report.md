@@ -34,6 +34,38 @@ remote exists (prerequisite P1), which is the project owner's call to make.
 | Test results (Debug) | CoreTests 1652, SyncTests 461, ObjectStoreTests 343 |
 | Test results (Release) | CoreTests 1647, SyncTests 460, ObjectStoreTests 343 |
 
+## What CI established, once it existed
+
+Phase 0b was written before this repository had any build CI. Everything below
+was verified on the day it was added, and every item was broken or unverified
+until the check ran:
+
+| Platform | Verification |
+|---|---|
+| macOS arm64 | build and all three suites, Debug and Release |
+| Linux x86-64, gcc-13 and clang-18 | build and all three suites, Debug and Release |
+| Linux, sanitizers | ASan, UBSan and TSan all clean over 1652 tests |
+| Windows | builds (tier 2; vcpkg supplies zlib and OpenSSL) |
+| iOS, WASM | compile |
+| Android | compiles **with sync and encryption disabled** -- both need OpenSSL and the NDK ships none |
+| Fuzzers | ten minutes against the storage engine, no crash |
+
+Two defects in the released v0.1.0 were found by the first runs, and neither was
+detectable on the machine that built it:
+
+- **The installed package exported `-fuse-ld=lld`.** A build-speed flag applied
+  as a plain `PUBLIC` link option was baked into the exported target, so a
+  consumer inherited whichever linker existed on the machine that built Tessera.
+  Every test suite passed on the configuration that exhibited it; only the
+  consumer smoke test failed. Fixed in v0.1.1.
+- **A fresh `git clone` could not configure.** The README omitted `--recursive`,
+  and a missing Catch2 produced an error naming a third-party file rather than
+  the problem. Fixed in v0.1.1.
+
+Every fix was small -- a missing include, a vcpkg install, a build flag, an
+export scope. None required redesign. The value was in running the checks, not
+in the fixes.
+
 ## The recurring finding
 
 Six times in this project, an inherited label did not describe the code beneath
