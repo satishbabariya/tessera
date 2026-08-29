@@ -102,10 +102,10 @@
 * `tools/check-test-sources-listed.sh`, run in CI, fails if any test source is
   not named by the `CMakeLists.txt` that should compile it. It establishes that a
   file is visible to the build, not that any particular configuration compiles it
-  -- 26 test files here are correctly conditional on `TESSERA_ENABLE_SYNC`. A test file left out
-  of the build does not fail, does not appear as skipped and does not break
-  anything, and the suite total is no help because nobody knows what it should
-  be.
+  -- 26 test files here are correctly conditional on `TESSERA_ENABLE_SYNC`.
+  A test file left out of the build does not fail, does not appear as skipped and
+  does not break anything, and the suite total is no help because nobody knows
+  what it should be.
 * `tools/analyse-zero-check-tests.sh` reports tests that run and execute no
   checks. Analysis rather than a gate: of 106 such tests, 105 are regression
   tests that assert by not crashing.
