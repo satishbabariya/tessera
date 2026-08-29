@@ -20,7 +20,15 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-DAYS=3650
+# 825 days, and not one more. Apple's Security framework rejects a TLS server
+# certificate whose validity period exceeds 825 days, returning
+# errSSLXCertChainInvalid (-9807) from the handshake -- it does not say why, and
+# the certificate verifies perfectly under `openssl verify` and against
+# `openssl s_client`. The upstream conf has carried default_days = 825 all
+# along, which is exactly this limit rather than a round number.
+#
+# Issuing for ten years instead cost five failing tests across macOS and Linux.
+DAYS=825
 
 # Snapshot new_certs_dir so the archive copies openssl is about to write can be
 # identified by difference rather than by pattern.

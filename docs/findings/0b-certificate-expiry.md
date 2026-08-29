@@ -29,21 +29,88 @@ is 825, so upstream hit this roughly every two years and quietly re-issued each
 time. `HOW_TO_UPDATE.md` documents how to regenerate, which is the artefact of a
 problem solved repeatedly and never prevented.
 
-## What was done
+## 825 is not a round number
 
-Re-issued the three server certificates for 3650 days from the existing keys and
-the existing signing CA, which is valid until 2124. Subjects and subject
-alternative names are unchanged; the SSL suite passes 21/21 and the full sync
-suite 461/461.
+The first attempt re-issued the certificates for 3650 days. CI failed on macOS
+Debug, macOS Release and Linux gcc Debug -- five sync tests, all of them
+certificate tests, with `securetransport:-9807`.
 
-The durable half is `tools/check-cert-expiry.sh`, which fails when any
-certificate is within 180 days of expiry. A long-dated certificate still expires;
-what changes is that the next lapse arrives as a sentence naming the file and the
-date, rather than as a handshake error.
+**Apple's Security framework rejects a TLS server certificate whose validity
+period exceeds 825 days.** The handshake returns `errSSLXCertChainInvalid` and
+says nothing about duration. Every diagnostic available elsewhere reports the
+certificate as sound: `openssl verify -CAfile root-ca/crt.pem -untrusted
+certs/dns-chain.crt.pem` returns OK, and a real `openssl s_client` handshake
+against `openssl s_server` reports `Verify return code: 0 (ok)`.
 
-The check is canary-tested three ways: a certificate expiring in 30 days, one
-already expired, and the certificates renamed away -- the last because a check
-that finds nothing must fail rather than report success over an empty set.
+`default_days = 825` in `signing-ca.conf` was upstream encoding that limit. It
+looked like an arbitrary two-year-ish figure and it is the exact ceiling.
+
+The certificates are now issued for 825 days, expiring December 2028, and
+`check-cert-expiry.sh` enforces the ceiling as well as the floor: it fails on any
+leaf valid for more than 825 days. The ceiling applies to leaves only -- the root
+and signing CAs here are valid until 2124 and Apple accepts them, because the
+limit is a policy on the certificate presented in the handshake, not on the
+anchors above it. Both directions are canary-tested.
+
+## The verification that was not one
+
+Before opening the pull request this finding claimed the SSL suite passed 21/21
+and the sync suite 461/461 against the new certificates. Both numbers were real
+and neither meant anything.
+
+`test/CMakeLists.txt` globs the certificate files into the test target's
+resources, and they are copied into the app bundle **at build time**. Between
+regenerating the certificates and running the tests I had not rebuilt. The suite
+ran against the certificates already sitting in the bundle -- the old ones, which
+work. The new certificates had never been executed at all.
+
+The tests were green, the certificates were broken, and both were true at once.
+This is the third time in this project a gate has passed against a stale
+artefact, and the second time it was a stale test binary or bundle specifically.
+The general form: a build system that copies inputs at build time makes "run the
+tests" and "test the current inputs" two different actions.
+
+## A test that pinned the certificate's bytes
+
+The Linux job failed differently, and for a second independent reason:
+
+    ERROR in Sync_SSL_Certificate_Verify_Callback_3:
+      CHECK_EQUAL(pem_data[1667], 'J') failed with (S, J)
+
+`Sync_SSL_Certificate_Verify_Callback_3` verified that the SSL verify callback
+receives the right certificates by asserting `pem_size == 1700` and four
+individual characters of the base64: `pem_data[1667] == 'J'`,
+`pem_data[93] == 'G'`, and the two closing bytes. `Sync_SSL_Certificate_Verify_Callback_2`
+transcribed the first two lines of the signing CA's base64 as a string literal.
+
+Both hold only for one particular issuance. Re-signing a certificate changes
+every base64 byte while leaving every length identical -- which is why the test
+failed on a single character and not on `pem_size`, and why it says nothing
+about *which* certificate arrived.
+
+They now compare against the certificate blocks in the file the server was
+actually configured with. That is the property the test names claim, and it
+survives re-issuance.
+
+These tests are `#if TESSERA_HAVE_OPENSSL`, so they never run on macOS, where
+the build uses SecureTransport. Verifying the fix meant configuring a second
+build with `-DTESSERA_FORCE_OPENSSL=ON`, which is how the count of 462 tests on
+Linux against 461 on macOS was reconciled. That configuration also has two
+pre-existing failures of its own, `Util_Network_SSL_BrokenPipeOnWrite` and
+`...OnShutdown`, which reproduce on an unmodified tree: nothing builds
+OpenSSL-on-macOS, so nothing had noticed.
+
+## What the check does
+
+`tools/check-cert-expiry.sh` fails when any certificate is within 180 days of
+expiry, and when any leaf is issued for more than 825 days. A certificate at the
+maximum lifetime still expires; what changes is that the next lapse arrives as a
+sentence naming the file and the date, rather than as a handshake error.
+
+The check is canary-tested five ways: a certificate expiring in 30 days, one
+already expired, a leaf over the 825-day ceiling, a CA over the ceiling (which
+must pass), and the certificates renamed away -- the last because a check that
+finds nothing must fail rather than report success over an empty set.
 
 ## A note on reading tool output
 

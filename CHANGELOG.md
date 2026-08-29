@@ -35,18 +35,27 @@
   API, but the smoke test had only ever included `db.hpp` and friends, so nothing
   verified they were installed or self-contained.
 * The TLS certificates the SSL tests use expired on 25 October 2026. They are
-  re-issued for ten years from the existing keys and signing CA. Since the tests
+  re-issued for 825 days from the existing keys and signing CA. Since the tests
   complete a real handshake against them, the whole suite would have begun
   failing on every platform at once, reported as certificate-verification errors
   inside tests named for the socket behaviour they cover.
 
+* `Sync_SSL_Certificate_Verify_Callback_2` and `_3` asserted the contents of the
+  test certificates by pinning `pem_size` and individual base64 characters
+  (`pem_data[1667] == 'J'`). Re-issuing a certificate changes every base64 byte
+  while every length stays the same, so the tests broke on one character and
+  never said which certificate had arrived. They now compare against the
+  certificate the server was configured with.
+
 ### Added
 
 * `tools/check-cert-expiry.sh`, run in CI, fails when any test certificate is
-  within 180 days of expiry. The signing CA's issuance database shows the
-  certificates lapsed in 2018, 2020, 2021, 2022 and 2024; a long-dated
-  certificate still expires, but the next lapse now arrives as a sentence naming
-  the file and the date.
+  within 180 days of expiry, and when any leaf certificate is issued for more
+  than 825 days. The signing CA's issuance database shows the certificates lapsed
+  in 2018, 2020, 2021, 2022 and 2024; the next lapse now arrives as a sentence
+  naming the file and the date. The 825-day ceiling is Apple's: its Security
+  framework rejects longer-lived server certificates with
+  `errSSLXCertChainInvalid` and no explanation, while OpenSSL accepts them.
 * `certificate-authority/regenerate-server-certs.sh` replaces six blocks of
   manual `openssl` invocation in a markdown file.
 

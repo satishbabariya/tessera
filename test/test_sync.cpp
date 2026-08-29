@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <memory>
 #include <mutex>
 #include <set>
@@ -2777,6 +2778,32 @@ TEST(Sync_SSL_Certificate_Verify_Callback_1)
 }
 
 
+// Returns the nth PEM certificate block in a file, including its BEGIN and END
+// lines and the newline after END. Used to state what a certificate callback
+// should have been handed without restating the certificate itself.
+static std::string nth_certificate_block(const std::string& path, int n)
+{
+    std::ifstream in(path);
+    std::string line, block;
+    bool inside = false;
+    int seen = 0;
+    while (std::getline(in, line)) {
+        if (line.compare(0, 27, "-----BEGIN CERTIFICATE-----") == 0) {
+            inside = true;
+            block.clear();
+        }
+        if (inside)
+            block += line + '\n';
+        if (line.compare(0, 25, "-----END CERTIFICATE-----") == 0) {
+            inside = false;
+            if (seen++ == n)
+                return block;
+        }
+    }
+    return {};
+}
+
+
 // This test checks that the SSL connection is rejected if the verify callback
 // always returns false. It also checks that preverify_ok and depth have
 // the expected values.
@@ -2794,13 +2821,11 @@ TEST(Sync_SSL_Certificate_Verify_Callback_2)
         server_port_ssl = server_port;
         CHECK_EQUAL(preverify_ok, 0);
         CHECK_EQUAL(depth, 1);
-        CHECK_EQUAL(pem_size, 2082);
-        std::string pem(pem_data, pem_size);
-
-        std::string expected = "-----BEGIN CERTIFICATE-----\n"
-                               "MIIF0zCCA7ugAwIBAgIBCjANBgkqhkiG9w0BAQsFADB1MRIwEAYKCZImiZPyLGQB\n";
-
-        CHECK_EQUAL(expected, pem.substr(0, expected.size()));
+        // The signing CA, which is the second block of the chain the server was
+        // given. Comparing against the file rather than against a transcribed
+        // base64 prefix: the transcription is valid only until the CA is
+        // re-issued, and it does not say which certificate this is.
+        CHECK_EQUAL(std::string(pem_data, pem_size), nth_certificate_block(ca_dir + "localhost-chain.crt.pem", 1));
 
         return false;
     };
@@ -2841,6 +2866,23 @@ TEST(Sync_SSL_Certificate_Verify_Callback_3)
     TEST_DIR(server_dir);
     TEST_CLIENT_DB(db);
     std::string ca_dir = get_test_resource_path();
+    std::string chain_path = ca_dir + "localhost-chain.crt.pem";
+
+    // The server is configured below with localhost-chain.crt.pem, which holds
+    // the leaf certificate followed by the signing CA. The callback should be
+    // handed exactly those, leaf first.
+    //
+    // This used to assert pem_size and four individual characters --
+    // pem_data[1667] == 'J' and so on. Those hold only for one particular
+    // issuance: re-signing the certificates changes the base64 while every
+    // length stays the same, so the test failed on a single byte and said
+    // nothing about which certificate had arrived. Comparing against the file
+    // the server was pointed at is the property the test name claims.
+    const std::string expected_leaf = nth_certificate_block(chain_path, 0);
+    const std::string expected_ca = nth_certificate_block(chain_path, 1);
+    CHECK(!expected_leaf.empty());
+    CHECK(!expected_ca.empty());
+    CHECK_NOT_EQUAL(expected_leaf, expected_ca);
 
     Session::port_type server_port_ssl = 0;
     auto ssl_verify_callback = [&](const std::string server_address, Session::port_type server_port,
@@ -2849,16 +2891,13 @@ TEST(Sync_SSL_Certificate_Verify_Callback_3)
         server_port_ssl = server_port;
 
         CHECK(depth == 0 || depth == 1);
+        std::string received(pem_data, pem_size);
         if (depth == 1) {
-            CHECK_EQUAL(pem_size, 2082);
-            CHECK_EQUAL(pem_data[93], 'G');
+            CHECK_EQUAL(received, expected_ca);
         }
         else {
-            CHECK_EQUAL(pem_size, 1700);
             CHECK_EQUAL(preverify_ok, 1);
-            CHECK_EQUAL(pem_data[1667], 'J');
-            CHECK_EQUAL(pem_data[1698], '-');
-            CHECK_EQUAL(pem_data[1699], '\n');
+            CHECK_EQUAL(received, expected_leaf);
         }
 
         return true;
