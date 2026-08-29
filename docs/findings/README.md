@@ -38,6 +38,7 @@ Read these before changing the area they describe.
 | | |
 |---|---|
 | [0a-flaky-and-slow-tests.md](0a-flaky-and-slow-tests.md) | `reports DNS error` is network-flaky (0.011s to 680s across four runs). The suites leak temp directories, and a large `TMPDIR` degrades some tests 40,000x |
+| [0b-certificate-expiry.md](0b-certificate-expiry.md) | The SSL tests' certificates were 57 days from expiry, and had lapsed five times before. The failure would have shown as a cluster of socket tests failing on every platform with no commit to blame |
 | [0a-include-hygiene.md](0a-include-hygiene.md) | An include can be unused by its host file and load-bearing for its consumers. Seven such dependencies have had to be made explicit |
 | [0b-identity-strings.md](0b-identity-strings.md) | The rename renamed the code, not what the code says. The product name, the sync User-Agent, the HTTP Server header, a WebSocket subprotocol, five error categories and six tools' help text still said realm |
 | [0b-rename-blind-spots.md](0b-rename-blind-spots.md) | What a code-identifier rename cannot see: message strings, a wire identifier, a Keychain item, a log-category API, and comments it turned into false claims |
