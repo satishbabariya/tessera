@@ -1,45 +1,41 @@
 #!/usr/bin/env bash
+# Refuses a direct push to main. Install with tools/install-hooks.sh.
+#
+# What was here before was inherited from realm-sync and had rotted into a hook
+# that blocked every push to this repository. It compared the push destination
+# against a list of four permitted remotes -- realm/realm-sync and
+# kspangsege/realm-sync, over ssh and https -- and aborted otherwise. This
+# repository is satishbabariya/tessera, so the hook rejected its own origin:
+#
+#     attempting to push to a repo other than realm-sync or git remotes
+#     contains a repo other than realm-sync. aborting...
+#
+# It survived the fork because nothing installs these hooks and nothing runs
+# them, so the file was never executed once. See
+# docs/findings/0b-hooks-nobody-runs.md.
+#
+# The guard is now the project's actual rule: changes reach main through a pull
+# request. Set TESSERA_ALLOW_MAIN_PUSH=1 for the rare deliberate exception.
+set -euo pipefail
 
-# This pre-push hook should prevent pushing to the wrong remote
+protected='refs/heads/main'
+zero='0000000000000000000000000000000000000000'
 
-################
-# Variables
-################
-
-declare -a authorized_remotes=(
-    'git@github.com:realm/realm-sync.git'
-    'https://github.com/realm/realm-sync.git'
-    'git@github.com:kspangsege/realm-sync.git'
-    'https://github.com/kspangsege/realm-sync.git'
-)
-repo_name='realm-sync'
-
-################
-# Functions
-################
-
-verify_remote() {
-    for current_authorized_remote in "${authorized_remotes[@]}"; do
-        if [[ "$1" = *"$current_authorized_remote"* ]]; then
-            return
-        fi
-    done
-    echo >&2 "attempting to push to a repo other than $repo_name or git remotes contains a repo other than $repo_name. aborting..."
+# git feeds one line per ref being pushed:  <local ref> <local sha> <remote ref> <remote sha>
+while read -r _local_ref local_sha remote_ref _remote_sha; do
+    [[ "$remote_ref" == "$protected" ]] || continue
+    if [[ "${TESSERA_ALLOW_MAIN_PUSH:-}" == "1" ]]; then
+        echo >&2 "pre-push: pushing directly to main, TESSERA_ALLOW_MAIN_PUSH=1 is set"
+        continue
+    fi
+    if [[ "$local_sha" == "$zero" ]]; then
+        echo >&2 "pre-push: refusing to delete main."
+    else
+        echo >&2 "pre-push: refusing a direct push to main. Open a pull request:"
+        echo >&2 "    git push -u origin HEAD  &&  gh pr create --base main"
+    fi
+    echo >&2 "  (set TESSERA_ALLOW_MAIN_PUSH=1 to override)"
     exit 1
-}
-
-################
-# Script
-################
-
-# current_remote_name="$1"
-current_remote_url="$2"
-
-verify_remote "$current_remote_url"
-
-saved_remotes="$(git remote -v)"
-while read -r remote_line; do
-    verify_remote "$remote_line"
-done <<< "$saved_remotes"
+done
 
 exit 0

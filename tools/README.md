@@ -25,6 +25,8 @@ structural violation should not wait on a build.
 | `check-header-macros.sh` | no header decides on a macro only a `.cpp` defines |
 | `check-rename-residue.sh` | no pre-rename identifiers or identity strings |
 | `check-cert-expiry.sh` | test certificates are neither near expiry nor over Apple's 825-day ceiling |
+| `test-pr-status.sh` | `pr-status.sh` still distinguishes a cancelled run from a running one |
+| `test-pre-push.sh` | the `pre-push` hook refuses main and permits everything else |
 | `verify/consumer-smoke-test.sh` | the installed package is consumable and exports the documented targets |
 | `verify/test-binary.sh` | resolves a test binary's path across platforms; used by the workflows |
 
@@ -39,6 +41,23 @@ merge gate.
 | | |
 |---|---|
 | `verify/clean-clone-test.sh` | a stranger can clone the published repository and build it |
+
+## Installed by hand, then run by git
+
+`tools/install-hooks.sh` symlinks these into `.git/hooks`. They are opt-in, so
+treat them as a convenience rather than a guarantee -- the pull-request checks
+above are what actually holds.
+
+| | |
+|---|---|
+| `pre-commit` | refuses a commit whose staged files are not clang-formatted. Needs `git-clang-format` on PATH; without it the hook passes everything |
+| `pre-push` | refuses a direct push to `main`. `TESSERA_ALLOW_MAIN_PUSH=1` overrides |
+
+Until now neither was listed here, neither was installable, and `pre-push` had
+rotted into a hook that rejected this repository's own remote -- it whitelisted
+four `realm-sync` URLs inherited from the fork. Nothing ran it, so nothing
+noticed. See
+[docs/findings/0b-hooks-nobody-runs.md](../docs/findings/0b-hooks-nobody-runs.md).
 
 ## Run by hand
 
