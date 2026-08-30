@@ -46,6 +46,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <string_view>
 #include <functional>
 #include <locale>
 #include <map>
@@ -1704,15 +1705,14 @@ util::Optional<AccessToken> m_access_token;
     /// client with no token produces.
     static std::string extract_handshake_token(StringData path)
     {
-        static const char* key = "baas_at=";
-        const std::size_t key_len = std::strlen(key);
+        constexpr std::string_view key = "baas_at=";
         std::string_view p{path.data(), path.size()};
         std::size_t pos = p.find(key);
         while (pos != std::string_view::npos) {
             // Only a value introduced by ? or & is a parameter; "xbaas_at=" is
             // not one.
             if (pos == 0 || p[pos - 1] == '?' || p[pos - 1] == '&') {
-                std::string_view rest = p.substr(pos + key_len);
+                std::string_view rest = p.substr(pos + key.size());
                 std::size_t end = rest.find('&');
                 return std::string{end == std::string_view::npos ? rest : rest.substr(0, end)};
             }
