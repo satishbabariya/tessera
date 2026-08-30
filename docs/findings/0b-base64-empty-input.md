@@ -58,8 +58,10 @@ this is not on the authentication path, but it is the same class of gap: a code
 path unreachable today, load-bearing the moment something reaches it.
 
 And an attempt to wire verification into `receive_bind_message` rejected the test
-suite's own token with `invalid_signature`, while a unit test verifies that same
-token against that same key successfully. The difference between the two is not
-yet understood, and the change was reverted rather than landed. Shipping a bind
-path that rejects valid tokens for an unexplained reason is worse than shipping
-none, which is what this project's own gate says.
+suite's own token with `invalid_signature`, while a unit test verified that same
+token against that same key successfully. That is now understood, and it is why
+this fix exists at all: the server was receiving an empty token, so `parse` was
+being handed `""` and terminating in `base64_decode`. See
+[0b-both-ends-of-the-token.md](0b-both-ends-of-the-token.md). The server change
+was reverted, because closing one end of an authentication that has neither end
+is not an improvement.
