@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Changed
+
+* The sync client sends the token it was given. `Session::Config::signed_user_token`
+  reached the connection and was used for the WebSocket handshake request, but
+  `send_bind_message` sent a local variable named `empty_access_token` --
+  "discarded since it's ignored by the server". The server does ignore it, partly
+  because nothing sent one. This changes nothing on its own: the server still does
+  not read it. It is the half of authentication that can land without the other
+  half, and it must land first, or adding server-side verification fails every
+  bind in the suite. See `docs/findings/0b-both-ends-of-the-token.md`.
+
 ### Fixed
 
 * `util::base64_decode("")` terminated the process. Its guard against
