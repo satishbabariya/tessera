@@ -4,6 +4,21 @@
 
 ### Added
 
+* **Token expiry outlives the handshake.** The server checked
+  `AccessToken::expired` once, while deciding whether to upgrade the WebSocket,
+  and never again -- a connection accepted with a token expiring a second later
+  kept every privilege that token had for as long as the socket stayed open.
+  `AccessControl::can` compares paths and access bits and takes no clock, and
+  `ProtocolError::token_expired` was never emitted by the server anywhere. There
+  is no `REFRESH` message to re-present a credential on; upstream removed it in
+  realm-core #5151 and moved the credential onto the WebSocket URL.
+
+  BIND and UPLOAD now consult expiry where they consult privileges, via
+  `SyncConnection::access_token_expired()`. This is reachable rather than
+  theoretical: sessions are multiplexed, so a connection whose token has lapsed
+  can still be asked to bind a new session, which the handshake cannot see. See
+  `docs/findings/0b-expiry-stops-at-the-handshake.md`.
+
 * **The sync server authenticates connections.** It reads the credential the
   client already carries on the WebSocket handshake -- `?baas_at=<token>`,
   appended by `ClientImpl::Connection::get_http_request_path` -- verifies it
