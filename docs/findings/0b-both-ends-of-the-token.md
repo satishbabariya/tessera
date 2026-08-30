@@ -1,5 +1,12 @@
 # Each end of the authentication is justified by the other
 
+> **Superseded in part.** The conclusion below -- that neither end sends a
+> credential -- is wrong. The client sends one in the WebSocket handshake URL as
+> `?baas_at=`, and upstream removed the BIND token deliberately in 2022. The
+> observations here are accurate; the inference from them is not. See
+> [0b-auth-belongs-at-the-handshake.md](0b-auth-belongs-at-the-handshake.md).
+
+
 [0b-server-has-no-auth.md](0b-server-has-no-auth.md) records that the sync server
 never looks at the token a client presents on BIND. That is half of it.
 
