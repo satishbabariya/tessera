@@ -20,6 +20,7 @@ Read these before changing the area they describe.
 | [0b-protocol-spec-drift.md](0b-protocol-spec-drift.md) | `doc/protocol.md` documents version 1; the code implements 14. Smaller than it sounds: 12 messages are documented and implemented, 7 are obsolete, **0 need writing** |
 | [0a-flx-deferred.md](0a-flx-deferred.md) | Why FLX was not removed. ~394 references woven through the session lifecycle, and `test_client_reset.cpp` alone holds 76 |
 | [0a-i1-i2-flx-boundary.md](0a-i1-i2-flx-boundary.md) | Core replication is entirely FLX-free; `client_reset` is protocol, not FLX. Bounds the blast radius of removing it |
+| [0b-base64-empty-input.md](0b-base64-empty-input.md) | `base64_decode("")` aborted the process, and `AccessToken::parse("")` with it. Unreachable only because nothing authenticates; a remote abort the moment something does |
 | [0b-server-has-no-auth.md](0b-server-has-no-auth.md) | The sync server accepts a token on every bind, logs it, and never looks at it. 761 lines of access control that nothing calls. Read this before making the server installable |
 | [0b-self-hostable.md](0b-self-hostable.md) | The README promised a self-hostable sync server. The package exports no server target, installs no server header, and there is no server executable. The server exists only inside the build tree |
 | [0b-server-installability-cost.md](0b-server-installability-cost.md) | What it would actually take to ship the server: 36 include sites, one header not yet installed, and 761 lines of App Services authentication behind four call sites |

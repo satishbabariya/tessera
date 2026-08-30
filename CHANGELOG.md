@@ -4,6 +4,23 @@
 
 ### Fixed
 
+* `util::base64_decode("")` terminated the process. Its guard against
+  overlapping input and output buffers called `Span::back()`, which asserts on an
+  empty span, and an empty input produces a zero-length output buffer.
+  `AccessToken::parse("")` inherited it. Unreachable today because nothing on the
+  server parses a token, and a remote abort the moment anything does -- an empty
+  token is what a client with no credentials sends.
+
+### Added
+
+* `Sync_Auth_MalformedTokensAreRejectedNotFatal` covers six malformed tokens.
+  `Sync_Auth_TheSuitesOwnTokenVerifiesAgainstTheSuitesOwnKey` and
+  `Sync_Auth_AWrongKeyRejectsTheToken` establish that the suite's own token
+  verifies against the suite's own key, and that a different key rejects it --
+  neither of which anything had checked, because the server never verifies.
+
+### Fixed
+
 * The `Self-hosting` section of `README.md`, shipped in 0.2.0, described an
   authentication model the sync server does not have. It said the server
   "requires a parseable signed JWT on every bind" and parses without verifying

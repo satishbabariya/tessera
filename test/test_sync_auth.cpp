@@ -94,6 +94,38 @@ TEST(Sync_Auth_AWrongKeyRejectsTheToken)
     CHECK(error == AccessToken::ParseError::invalid_signature);
 }
 
+
+// AccessToken::parse must reject malformed input rather than abort. An empty
+// token is what a client that has not been given one sends, and what anyone
+// probing an exposed port sends first.
+//
+// This was found by making the server verify tokens: base64_decode calls
+// Span::back() on the input, which asserts on an empty span, so parse("")
+// terminated the process. A server that authenticates is a server that parses
+// hostile input, and the parser had never been given any.
+TEST(Sync_Auth_MalformedTokensAreRejectedNotFatal)
+{
+    PKey key = PKey::load_public(fixtures::test_server_key_path());
+    AccessControl control(std::move(key));
+
+    const char* malformed[] = {
+        "",                       // no token at all
+        ":",                      // separator only
+        ":abc",                   // empty payload
+        "abc:",                   // empty signature
+        "not-base64!:also-not",   // invalid alphabet
+        "eyJ9",                   // one part, no signature
+    };
+
+    for (const char* t : malformed) {
+        AccessToken token;
+        AccessToken::ParseError error = AccessToken::ParseError::none;
+        bool ok = AccessToken::parse(StringData(t), token, error, &control.verifier());
+        CHECK_NOT(ok);
+        CHECK(error != AccessToken::ParseError::none);
+    }
+}
+
 #endif // !TESSERA_MOBILE
 
 } // unnamed namespace
