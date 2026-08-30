@@ -1,0 +1,12 @@
+[
+  {
+    "name": "changelog",
+    "state": "SUCCESS",
+    "bucket": "pass"
+  },
+  {
+    "name": "CodeRabbit",
+    "state": "SUCCESS",
+    "bucket": "pass"
+  }
+]

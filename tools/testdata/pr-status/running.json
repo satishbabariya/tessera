@@ -1,0 +1,37 @@
+[
+  {
+    "name": "ubuntu-latest gcc Debug",
+    "state": "IN_PROGRESS",
+    "bucket": "pending"
+  },
+  {
+    "name": "ubuntu-latest clang Debug",
+    "state": "IN_PROGRESS",
+    "bucket": "pending"
+  },
+  {
+    "name": "ubuntu-latest gcc Release",
+    "state": "IN_PROGRESS",
+    "bucket": "pending"
+  },
+  {
+    "name": "macos-latest clang Debug",
+    "state": "IN_PROGRESS",
+    "bucket": "pending"
+  },
+  {
+    "name": "macos-latest clang Release",
+    "state": "IN_PROGRESS",
+    "bucket": "pending"
+  },
+  {
+    "name": "changelog",
+    "state": "SUCCESS",
+    "bucket": "pass"
+  },
+  {
+    "name": "CodeRabbit",
+    "state": "SUCCESS",
+    "bucket": "pass"
+  }
+]

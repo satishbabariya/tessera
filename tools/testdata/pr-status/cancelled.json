@@ -1,0 +1,37 @@
+[
+  {
+    "name": "ubuntu-latest gcc Debug",
+    "state": "CANCELLED",
+    "bucket": "cancel"
+  },
+  {
+    "name": "ubuntu-latest clang Debug",
+    "state": "CANCELLED",
+    "bucket": "cancel"
+  },
+  {
+    "name": "ubuntu-latest gcc Release",
+    "state": "CANCELLED",
+    "bucket": "cancel"
+  },
+  {
+    "name": "macos-latest clang Debug",
+    "state": "CANCELLED",
+    "bucket": "cancel"
+  },
+  {
+    "name": "macos-latest clang Release",
+    "state": "CANCELLED",
+    "bucket": "cancel"
+  },
+  {
+    "name": "changelog",
+    "state": "SUCCESS",
+    "bucket": "pass"
+  },
+  {
+    "name": "CodeRabbit",
+    "state": "SUCCESS",
+    "bucket": "pass"
+  }
+]
