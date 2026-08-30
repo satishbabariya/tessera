@@ -214,9 +214,22 @@ what changed instead.
 
 | | At exit | Now |
 |---|---|---|
-| CoreTests (Linux) | 1652 | 1664 |
+| CoreTests, Linux Debug | 1651 | 1664 |
+| CoreTests, macOS Debug | 1652 | 1664 |
+| Tests disabled by `TEST_IF` | not reported | 31 Linux, 32 macOS |
 | Executable checks | 6 | 12 |
 | Sanitizers | ASan, UBSan, TSan clean | unchanged, over the larger suite, and over ObjectStoreTests as well |
+
+The first version of this table had a single row reading `CoreTests (Linux) |
+1652 | 1664`. 1652 was the macOS figure; Linux was 1651. The delta was roughly
+right and the label was wrong, in a table whose purpose is saying what changed.
+
+The two platforms now agree at 1664 and disagree by one on what is switched off:
+`Shared_RobustAgainstDeathDuringWrite` runs on Linux, which has robust POSIX
+mutexes, and is correctly disabled on macOS, which does not. That single row of
+difference is the entire visible result of the work in
+[0b-header-macro-visibility.md](findings/0b-header-macro-visibility.md), and
+until that work the framework did not print the number at all.
 
 Twelve of those additional tests exist because a claim was measured for the first
 time. The other, `test_util_enum.cpp`, existed already and was in no
