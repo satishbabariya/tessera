@@ -20,6 +20,14 @@
   server installable must come after adding authentication rather than before.
   See `docs/findings/0b-server-has-no-auth.md`.
 
+### Added
+
+* `tools/check-server-not-shipped-unauthenticated.sh`, run in CI, fails if the
+  sync server acquires an `install(TARGETS)` rule or an executable while
+  `server.cpp` still consults no token. A conjunction on purpose: either half
+  alone is fine, and only the pairing of reachable and unauthenticated is
+  refused.
+
 ## 0.2.0 — 2026-08-29
 
 ### Breaking

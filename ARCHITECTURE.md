@@ -169,6 +169,7 @@ to confirm it can actually fail:
 | `tools/check-repo-hygiene.sh` | no runtime artefacts, stray keys or dead references in the tree |
 | `tools/check-rename-residue.sh` | no pre-rename identifiers, and nothing still names the project `realm` to the outside |
 | `tools/check-test-sources-listed.sh` | every test source is named by a `CMakeLists`, so no test file is invisible to the build entirely |
+| `tools/check-server-not-shipped-unauthenticated.sh` | the sync server does not become installable while it still authenticates nobody |
 | `tools/check-cert-expiry.sh` | the test certificates are neither near expiry nor over Apple's 825-day ceiling |
 | `tools/verify/consumer-smoke-test.sh` | the installed package is consumable and exports exactly the documented target set |
 | `tools/verify/clean-clone-test.sh` | a fresh clone configures and builds |

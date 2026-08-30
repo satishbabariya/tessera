@@ -58,6 +58,15 @@ App-Services-specific parts are the token *encoding* -- a JWT carrying `app_id`,
 `sync_label` and `identity` -- and the claims `app_id`, `sync_label` and `admin`,
 none of which `server.cpp` reads.
 
+That ordering is enforced rather than described.
+`tools/check-server-not-shipped-unauthenticated.sh` fails if the server acquires
+an `install(TARGETS)` rule or an executable while `server.cpp` still calls
+neither `verify_access_token` nor `can()`. It is a conjunction on purpose: a
+server that authenticates nothing and cannot be reached is what exists today, and
+a server that authenticates properly may be installed freely. Only the pairing is
+refused, and the check says so when it passes rather than claiming a safety it is
+not measuring.
+
 Stricter, because the sequence now matters. Making the server installable is
 mechanical: 36 include sites and one header. Adding authentication is not. Doing
 the mechanical part first would ship a reachable server that authenticates
