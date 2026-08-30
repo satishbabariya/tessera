@@ -1685,6 +1685,29 @@ private:
         }
     }
 
+    /// The credential the client carries on the WebSocket handshake, as
+    /// `?baas_at=<token>` appended by ClientImpl::Connection::get_http_request_path.
+    /// Returns an empty string when the parameter is absent, which is what a
+    /// client with no token produces.
+    static std::string extract_handshake_token(StringData path)
+    {
+        static const char* key = "baas_at=";
+        const std::size_t key_len = std::strlen(key);
+        std::string_view p{path.data(), path.size()};
+        std::size_t pos = p.find(key);
+        while (pos != std::string_view::npos) {
+            // Only a value introduced by ? or & is a parameter; "xbaas_at=" is
+            // not one.
+            if (pos == 0 || p[pos - 1] == '?' || p[pos - 1] == '&') {
+                std::string_view rest = p.substr(pos + key_len);
+                std::size_t end = rest.find('&');
+                return std::string{end == std::string_view::npos ? rest : rest.substr(0, end)};
+            }
+            pos = p.find(key, pos + 1);
+        }
+        return {};
+    }
+
     void handle_request_for_sync(const HTTPRequest& request)
     {
         if (m_server.is_sync_stopped()) {
@@ -1693,6 +1716,40 @@ private:
             handle_503_service_unavailable(request, "The server does not accept sync "
                                                     "connections"); // Throws
             return;
+        }
+
+        // Authenticate the connection before upgrading it. This is where the
+        // credential is: the client appends ?baas_at=<token> to the handshake
+        // URL. BIND carries no token -- upstream emptied that field in
+        // realm-core #5151 and moved authentication to the transport -- so
+        // checking here rather than per session is both correct and cheaper.
+        // See docs/findings/0b-auth-belongs-at-the-handshake.md.
+        {
+            const AccessControl& access_control = m_server.get_access_control();
+            AccessToken::ParseError parse_error = AccessToken::ParseError::none;
+            std::string handshake_token = extract_handshake_token(request.path);
+            util::Optional<AccessToken> token =
+                access_control.verify_access_token(handshake_token, &parse_error); // Throws
+
+            if (!token) {
+                handle_401_unauthorized(request, "The access token was missing or could not be "
+                                                 "verified\n"); // Throws
+                return;
+            }
+
+            // verify_access_token reports invalid_signature when this server was
+            // constructed with no public key: it parsed the token and could not
+            // check it. That is the documented keyless mode -- see
+            // Sync_RunServerWithoutPublicKey -- so it is allowed, and said out
+            // loud once per connection rather than silently.
+            if (parse_error == AccessToken::ParseError::invalid_signature) {
+                logger.warn("Accepting a connection without verifying its token: this server was "
+                            "given no public key and authenticates nobody"); // Throws
+            }
+            else if (token->expired(m_server.token_expiration_clock_now())) {
+                handle_401_unauthorized(request, "The access token has expired\n"); // Throws
+                return;
+            }
         }
 
         util::Optional<std::string> sec_websocket_protocol = websocket::read_sec_websocket_protocol(request);
@@ -1932,6 +1989,12 @@ private:
         logger.detail("404 Not Found"); // Throws
         handle_text_response(HTTPStatus::NotFound,
                              "database sync server\n\nPage not found\n"); // Throws
+    }
+
+    void handle_401_unauthorized(const HTTPRequest&, std::string_view message)
+    {
+        logger.debug("401 Unauthorized: %1", message); // Throws
+        handle_text_response(HTTPStatus::Unauthorized, message); // Throws
     }
 
     void handle_503_service_unavailable(const HTTPRequest&, std::string_view message)
