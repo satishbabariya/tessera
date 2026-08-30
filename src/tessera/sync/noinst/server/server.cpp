@@ -2561,6 +2561,22 @@ public:
         TESSERA_ASSERT(!error_occurred());
         TESSERA_ASSERT(!m_error_message_sent);
 
+        // Upload is checked here rather than at BIND. Refusing it at bind would
+        // lock out read-only sessions, which have every right to connect and
+        // receive the server's history; what they may not do is send changesets.
+        // BIND checks Download, which is the floor for binding at all. See
+        // docs/findings/0b-server-has-no-auth.md.
+        if (const util::Optional<AccessToken>& token = m_connection.get_access_token()) {
+            const AccessControl& access_control = m_connection.get_server().get_access_control();
+            const std::string& virt_path = m_server_file->get_virt_path();
+            if (!access_control.can(*token, Privilege::Upload, virt_path)) {
+                logger.error("Rejected: UPLOAD(path='%1') -- the token grants no write access",
+                             virt_path); // Throws
+                error = ProtocolError::permission_denied;
+                return false;
+            }
+        }
+
         logger.detail("Received: UPLOAD(progress_client_version=%1, progress_server_version=%2, "
                       "locked_server_version=%3, num_changesets=%4)",
                       progress_client_version, progress_server_version, locked_server_version,

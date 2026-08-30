@@ -38,11 +38,16 @@
   upstream removed its caller in realm-core #5151. A token scoped to one path is
   refused for any other, with `permission_denied`.
 
-  `Privilege::Download` is the floor: a session that cannot download cannot
-  usefully bind, since even an upload-only client receives the server's history.
-  Upload is deliberately not checked at bind, because refusing it there would
-  lock out read-only sessions; its place is where an UPLOAD message arrives, and
-  that check does not exist yet.
+  `Privilege::Download` is the floor for binding: a session that cannot download
+  cannot usefully bind, since even an upload-only client receives the server's
+  history.
+
+* **A read-only token cannot write.** `Privilege::Upload` is checked where an
+  UPLOAD message arrives rather than at bind, because refusing it at bind would
+  lock out read-only sessions -- which have every right to connect and receive
+  history, and may only not send changesets.
+  `g_signed_test_user_token_readonly` grants `["download"]`, and until now a
+  session presenting it could write freely.
 
 * `Sync_Auth_HandshakeRejectsABadSignature`, `...RejectsAnExpiredToken` and
   `...AcceptsAValidToken`. The third is not redundant: without it the first two
@@ -50,6 +55,9 @@
 * `Sync_Auth_APathScopedTokenIsRefusedElsewhere` and `...WorksOnItsOwnPath`.
   `g_signed_test_user_token_for_path` carries `"path": "/valid"` and had sat in
   `sync_fixtures.hpp` with no test to belong to.
+* `Sync_Auth_AReadOnlyTokenCannotUpload` and `...MayStillBindAndDownload`. The
+  second is what makes the first mean something: a server that refused read-only
+  sessions outright would pass the first and fail this one.
 
 ### Fixed
 

@@ -260,6 +260,58 @@ TEST(Sync_Auth_APathScopedTokenWorksOnItsOwnPath)
     CHECK_NOT(did_fail);
 }
 
+
+// g_signed_test_user_token_readonly grants ["download"] and not upload. It has
+// been in sync_fixtures.hpp since before the authorization check was removed
+// upstream, and until now a session presenting it could write freely.
+
+TEST(Sync_Auth_AReadOnlyTokenCannotUpload)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db);
+    bool did_fail = false;
+    {
+        fixtures::ClientServerFixture fixture(dir, test_context);
+        fixture.set_client_side_error_handler([&](Status, bool) {
+            did_fail = true;
+            fixture.stop();
+        });
+        fixture.start();
+        Session session =
+            fixture.make_bound_session(db, "/test", fixtures::g_signed_test_user_token_readonly);
+
+        // Binding is allowed -- a read-only session is a legitimate thing. It is
+        // the changeset that must be refused.
+        {
+            WriteTransaction wt{db};
+            wt.get_group().add_table_with_primary_key("class_foo", type_Int, "id"); // Throws
+            wt.commit();
+        }
+        session.wait_for_upload_complete_or_client_stopped();
+    }
+    CHECK(did_fail);
+}
+
+
+TEST(Sync_Auth_AReadOnlyTokenMayStillBindAndDownload)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db);
+    bool did_fail = false;
+    {
+        fixtures::ClientServerFixture fixture(dir, test_context);
+        fixture.set_client_side_error_handler([&](Status, bool) {
+            did_fail = true;
+            fixture.stop();
+        });
+        fixture.start();
+        Session session =
+            fixture.make_bound_session(db, "/test", fixtures::g_signed_test_user_token_readonly);
+        session.wait_for_download_complete_or_client_stopped();
+    }
+    CHECK_NOT(did_fail);
+}
+
 #endif // !TESSERA_MOBILE
 
 } // unnamed namespace
