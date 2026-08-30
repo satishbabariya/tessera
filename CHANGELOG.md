@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Fixed
+
+* A server could terminate any client connected to it. `sync/protocol.cpp` mapped
+  `ProtocolError` values onto `ErrorCodes`, and twelve of them fell through to
+  `TESSERA_UNREACHABLE()`, which aborts the process. Two are what a server sends
+  when it refuses a bind -- `token_expired` and `bad_authentication` -- so a
+  client could not survive being told its authentication had failed. They now map
+  to `AuthError`, `SyncPermissionDenied`, `SyncServerPermissionsChanged` and
+  `SyncProtocolInvariantFailed`. Nothing sent them, because nothing
+  authenticates, which is why this survived. See
+  `docs/findings/0b-client-terminates-on-errors.md`.
+
 ### Changed
 
 * The sync client sends the token it was given. `Session::Config::signed_user_token`
