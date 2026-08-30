@@ -216,6 +216,50 @@ TEST(Sync_Auth_HandshakeAcceptsAValidToken)
     CHECK_NOT(did_fail);
 }
 
+
+// g_signed_test_user_token_for_path carries "path": "/valid". It has been in
+// sync_fixtures.hpp with no test to belong to since the authorization check was
+// removed upstream in 2022. These are the two halves of what it is for.
+
+TEST(Sync_Auth_APathScopedTokenIsRefusedElsewhere)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db);
+    bool did_fail = false;
+    {
+        fixtures::ClientServerFixture fixture(dir, test_context);
+        fixture.set_client_side_error_handler([&](Status, bool) {
+            did_fail = true;
+            fixture.stop();
+        });
+        fixture.start();
+        Session session =
+            fixture.make_bound_session(db, "/other", fixtures::g_signed_test_user_token_for_path);
+        session.wait_for_download_complete_or_client_stopped();
+    }
+    CHECK(did_fail);
+}
+
+
+TEST(Sync_Auth_APathScopedTokenWorksOnItsOwnPath)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db);
+    bool did_fail = false;
+    {
+        fixtures::ClientServerFixture fixture(dir, test_context);
+        fixture.set_client_side_error_handler([&](Status, bool) {
+            did_fail = true;
+            fixture.stop();
+        });
+        fixture.start();
+        Session session =
+            fixture.make_bound_session(db, "/valid", fixtures::g_signed_test_user_token_for_path);
+        session.wait_for_download_complete_or_client_stopped();
+    }
+    CHECK_NOT(did_fail);
+}
+
 #endif // !TESSERA_MOBILE
 
 } // unnamed namespace
