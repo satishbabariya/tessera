@@ -2,6 +2,45 @@
 
 ## Unreleased
 
+Nothing yet.
+
+## 0.2.0 — 2026-08-29
+
+### Breaking
+
+Tessera is 0.x and promises no compatibility between versions. These are the
+changes that actually break something, stated plainly rather than left for a
+reader to infer from the entries below.
+
+* **Two versions must not open the same database file.** On Windows the
+  interprocess write mutex is a named object derived from the file path, and its
+  prefix changed from `realm_named_intermutex_` to `tessera_named_intermutex_`.
+  A 0.1.x process and a 0.2.0 process would take different mutexes for the same
+  file and both believe they held the single writer lock. On POSIX the write lock
+  is file-based and unaffected, but the change-notification FIFO was renamed, so
+  the two would not see each other's commits.
+* **Two versions must not sync with each other.** The WebSocket subprotocol a
+  server offers changed from `realm.io` to `io.tessera`, and the `User-Agent` and
+  HTTP `Server` headers from `RealmSync/` to `TesseraSync/`.
+* **Error category names changed** from `realm.*` to `tessera.*`:
+  `basic_system`, `util.misc_ext`, `simulated_failure`, `sync.network.resolve`,
+  `sync.network.ssl`. Code matching on `std::error_code::category().name()`
+  breaks.
+* **`TESSERA_PRODUCT_NAME` is now `tessera`**, so `TESSERA_VER_CHUNK` -- printed
+  on abort and logged at sync startup -- reads `[tessera-0.2.0]` rather than
+  `[realm-core-...]`.
+* `TESSERA_VERSION` in the generated `config.h` was `""`. `config.h.in`
+  interpolated `@VERSION@`, a CMake variable that does not exist; the one that
+  does is `TESSERA_VERSION`, holding the `git describe` output. It now reads
+  e.g. `v0.1.1-29-g47c8d3fdf`. No C++ code used it, so nothing behaved
+  differently -- a generated header simply stated a version it did not have.
+* **The command-line tools' CMake target names changed** to match the binaries
+  they have always produced: `RealmTrawler` is `TesseraTrawler`, `Realm2JSON` is
+  `Tessera2JSON`, and so on. The installed binary names are unchanged.
+
+The file format is unchanged at version 1. A database written by 0.1.x opens in
+0.2.0.
+
 ### Fixed
 
 * `test/test_util_enum.cpp` is now in the build. It was in no `CMakeLists.txt`,
