@@ -9,6 +9,7 @@
 #include <tessera/sync/noinst/server/access_control.hpp>
 
 #include "test.hpp"
+#include "sync_fixtures.hpp"
 
 using namespace tessera;
 using namespace tessera::util;
@@ -45,6 +46,84 @@ TEST(Sync_Auth_JWTAccessToken)
     CHECK_EQUAL(tok.expires, 4720411615);
     CHECK_EQUAL(tok.identity, "df2f1860c19521bb9463494c925162f7");
     CHECK_EQUAL(tok.sync_label, "default");
+}
+
+
+// The token every sync test presents, and the key every sync test configures the
+// server with. Nothing has ever checked that the one verifies against the other,
+// because the server never verifies anything -- it logs the token and discards
+// it. See docs/findings/0b-server-has-no-auth.md.
+//
+// This has to hold before the server can be made to verify: if the suite's own
+// token does not check out against the suite's own key, turning verification on
+// fails 461 tests for a reason unrelated to the change.
+TEST(Sync_Auth_TheSuitesOwnTokenVerifiesAgainstTheSuitesOwnKey)
+{
+    PKey key = PKey::load_public(fixtures::test_server_key_path());
+    AccessControl control(std::move(key));
+
+    AccessToken token;
+    AccessToken::ParseError error = AccessToken::ParseError::none;
+    bool ok = AccessToken::parse(StringData(fixtures::g_signed_test_user_token), token, error, &control.verifier());
+
+    CHECK(ok);
+    CHECK(error == AccessToken::ParseError::none);
+    CHECK_EQUAL(token.identity, "test");
+
+    // Download and upload, on any path, forever: the token carries no path and
+    // no expiry. That is the right shape for a test fixture and the wrong shape
+    // for anything else.
+    CHECK_NOT(bool(token.path));
+    CHECK_EQUAL(token.expires, 0);
+    CHECK(control.can(token, Privilege::Download, "/any/path"));
+    CHECK(control.can(token, Privilege::Upload, "/any/path"));
+}
+
+
+// The same token against a key that did not sign it.
+TEST(Sync_Auth_AWrongKeyRejectsTheToken)
+{
+    PKey wrong = PKey::load_public(test_util::get_test_resource_path() + "test_pubkey2.pem");
+    AccessControl control(std::move(wrong));
+
+    AccessToken token;
+    AccessToken::ParseError error = AccessToken::ParseError::none;
+    bool ok = AccessToken::parse(StringData(fixtures::g_signed_test_user_token), token, error, &control.verifier());
+
+    CHECK_NOT(ok);
+    CHECK(error == AccessToken::ParseError::invalid_signature);
+}
+
+
+// AccessToken::parse must reject malformed input rather than abort. An empty
+// token is what a client that has not been given one sends, and what anyone
+// probing an exposed port sends first.
+//
+// This was found by making the server verify tokens: base64_decode calls
+// Span::back() on the input, which asserts on an empty span, so parse("")
+// terminated the process. A server that authenticates is a server that parses
+// hostile input, and the parser had never been given any.
+TEST(Sync_Auth_MalformedTokensAreRejectedNotFatal)
+{
+    PKey key = PKey::load_public(fixtures::test_server_key_path());
+    AccessControl control(std::move(key));
+
+    const char* malformed[] = {
+        "",                       // no token at all
+        ":",                      // separator only
+        ":abc",                   // empty payload
+        "abc:",                   // empty signature
+        "not-base64!:also-not",   // invalid alphabet
+        "eyJ9",                   // one part, no signature
+    };
+
+    for (const char* t : malformed) {
+        AccessToken token;
+        AccessToken::ParseError error = AccessToken::ParseError::none;
+        bool ok = AccessToken::parse(StringData(t), token, error, &control.verifier());
+        CHECK_NOT(ok);
+        CHECK(error != AccessToken::ParseError::none);
+    }
 }
 
 #endif // !TESSERA_MOBILE

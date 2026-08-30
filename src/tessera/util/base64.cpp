@@ -120,8 +120,17 @@ std::optional<size_t> base64_decode(Span<const char> input, Span<char> out_buffe
     TESSERA_ASSERT_EX(out_buffer.size() >= required_buffer_len, out_buffer.size(), required_buffer_len);
     static_cast<void>(required_buffer_len);
 
-    // Guard against overlap (so that "restrict" works in the following)
-    TESSERA_ASSERT(input.data() + input.size() <= out_buffer.data() || input.data() > &out_buffer.back());
+    // Guard against overlap (so that "restrict" works in the following).
+    //
+    // The end pointer is computed rather than taken from back(), which asserts
+    // on an empty span. An empty input gives a zero-length output buffer, so
+    // base64_decode("") terminated the process instead of returning nullopt --
+    // and AccessToken::parse("") with it, which is what a client sends when it
+    // has no token and what anyone probing an exposed port sends first. See
+    // docs/findings/0b-base64-empty-input.md.
+    TESSERA_ASSERT(input.empty() || out_buffer.empty() ||
+                 input.data() + input.size() <= out_buffer.data() ||
+                 input.data() >= out_buffer.data() + out_buffer.size());
 
 
     const char* TESSERA_RESTRICT p = input.data();
