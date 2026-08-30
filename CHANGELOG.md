@@ -60,6 +60,17 @@
   never finish. It also covers the case #32 fixed: checks containing no build job
   at all now say so rather than reading as green. See
   `docs/findings/0b-green-by-absence.md`.
+* Removed `AccessControl::is_admin`, which was inverted. It treated the absence
+  of a path scope as evidence of administrator status, so a token whose entire
+  grant was `["download"]` -- one that `can()` correctly refuses permission to
+  upload anything anywhere -- came back as an administrator, while a token
+  scoped to a path and holding upload rights within it did not. Seven of the
+  suite's eight token fixtures are unscoped and so were all administrators. The
+  function was called by nothing, which is why it survived; its own comment read
+  "It is not safe since it might be too liberal". Tessera implements no
+  administrator concept, so nothing is preserved by keeping a broken
+  implementation of one. `AccessToken::admin` and `admin_field` stay -- they are
+  parsed token data. See `docs/findings/0b-is-admin-was-inverted.md`.
 
 * CI runs on every pull request, not only those targeting `main`. A stacked pull
   request -- one whose base is another feature branch -- got no build matrix at

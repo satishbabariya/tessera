@@ -39,8 +39,6 @@ struct AccessControl {
     bool can(const AccessToken&, unsigned int mask, const RealmFileIdent&) const noexcept;
     //@}
 
-    bool is_admin(const AccessToken&) const noexcept;
-
     /// Whether this server was given a public key. Without one it can verify
     /// nothing, so it authenticates nobody -- see the keyless branch in
     /// SyncConnection::handle_request_for_sync and Sync_RunServerWithoutPublicKey.
