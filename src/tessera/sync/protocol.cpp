@@ -224,13 +224,29 @@ Status protocol_error_to_status(ProtocolError error_code, std::string_view msg)
             case ProtocolError::schema_version_changed:
                 return ErrorCodes::SyncSchemaMigrationError;
 
-            case ProtocolError::limits_exceeded:
-                [[fallthrough]];
+            // These used to fall through to TESSERA_UNREACHABLE(), which
+            // terminated the process. A server could abort any client connected
+            // to it by sending one of twelve error codes, and two of them --
+            // token_expired and bad_authentication -- are what a server sends
+            // when it rejects a bind, so a client could not survive being told
+            // its authentication had failed. Nothing sent them, because nothing
+            // authenticated. See docs/findings/0b-client-terminates-on-errors.md.
             case ProtocolError::token_expired:
                 [[fallthrough]];
             case ProtocolError::bad_authentication:
+                return ErrorCodes::AuthError;
+
+            case ProtocolError::user_blacklisted:
                 [[fallthrough]];
+            case ProtocolError::client_file_blacklisted:
+                return ErrorCodes::SyncPermissionDenied;
+
             case ProtocolError::no_such_realm:
+                [[fallthrough]];
+            case ProtocolError::server_file_deleted:
+                return ErrorCodes::SyncServerPermissionsChanged;
+
+            case ProtocolError::limits_exceeded:
                 [[fallthrough]];
             case ProtocolError::bad_server_file_ident:
                 [[fallthrough]];
@@ -240,14 +256,8 @@ Status protocol_error_to_status(ProtocolError error_code, std::string_view msg)
                 [[fallthrough]];
             case ProtocolError::too_many_sessions:
                 [[fallthrough]];
-            case ProtocolError::server_file_deleted:
-                [[fallthrough]];
-            case ProtocolError::client_file_blacklisted:
-                [[fallthrough]];
-            case ProtocolError::user_blacklisted:
-                [[fallthrough]];
             case ProtocolError::transact_before_upload:
-                TESSERA_UNREACHABLE();
+                return ErrorCodes::SyncProtocolInvariantFailed;
         }
         return ErrorCodes::UnknownError;
     }();
