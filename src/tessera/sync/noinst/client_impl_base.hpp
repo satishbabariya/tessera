@@ -487,6 +487,18 @@ public:
 
     void update_connect_info(const std::string& http_request_path_prefix, const std::string& signed_access_token);
 
+    /// The token given to update_connect_info(). Sessions send it on BIND.
+    ///
+    /// Until this existed, send_bind_message() sent a local variable named
+    /// empty_access_token, with a comment saying the token was discarded because
+    /// the server ignores it. The server does ignore it -- and ignores it partly
+    /// because nothing sends one. See
+    /// docs/findings/0b-both-ends-of-the-token.md.
+    const std::string& get_signed_access_token() const noexcept
+    {
+        return m_signed_access_token;
+    }
+
     void resume_active_sessions();
 
     void voluntary_disconnect();

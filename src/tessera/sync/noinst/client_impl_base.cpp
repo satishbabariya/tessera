@@ -1895,8 +1895,13 @@ void Session::send_bind_message()
     ClientProtocol& protocol = m_conn.get_client_protocol();
     int protocol_version = m_conn.get_negotiated_protocol_version();
     OutputBuffer& out = m_conn.get_output_buffer();
-    // Discard the token since it's ignored by the server.
-    std::string empty_access_token;
+    // The token the caller supplied as Session::Config::signed_user_token,
+    // carried to the connection by update_connect_info(). This used to be a
+    // local named empty_access_token, discarded "since it's ignored by the
+    // server" -- which was true, and true partly because nothing sent one.
+    // Sending it changes nothing on its own: the server still does not read it.
+    // It is the half of authentication that can land without the other half.
+    const std::string& access_token = m_conn.get_signed_access_token();
     if (m_is_flx_sync_session) {
         nlohmann::json bind_json_data;
         if (auto migrated_partition = get_migration_store()->get_migrated_partition()) {
@@ -1915,14 +1920,14 @@ void Session::send_bind_message()
                 "Sending: BIND(session_ident=%1, need_client_file_ident=%2, is_subserver=%3, json_data=\"%4\")",
                 session_ident, need_client_file_ident, is_subserver, json_data_dump);
         }
-        protocol.make_flx_bind_message(protocol_version, out, session_ident, bind_json_data, empty_access_token,
+        protocol.make_flx_bind_message(protocol_version, out, session_ident, bind_json_data, access_token,
                                        need_client_file_ident, is_subserver); // Throws
     }
     else {
         std::string server_path = get_virt_path();
         logger.debug("Sending: BIND(session_ident=%1, need_client_file_ident=%2, is_subserver=%3, server_path=%4)",
                      session_ident, need_client_file_ident, is_subserver, server_path);
-        protocol.make_pbs_bind_message(protocol_version, out, session_ident, server_path, empty_access_token,
+        protocol.make_pbs_bind_message(protocol_version, out, session_ident, server_path, access_token,
                                        need_client_file_ident, is_subserver); // Throws
     }
     m_conn.initiate_write_message(out, this); // Throws
