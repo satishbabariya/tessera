@@ -97,7 +97,21 @@
   API, but the smoke test had only ever included `db.hpp` and friends, so nothing
   verified they were installed or self-contained.
 
+### Changed
+
+* The test binaries reject an argument beginning with `-` instead of treating it
+  as a path prefix, and print what they do accept. `tessera-tests --help` used to
+  set the prefix to `--help` and write its temporary databases into the working
+  directory.
+
 ### Added
+
+* `check-repo-hygiene.sh` rejects any tracked path that is not a legal filename
+  on Windows, and its runtime-artifact rule now covers `.realm` and `.mx` as well
+  as `.tess` -- the test suite names its files `.realm`, so the rule had been
+  looking for artifacts the engine produces while the tests produce different
+  ones.
+* `.gitignore` covers the databases the test suite leaves behind.
 
 * `tools/check-test-sources-listed.sh`, run in CI, fails if any test source is
   not named by the `CMakeLists.txt` that should compile it. It establishes that a
