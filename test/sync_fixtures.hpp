@@ -698,6 +698,20 @@ public:
         //  connections, while BaaS does not.
         config.service_identifier = "/tessera-sync";
         config.realm_identifier = std::move(realm_identifier);
+
+        // Every session needs a token, not only those built through
+        // make_bound_session. This did not matter while the client sent an empty
+        // string regardless of what it was given, and stopped being true in #23.
+        // A server that verifies -- which is the next step -- rejects a session
+        // that presents nothing, and the tests that would fail are the ones that
+        // build sessions directly: client reset, and anything constructing a
+        // Session::Config of its own.
+        //
+        // Defaulting it here rather than at each call site keeps the two paths
+        // agreeing. A test that wants a different token, or none, still sets one
+        // explicitly and this leaves it alone.
+        if (config.signed_user_token.empty())
+            config.signed_user_token = g_signed_test_user_token;
         config.server_port = m_server_ports[server_index];
         config.server_address = "localhost";
         if (m_connection_state_change_listeners[client_index]) {
