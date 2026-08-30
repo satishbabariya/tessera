@@ -62,6 +62,7 @@ jobs:
           tools/check-header-macros.sh
           tools/check-rename-residue.sh
           tools/check-cert-expiry.sh
+          tools/test-pr-status.sh
 
       - name: Configure
         env:

@@ -4,13 +4,19 @@
 
 ### Fixed
 
+* `tools/pr-status.sh` reports pull-request checks by outcome instead of counting
+  failures. The poll it replaces printed `5 of 7` for a stack whose runs had been
+  *cancelled* -- a terminal state -- which is the same string it prints for a
+  stack still building, so two pull requests waited two hours on runs that would
+  never finish. It also covers the case #32 fixed: checks containing no build job
+  at all now say so rather than reading as green. See
+  `docs/findings/0b-green-by-absence.md`.
+
 * CI runs on every pull request, not only those targeting `main`. A stacked pull
   request -- one whose base is another feature branch -- got no build matrix at
   all, so `gh pr checks` reported two green checks and nothing else. Two passing
   checks and seven passing checks look identical if you count failures rather
   than reading the list.
-
-### Fixed
 
 * A server could terminate any client connected to it. `sync/protocol.cpp` mapped
   `ProtocolError` values onto `ErrorCodes`, and twelve of them fell through to
