@@ -1,5 +1,5 @@
 // Version information
-#cmakedefine TESSERA_VERSION "@VERSION@"
+#cmakedefine TESSERA_VERSION "@TESSERA_VERSION@"
 
 // Feature detection
 #cmakedefine01 TESSERA_HAVE_READDIR64
