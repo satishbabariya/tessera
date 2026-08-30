@@ -23,6 +23,14 @@
   costs one check per connection instead of one per session, it can refuse with an
   HTTP status before any protocol state exists, and BIND's token field was emptied
   upstream on purpose. See `docs/findings/0b-auth-belongs-at-the-handshake.md`.
+  **This is authentication, not authorization.** `AccessControl::can` is still
+  never called and the token's `path` claim and `access` bits are still not
+  consulted, so any token that verifies grants access to every path with every
+  privilege. `g_signed_test_user_token_for_path` is scoped to `/valid` and can
+  still bind `/other`; `g_signed_test_user_token_readonly` grants download only
+  and can still upload. Closing that is a separate change, and it belongs at BIND
+  rather than the handshake, because the path is not known until then.
+
 * `Sync_Auth_HandshakeRejectsABadSignature`, `...RejectsAnExpiredToken` and
   `...AcceptsAValidToken`. The third is not redundant: without it the first two
   would pass against a server that refused every connection.
