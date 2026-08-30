@@ -1,16 +1,16 @@
 # Releasing
 
-## Prerequisite: a remote
+## The remote
 
-Until a Tessera repository exists under the project owner's control, nothing can
-be pushed and no release can be tagged. `origin` currently points at
-`https://github.com/realm/realm-core`, which is the upstream we forked from and
-must not be pushed to.
+`origin` is `https://github.com/satishbabariya/tessera`. There is deliberately no
+`upstream` remote: this repository is not a fork that tracks realm-core, and
+`tools/check-no-vendor-hosts.sh` fails if one is added, because a remote that can
+be pushed to by accident is worse than no remote at all.
+
+Confirm before pushing anything:
 
 ```sh
-git remote rename origin upstream      # keep upstream history fetchable
-git remote add origin <tessera-repo-url>
-git remote -v                          # confirm before pushing
+git remote -v
 ```
 
 ## Before tagging
@@ -28,18 +28,25 @@ TMPDIR="$CLEAN/" ./build.release/test/tessera-tests.app/Contents/MacOS/tessera-t
 TMPDIR="$CLEAN/" UNITTEST_THREADS=1 ./build.release/test/tessera-sync-tests.app/Contents/MacOS/tessera-sync-tests
 TMPDIR="$CLEAN/" ./build.release/test/object-store/tessera-object-store-tests.app/Contents/MacOS/tessera-object-store-tests
 
-tools/check-copyright-notices.sh 560
-tools/check-no-vendor-hosts.sh
-tools/check-layering.sh
-tools/check-merge-deps.sh
-tools/check-header-tiers.sh
+for c in tools/check-*.sh; do
+  case "$c" in
+    *copyright*) "$c" 560 ;;
+    *)           "$c"     ;;
+  esac
+done
 tools/verify/consumer-smoke-test.sh build.release
+tools/verify/clean-clone-test.sh
 ```
 
-Expected: CoreTests 1647 (Release), SyncTests 461, ObjectStoreTests 343. Debug
-reports 1652 — five tests are compiled out of Release builds by `#ifdef
-TESSERA_DEBUG` and `TEST_IF(..., SimulatedFailure::is_enabled())`. Compare like
-with like.
+The loop is deliberate. This list named five checks when there were five, and
+went on naming five when there were twelve -- a gate that enumerates its own
+members drifts behind them. `tools/README.md` says what each one does.
+
+Expected counts move whenever tests are added, so treat the table below as the
+last measured values rather than as constants, and check it against a recent
+`main` run before trusting it. What matters is that Debug and Release differ
+legitimately -- some tests are compiled out of Release by `#ifdef TESSERA_DEBUG`
+and `TEST_IF(..., SimulatedFailure::is_enabled())` -- so compare like with like.
 
 ## Read the run's conclusion, not the count of green jobs
 
@@ -72,9 +79,25 @@ Expected counts, which differ legitimately between configurations:
 
 | Suite | Debug | Release |
 |---|---|---|
-| CoreTests | 1652 | 1647 |
+| CoreTests | 1664 | 1659 |
 | SyncTests | 461 | 460 |
 | ObjectStoreTests | 343 | 343 |
+| Tests disabled by `TEST_IF` | 32 | 36 |
+
+Measured on macOS, 2026-08-29, at `feea4f54b`. Linux Debug agrees on 1664 and
+reports 31 disabled rather than 32, because `Shared_RobustAgainstDeathDuringWrite`
+runs there and not on Apple platforms.
+
+The five-test difference between Debug and Release is `#ifdef TESSERA_DEBUG`; the
+four-test difference in the disabled count is `SimulatedFailure::is_enabled()`,
+which is false in Release. A discrepancy that does not decompose into those two
+is worth investigating rather than accepting.
+
+The disabled row is new and matters more than it looks. Until #6 the framework
+computed that number and printed nothing, so a test switched off by its condition
+was invisible: absent from the total and from every other figure. If it moves
+without a test being added or removed, something changed platform or
+configuration underneath you.
 
 **Check the assertion counts too, not just the test counts.** A suite reporting
 the same number of tests with a wildly different number of assertions is usually
@@ -84,8 +107,10 @@ because the binary predated the changes being verified.
 
 ## The clean-clone test
 
-`tools/verify/clean-clone-test.sh` automates this. Run it against the published
-repository, not a local path -- the point is to exercise what a stranger gets.
+`tools/verify/clean-clone-test.sh` automates this, and since #13 the nightly
+runs it against the published repository. Run it by hand before a release
+anyway: the nightly tests whatever `main` was at 03:17, and a release is a
+different commit.
 
 The only honest test of "can someone use this" is doing what they would do, with
 no local knowledge:
