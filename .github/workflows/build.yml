@@ -3,8 +3,13 @@ name: build
 on:
   push:
     branches: [main]
+  # Every pull request, not only those targeting main. A stacked pull request --
+  # one whose base is another feature branch -- got no build matrix at all under
+  # `branches: [main]`, so `gh pr checks` showed two green checks and nothing
+  # else. Two passing checks and seven passing checks look the same if you count
+  # failures rather than reading the list, and #31 was one step from being merged
+  # on that basis.
   pull_request:
-    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

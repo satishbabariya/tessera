@@ -4,6 +4,14 @@
 
 ### Fixed
 
+* CI runs on every pull request, not only those targeting `main`. A stacked pull
+  request -- one whose base is another feature branch -- got no build matrix at
+  all, so `gh pr checks` reported two green checks and nothing else. Two passing
+  checks and seven passing checks look identical if you count failures rather
+  than reading the list.
+
+### Fixed
+
 * A server could terminate any client connected to it. `sync/protocol.cpp` mapped
   `ProtocolError` values onto `ErrorCodes`, and twelve of them fell through to
   `TESSERA_UNREACHABLE()`, which aborts the process. Two are what a server sends
