@@ -16,6 +16,15 @@
 
 ### Changed
 
+* ~~The sync client sends the token it was given.~~ Reverted before release. The
+  token was never absent: the client carries it on the WebSocket handshake as
+  `?baas_at=`, and upstream emptied the BIND field deliberately in 2022. Sending
+  it on BIND as well put a second copy of the credential on the wire once per
+  session. See `docs/findings/0b-auth-belongs-at-the-handshake.md`.
+
+  The original entry follows, struck through rather than deleted because it
+  describes a change that briefly existed on `main`.
+
 * The sync client sends the token it was given. `Session::Config::signed_user_token`
   reached the connection and was used for the WebSocket handshake request, but
   `send_bind_message` sent a local variable named `empty_access_token` --
