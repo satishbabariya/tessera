@@ -46,13 +46,20 @@ The App Services-shaped code is four files:
 | `permissions.cpp/.hpp` | 121 lines -- the privilege model |
 | `crypto_server*.cpp/.hpp` | 75 lines -- the signature backend, three implementations |
 
-761 lines. `server.cpp` touches access control at **four** call sites, and the
-protocol carries the token as one field on one message: `signed_user_token` on
-BIND.
+761 lines. The protocol carries the token as one field on one message:
+`signed_user_token` on BIND.
 
-That is a contained replacement rather than a pervasive one. Whatever
-authentication model Tessera adopts, it plugs in behind four calls and one wire
-field.
+The four "call sites" counted here were a grep for `m_access_control` and
+`access_control.`, which matched an include, a member declaration, a constructor
+initialiser and an accessor that nobody calls. None of them is a decision point.
+`server.cpp` consults access control **zero** times -- see
+[0b-server-has-no-auth.md](0b-server-has-no-auth.md). Counting textual matches
+and calling them call sites is the same error as the rest of this directory, made
+while measuring it.
+
+That makes the replacement more contained still, and the ordering stricter:
+whatever authentication model Tessera adopts is added to a server that currently
+has none, and must land before the server becomes reachable.
 
 ## What this does not settle
 

@@ -102,14 +102,24 @@ It is not installable. `find_package(Tessera)` exports `Tessera::Storage`,
 installed, and there is no server executable. To run one today you must build
 Tessera from source and link the in-tree target.
 
-Two things stand in the way, and both are decisions rather than oversights. The
-headers sit under a path named `noinst`, which cannot become a public include
-path without a rename, and that rename fixes an interface. And the server still
-expects the client to present an App Services access token: it requires a
-parseable signed JWT on every bind, and when no public key is configured it
-parses the token without verifying the signature -- a mode the source describes
-as being for testing. Giving Tessera an authentication model it actually owns is
-the substance of the next milestone.
+Two things stand in the way.
+
+The headers sit under a path named `noinst`, which cannot become a public include
+path without a rename, and that rename fixes an interface.
+
+**The server has no authentication and no authorization.** It accepts a
+`signed_user_token` on every bind, writes it to the log, and never looks at it
+again. `AccessToken::verify_access_token` is never called, `AccessControl::can`
+is never called, the public key passed to the `Server` constructor is stored and
+never read, and the `Authorization` header name in its configuration is used once
+-- to log its own value at startup. Anyone who can reach the port can bind to any
+database path and read and write it.
+
+Nothing is exposed by this today, because the server is not installable and
+cannot be reached from outside a build tree. It does mean the next milestone is
+to *add* an authentication model rather than to replace one, and that shipping
+the server without doing so would be worse than not shipping it. See
+[docs/findings/0b-server-has-no-auth.md](docs/findings/0b-server-has-no-auth.md).
 
 Until then, read "self-hostable" as a property of the licence and the
 architecture -- nothing here phones home, and the code is yours -- rather than

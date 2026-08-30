@@ -71,10 +71,13 @@ The headers include each other as `<tessera/sync/noinst/server/...>`, so they
 could be installed at that path unchanged -- but `noinst` in a public include
 path is a contradiction, and renaming the directory fixes a public interface.
 
-More substantially, the server still expects an App Services access token. It
-requires a parseable signed JWT on every bind, and `AccessControl` will parse a
-token without verifying its signature when no public key is configured, in a
-branch the source comments describe as being for testing. A self-hostable server
-needs an authentication model this project owns.
+More substantially, the server has no authentication at all. This section
+originally said it "still expects an App Services access token ... requires a
+parseable signed JWT on every bind", which is wrong in every clause: the token is
+logged and discarded, `verify_access_token` and `can()` are never called, and the
+public key is never read. See
+[0b-server-has-no-auth.md](0b-server-has-no-auth.md). A self-hostable server
+needs an authentication model this project owns, and the work is to add one
+rather than to replace one.
 
 Both belong to the next milestone. They are the milestone.

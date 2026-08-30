@@ -52,6 +52,7 @@ jobs:
           tools/check-merge-deps.sh
           tools/check-header-tiers.sh
           tools/check-repo-hygiene.sh
+          tools/check-server-not-shipped-unauthenticated.sh
           tools/check-test-sources-listed.sh
           tools/check-header-macros.sh
           tools/check-rename-residue.sh

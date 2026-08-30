@@ -2,7 +2,31 @@
 
 ## Unreleased
 
-Nothing yet.
+### Fixed
+
+* The `Self-hosting` section of `README.md`, shipped in 0.2.0, described an
+  authentication model the sync server does not have. It said the server
+  "requires a parseable signed JWT on every bind" and parses without verifying
+  when no public key is configured. In fact the server accepts a token on bind,
+  logs it, and never refers to it again: `verify_access_token` and
+  `AccessControl::can` are never called, the public key passed to the `Server`
+  constructor is never read, and `Config::authorization_header_name` is used only
+  to log its own value at startup. **The server performs no authentication and no
+  authorization.**
+
+  Nothing is exposed by this. The server is not in the installed package -- there
+  is no `Tessera::SyncServer` target, no installed header and no executable -- so
+  it cannot be reached from outside a build tree. It does mean that making the
+  server installable must come after adding authentication rather than before.
+  See `docs/findings/0b-server-has-no-auth.md`.
+
+### Added
+
+* `tools/check-server-not-shipped-unauthenticated.sh`, run in CI, fails if the
+  sync server acquires an `install(TARGETS)` rule or an executable while
+  `server.cpp` still consults no token. A conjunction on purpose: either half
+  alone is fine, and only the pairing of reachable and unauthenticated is
+  refused.
 
 ## 0.2.0 — 2026-08-29
 
