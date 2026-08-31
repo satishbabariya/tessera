@@ -63,6 +63,7 @@ jobs:
           tools/check-rename-residue.sh
           tools/check-cert-expiry.sh
           tools/test-pr-status.sh
+          tools/test-pre-push.sh
 
       - name: Configure
         env:

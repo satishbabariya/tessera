@@ -4,6 +4,17 @@
 
 ### Fixed
 
+* The `pre-push` hook no longer rejects this repository. Inherited from
+  realm-sync, it compared the push destination against four permitted
+  `realm-sync` remotes and aborted otherwise, so it refused every push to
+  `satishbabariya/tessera` -- not just pushes to `main`. Nothing installs the
+  hooks and `tools/README.md` did not list them, so the file had never been
+  executed once. It now enforces the rule the project actually has: changes
+  reach `main` through a pull request, with `TESSERA_ALLOW_MAIN_PUSH=1` for the
+  deliberate exception. `tools/install-hooks.sh` installs the hooks and
+  `tools/test-pre-push.sh` covers them in CI. See
+  `docs/findings/0b-hooks-nobody-runs.md`.
+
 * `tools/pr-status.sh` reports pull-request checks by outcome instead of counting
   failures. The poll it replaces printed `5 of 7` for a stack whose runs had been
   *cancelled* -- a terminal state -- which is the same string it prints for a
