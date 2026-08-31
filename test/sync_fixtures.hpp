@@ -708,9 +708,17 @@ public:
         // Session::Config of its own.
         //
         // Defaulting it here rather than at each call site keeps the two paths
-        // agreeing. A test that wants a different token, or none, still sets one
-        // explicitly and this leaves it alone.
-        if (config.signed_user_token.empty())
+        // agreeing. A test that wants a different token sets one explicitly and
+        // this leaves it alone.
+        //
+        // A test that wants *no* token cannot say so by passing an empty string,
+        // because that is indistinguishable from not having set one -- an
+        // earlier version of this comment claimed otherwise. Clear
+        // default_the_user_token instead. It matters: a client whose access
+        // token is being refreshed sends `?baas_at=` with an empty value, and
+        // whether the server tolerates that is the difference between a keyless
+        // server working and a keyless server refusing every connection.
+        if (default_the_user_token && config.signed_user_token.empty())
             config.signed_user_token = g_signed_test_user_token;
         config.server_port = m_server_ports[server_index];
         config.server_address = "localhost";
@@ -747,6 +755,11 @@ public:
         config.signed_user_token = std::move(signed_user_token);
         return make_session(client_index, server_index, std::move(db), std::move(server_path), std::move(config));
     }
+
+    /// Whether make_session fills in a token when the caller supplies none.
+    /// Clear it to send sessions with no token at all, which is what a client
+    /// does while its access token is being refreshed.
+    bool default_the_user_token = true;
 
     void cancel_reconnect_delay(int client_index)
     {

@@ -72,6 +72,11 @@ bool AccessControl::can(const AccessToken& token, unsigned int mask, const Realm
     return (token.access & mask) == mask;
 }
 
+bool AccessControl::has_public_key() const noexcept
+{
+    return bool(m_impl->m_public_key);
+}
+
 AccessToken::Verifier& AccessControl::verifier() const noexcept
 {
     return *m_impl;

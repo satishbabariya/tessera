@@ -1724,8 +1724,27 @@ private:
         // realm-core #5151 and moved authentication to the transport -- so
         // checking here rather than per session is both correct and cheaper.
         // See docs/findings/0b-auth-belongs-at-the-handshake.md.
-        {
-            const AccessControl& access_control = m_server.get_access_control();
+        const AccessControl& access_control = m_server.get_access_control();
+        if (!access_control.has_public_key()) {
+            // A server with no public key can verify nothing, so it
+            // authenticates nobody -- the documented keyless mode, covered by
+            // Sync_RunServerWithoutPublicKey. It must therefore not demand a
+            // token either.
+            //
+            // An earlier version of this checked has_public_key only *after*
+            // parsing, by way of the invalid_signature that verify_access_token
+            // reports when it has no key. That works for a token that parses
+            // and not otherwise, and a client with no token yet sends
+            // `?baas_at=` with an empty value -- which is exactly what one does
+            // while its token is being refreshed. Parsing an empty string
+            // fails, so the keyless branch was never reached and the server
+            // answered 401 to a connection it was never meant to authenticate.
+            // The client retried, forever. See
+            // docs/findings/0b-keyless-still-demanded-a-token.md.
+            logger.warn("Accepting a connection without verifying its token: this server was "
+                        "given no public key and authenticates nobody"); // Throws
+        }
+        else {
             AccessToken::ParseError parse_error = AccessToken::ParseError::none;
             std::string handshake_token = extract_handshake_token(request.path);
             util::Optional<AccessToken> token =
@@ -1736,17 +1755,7 @@ private:
                                                  "verified\n"); // Throws
                 return;
             }
-
-            // verify_access_token reports invalid_signature when this server was
-            // constructed with no public key: it parsed the token and could not
-            // check it. That is the documented keyless mode -- see
-            // Sync_RunServerWithoutPublicKey -- so it is allowed, and said out
-            // loud once per connection rather than silently.
-            if (parse_error == AccessToken::ParseError::invalid_signature) {
-                logger.warn("Accepting a connection without verifying its token: this server was "
-                            "given no public key and authenticates nobody"); // Throws
-            }
-            else if (token->expired(m_server.token_expiration_clock_now())) {
+            if (token->expired(m_server.token_expiration_clock_now())) {
                 handle_401_unauthorized(request, "The access token has expired\n"); // Throws
                 return;
             }

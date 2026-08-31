@@ -11,6 +11,11 @@
   before upgrading the connection if the token is missing, malformed, unverifiable
   or expired.
 
+  A server given no public key can verify nothing, so it authenticates nobody and
+  does not demand a token either -- including from a client that sends
+  `?baas_at=` with an empty value, which is what a client does while its access
+  token is being refreshed.
+
   Until now it read nothing: `verify_access_token` and `AccessControl::can` were
   never called and the public key was never used, so anyone able to reach the port
   could bind to any database path. See `docs/findings/0b-server-has-no-auth.md`.

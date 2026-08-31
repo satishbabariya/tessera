@@ -41,6 +41,16 @@ struct AccessControl {
 
     bool is_admin(const AccessToken&) const noexcept;
 
+    /// Whether this server was given a public key. Without one it can verify
+    /// nothing, so it authenticates nobody -- see the keyless branch in
+    /// SyncConnection::handle_request_for_sync and Sync_RunServerWithoutPublicKey.
+    ///
+    /// verify_access_token signals the same condition by reporting
+    /// invalid_signature on a token it parsed, but that signal only exists for
+    /// tokens that parse. A caller deciding whether to demand a token at all
+    /// has to ask before parsing.
+    bool has_public_key() const noexcept;
+
     AccessToken::Verifier& verifier() const noexcept;
 
 private:

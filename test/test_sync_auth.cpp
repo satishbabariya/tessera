@@ -219,3 +219,62 @@ TEST(Sync_Auth_HandshakeAcceptsAValidToken)
 #endif // !TESSERA_MOBILE
 
 } // unnamed namespace
+
+
+// A server given no public key can verify nothing, so it authenticates nobody.
+// It must therefore not demand a token either -- and the case that matters is
+// not an unsigned token but *no* token, because a client whose access token is
+// being refreshed sends `?baas_at=` with an empty value.
+//
+// This is the shape that hung ObjectStoreTests. The keyless branch used to be
+// reached by way of the invalid_signature that verify_access_token reports when
+// it holds no key, which only happens for a token that parses. An empty string
+// does not parse, so the branch was skipped and the server answered 401 to a
+// connection it was never meant to authenticate. The client retried, forever:
+// every job in the CI matrix died at the 60-minute timeout with no output.
+// Sync_RunServerWithoutPublicKey did not catch it because it presents an
+// unsigned token, which parses.
+TEST(Sync_Auth_AKeylessServerAcceptsAClientWithNoToken)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db);
+    bool did_fail = false;
+    {
+        fixtures::ClientServerFixture::Config config;
+        config.server_public_key_path = {}; // keyless
+        fixtures::ClientServerFixture fixture(dir, test_context, std::move(config));
+        fixture.default_the_user_token = false; // send `?baas_at=` with nothing after it
+        fixture.set_client_side_error_handler([&](Status, bool) {
+            did_fail = true;
+            fixture.stop();
+        });
+        fixture.start();
+        Session session = fixture.make_bound_session(db, "/test", "");
+        session.wait_for_download_complete_or_client_stopped();
+    }
+    CHECK_NOT(did_fail);
+}
+
+
+// The complement, and the reason the branch above is conditional rather than
+// unconditional: a server that *was* given a public key must refuse a client
+// presenting nothing. Without this, the test above would pass against a server
+// that had simply stopped authenticating.
+TEST(Sync_Auth_AVerifyingServerRejectsAClientWithNoToken)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db);
+    bool did_fail = false;
+    {
+        fixtures::ClientServerFixture fixture(dir, test_context); // default: keyed
+        fixture.default_the_user_token = false;
+        fixture.set_client_side_error_handler([&](Status, bool) {
+            did_fail = true;
+            fixture.stop();
+        });
+        fixture.start();
+        Session session = fixture.make_bound_session(db, "/test", "");
+        session.wait_for_download_complete_or_client_stopped();
+    }
+    CHECK(did_fail);
+}
