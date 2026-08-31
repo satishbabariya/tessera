@@ -8,6 +8,8 @@
 #include <tessera/sync/noinst/server/access_token.hpp>
 #include <tessera/sync/noinst/server/access_control.hpp>
 
+#include <tessera/db.hpp>
+#include <tessera/sync/noinst/client_history_impl.hpp>
 #include "test.hpp"
 #include "sync_fixtures.hpp"
 
@@ -16,6 +18,12 @@ using namespace tessera::util;
 using namespace tessera::sync;
 
 namespace {
+
+// As in test_sync.cpp: a client-side database with replication, on a test path.
+#define TEST_CLIENT_DB(name)                                                                                         \
+    SHARED_GROUP_TEST_PATH(name##_path);                                                                             \
+    auto name = DB::create(make_client_replication(), name##_path);
+
 
 #if !TESSERA_MOBILE
 
@@ -126,6 +134,147 @@ TEST(Sync_Auth_MalformedTokensAreRejectedNotFatal)
     }
 }
 
+
+// The server verifies the credential on the WebSocket handshake. Until that
+// existed nothing checked a token at all, and the fixtures below -- a signature
+// that does not verify, and a token past its expiry -- had no test to belong to.
+// See docs/findings/0b-tokens-without-tests.md.
+//
+// A suite that only asserts acceptance cannot tell a system that accepts the
+// right things from one that accepts everything. These are the complement.
+
+TEST(Sync_Auth_HandshakeRejectsABadSignature)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db);
+    bool did_fail = false;
+    {
+        fixtures::ClientServerFixture fixture(dir, test_context);
+        fixture.set_client_side_error_handler([&](Status, bool) {
+            did_fail = true;
+            fixture.stop();
+        });
+        fixture.start();
+
+        // The suite's own token with one character of its signature changed.
+        // Everything else about it is valid, so a server that rejects this is
+        // checking the signature rather than the shape.
+        std::string corrupted = fixtures::g_signed_test_user_token;
+        corrupted[corrupted.size() - 1] = (corrupted[corrupted.size() - 1] == 'A' ? 'B' : 'A');
+
+        Session session = fixture.make_bound_session(db, "/test", corrupted);
+        session.wait_for_download_complete_or_client_stopped();
+    }
+    CHECK(did_fail);
+}
+
+
+TEST(Sync_Auth_HandshakeRejectsAnExpiredToken)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db);
+    bool did_fail = false;
+    {
+        fixtures::ClientServerFixture fixture(dir, test_context);
+        fixture.set_client_side_error_handler([&](Status, bool) {
+            did_fail = true;
+            fixture.stop();
+        });
+        fixture.start();
+
+        // g_signed_test_user_token_expiration_specified expires at 3000000000.
+        // The server reads the clock the fixture gives it, so move that past the
+        // expiry rather than waiting until 2065.
+        fixture.set_fake_token_expiration_time(3000000001);
+
+        Session session =
+            fixture.make_bound_session(db, "/test", fixtures::g_signed_test_user_token_expiration_specified);
+        session.wait_for_download_complete_or_client_stopped();
+    }
+    CHECK(did_fail);
+}
+
+
+// The complement of the two above: the same fixture, an untouched token, and no
+// clock movement must still connect. Without this, both tests above would pass
+// against a server that refused everything.
+TEST(Sync_Auth_HandshakeAcceptsAValidToken)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db);
+    bool did_fail = false;
+    {
+        fixtures::ClientServerFixture fixture(dir, test_context);
+        fixture.set_client_side_error_handler([&](Status, bool) {
+            did_fail = true;
+            fixture.stop();
+        });
+        fixture.start();
+        Session session = fixture.make_bound_session(db, "/test");
+        session.wait_for_download_complete_or_client_stopped();
+    }
+    CHECK_NOT(did_fail);
+}
+
 #endif // !TESSERA_MOBILE
 
 } // unnamed namespace
+
+
+// A server given no public key can verify nothing, so it authenticates nobody.
+// It must therefore not demand a token either -- and the case that matters is
+// not an unsigned token but *no* token, because a client whose access token is
+// being refreshed sends `?baas_at=` with an empty value.
+//
+// This is the shape that hung ObjectStoreTests. The keyless branch used to be
+// reached by way of the invalid_signature that verify_access_token reports when
+// it holds no key, which only happens for a token that parses. An empty string
+// does not parse, so the branch was skipped and the server answered 401 to a
+// connection it was never meant to authenticate. The client retried, forever:
+// every job in the CI matrix died at the 60-minute timeout with no output.
+// Sync_RunServerWithoutPublicKey did not catch it because it presents an
+// unsigned token, which parses.
+TEST(Sync_Auth_AKeylessServerAcceptsAClientWithNoToken)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db);
+    bool did_fail = false;
+    {
+        fixtures::ClientServerFixture::Config config;
+        config.server_public_key_path = {}; // keyless
+        fixtures::ClientServerFixture fixture(dir, test_context, std::move(config));
+        fixture.default_the_user_token = false; // send `?baas_at=` with nothing after it
+        fixture.set_client_side_error_handler([&](Status, bool) {
+            did_fail = true;
+            fixture.stop();
+        });
+        fixture.start();
+        Session session = fixture.make_bound_session(db, "/test", "");
+        session.wait_for_download_complete_or_client_stopped();
+    }
+    CHECK_NOT(did_fail);
+}
+
+
+// The complement, and the reason the branch above is conditional rather than
+// unconditional: a server that *was* given a public key must refuse a client
+// presenting nothing. Without this, the test above would pass against a server
+// that had simply stopped authenticating.
+TEST(Sync_Auth_AVerifyingServerRejectsAClientWithNoToken)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db);
+    bool did_fail = false;
+    {
+        fixtures::ClientServerFixture fixture(dir, test_context); // default: keyed
+        fixture.default_the_user_token = false;
+        fixture.set_client_side_error_handler([&](Status, bool) {
+            did_fail = true;
+            fixture.stop();
+        });
+        fixture.start();
+        Session session = fixture.make_bound_session(db, "/test", "");
+        session.wait_for_download_complete_or_client_stopped();
+    }
+    CHECK(did_fail);
+}

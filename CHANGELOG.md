@@ -2,6 +2,44 @@
 
 ## Unreleased
 
+### Added
+
+* **The sync server authenticates connections.** It reads the credential the
+  client already carries on the WebSocket handshake -- `?baas_at=<token>`,
+  appended by `ClientImpl::Connection::get_http_request_path` -- verifies it
+  against the public key given to the `Server` constructor, and answers HTTP 401
+  before upgrading the connection if the token is missing, malformed, unverifiable
+  or expired.
+
+  A server given no public key can verify nothing, so it authenticates nobody and
+  does not demand a token either -- including from a client that sends
+  `?baas_at=` with an empty value, which is what a client does while its access
+  token is being refreshed.
+
+  Until now it read nothing: `verify_access_token` and `AccessControl::can` were
+  never called and the public key was never used, so anyone able to reach the port
+  could bind to any database path. See `docs/findings/0b-server-has-no-auth.md`.
+
+  A server constructed with no public key still accepts unsigned tokens, which is
+  the documented keyless mode `Sync_RunServerWithoutPublicKey` covers. It now says
+  so in the log once per connection rather than silently.
+
+  Checked at the handshake rather than at BIND: that is where the token is, it
+  costs one check per connection instead of one per session, it can refuse with an
+  HTTP status before any protocol state exists, and BIND's token field was emptied
+  upstream on purpose. See `docs/findings/0b-auth-belongs-at-the-handshake.md`.
+  **This is authentication, not authorization.** `AccessControl::can` is still
+  never called and the token's `path` claim and `access` bits are still not
+  consulted, so any token that verifies grants access to every path with every
+  privilege. `g_signed_test_user_token_for_path` is scoped to `/valid` and can
+  still bind `/other`; `g_signed_test_user_token_readonly` grants download only
+  and can still upload. Closing that is a separate change, and it belongs at BIND
+  rather than the handshake, because the path is not known until then.
+
+* `Sync_Auth_HandshakeRejectsABadSignature`, `...RejectsAnExpiredToken` and
+  `...AcceptsAValidToken`. The third is not redundant: without it the first two
+  would pass against a server that refused every connection.
+
 ### Fixed
 
 * The `pre-push` hook no longer rejects this repository. Inherited from
