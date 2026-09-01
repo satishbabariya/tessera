@@ -4,6 +4,20 @@
 
 ### Added
 
+* **A server you can run.** `tessera-sync-server` is installed to `bin` beside
+  the inspector tools. It takes `--root`, `--public-key`, `--listen`, `--port`,
+  `--id` and `--log-level`, and stops cleanly on `SIGINT` or `SIGTERM` -- the
+  signal is taken by a thread waiting in `sigwait` rather than by a handler,
+  because `Server::stop()` takes locks.
+
+  It refuses to start without `--public-key` unless `--authenticate-nobody` is
+  given by name, exiting 2 and saying why. A keyless server verifies no
+  signature, demands no token and applies no permissions; a binary that entered
+  that mode silently, on a port, would put back at the command line exactly what
+  the authentication work took out of the server.
+  `tools/verify/consumer-smoke-test.sh` asserts the refusal against the
+  installed binary.
+
 * **The sync server is installable.** `src/tessera/sync/noinst/server/` is now
   `src/tessera/sync/server/`, and `find_package(Tessera)` exports
   `Tessera::SyncServer` alongside the five existing targets. Three headers are

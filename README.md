@@ -136,20 +136,47 @@ does exactly this: `find_package`, include, construct a `Server`, link. It runs
 on every pull request, so the claim on this line is checked rather than
 asserted.
 
-What is still missing is a server you can *run*. The package ships a static
-library and five inspector binaries; there is no `tessera-sync-server`
-executable, so self-hosting today means writing the twenty-line program that
-constructs a `Server` and starts it.
+And there is a server you can run. `tessera-sync-server` is installed to `bin`
+alongside the inspector tools:
+
+```console
+$ tessera-sync-server --root /srv/tessera --public-key /etc/tessera/pub.pem
+Tessera.Sync.Server - database sync server started ([tessera-0.2.0])
+... twenty lines of configuration ...
+Tessera.Sync.Server - Listening on ::1:7800 (max backlog is 128, non-TLS)
+Tessera - Listening on localhost:7800
+```
+
+`SIGINT` or `SIGTERM` stops it cleanly -- the signal is taken by a thread
+waiting in `sigwait` rather than by a handler, because `Server::stop()` takes
+locks.
+
+It refuses to start without a key unless you say so by name:
+
+```console
+$ tessera-sync-server --root /srv/tessera
+tessera-sync-server: no --public-key given.
+
+Without one this server cannot verify a signature, so it would accept
+every connection, require no token from anyone, and apply no
+permissions to any database it serves.
+
+Pass --public-key PATH to authenticate clients, or
+--authenticate-nobody if that is genuinely what you want.
+```
+
+A keyless server is a real mode and a useful one for tests, but a binary that
+entered it silently, on a port, would put back at the command line exactly what
+the sections above took out of the server. The smoke test asserts the refusal.
 
 See [docs/findings/0b-server-has-no-auth.md](docs/findings/0b-server-has-no-auth.md)
 for what was missing and
 [docs/findings/0b-keyless-still-demanded-a-token.md](docs/findings/0b-keyless-still-demanded-a-token.md)
 for why the keyless case is a branch of its own.
 
-So "self-hostable" now means what it says for anyone willing to write a `main`:
-install the package, link `Tessera::SyncServer`, and run your own sync server
-with no cloud account and no vendor. It does not yet mean a binary you can
-install and start, which is the next thing.
+So "self-hostable" now means what it says: install the package, run
+`tessera-sync-server`, and you have your own sync server, with no cloud account
+and no vendor. Link `Tessera::SyncServer` instead if you would rather embed it.
 
 ## The two API tiers
 

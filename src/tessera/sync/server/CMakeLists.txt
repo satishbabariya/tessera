@@ -61,3 +61,19 @@ install(TARGETS SyncServer EXPORT tessera
 install(FILES ${SERVER_INSTALL_HEADERS}
         DESTINATION include/tessera/sync/server
         COMPONENT devel)
+
+# A server you can run, not only link. Installed to bin alongside the inspector
+# tools. Guarded: tools/check-server-not-shipped-unauthenticated.sh treats an
+# executable in this directory as making the server reachable, and refuses that
+# combination unless the server authenticates -- which is why this could not
+# have been added before #29.
+if(NOT TESSERA_BUILD_LIB_ONLY AND NOT CMAKE_SYSTEM_NAME MATCHES "^Windows")
+    add_executable(TesseraSyncServer tessera_sync_server.cpp)
+    set_target_properties(TesseraSyncServer PROPERTIES
+                          OUTPUT_NAME "tessera-sync-server"
+                          DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}")
+    target_link_libraries(TesseraSyncServer PRIVATE SyncServer)
+    install(TARGETS TesseraSyncServer
+            COMPONENT runtime
+            DESTINATION bin)
+endif()
