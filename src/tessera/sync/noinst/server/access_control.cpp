@@ -81,23 +81,3 @@ AccessToken::Verifier& AccessControl::verifier() const noexcept
 {
     return *m_impl;
 }
-
-// This is_admin() function is more complicated than it should be due to
-// the current format of the tokens and behavior of ROS.
-// This function can be simplified with new a token format.
-bool AccessControl::is_admin(const AccessToken& token) const noexcept
-{
-    if (token.admin_field)
-        return token.admin;
-
-    if (!token.path)
-        return true;
-
-    // This will catch admins due to the way ROS makes access tokens.
-    // It is not safe since it might be too liberal. This function will be
-    // replaced as described above.
-    if (token.access & (Privilege::ModifySchema | Privilege::SetPermissions))
-        return true;
-
-    return false;
-}
