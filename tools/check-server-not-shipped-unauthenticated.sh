@@ -1,27 +1,36 @@
 #!/usr/bin/env bash
-# Fails if the sync server becomes installable while it still authenticates
-# nobody.
+# Fails if the sync server becomes installable while it authenticates nobody.
 #
-# The server accepts a signed_user_token on every bind, logs it, and never refers
-# to it again: verify_access_token and AccessControl::can are never called, and
-# the public key handed to the Server constructor is never read. See
+# This was written when the second half was simply true: the server accepted a
+# signed_user_token on every bind, logged it, and never referred to it again.
+# verify_access_token and AccessControl::can were never called and the public key
+# handed to the Server constructor was never read. See
 # docs/findings/0b-server-has-no-auth.md.
 #
-# That is safe only because the server cannot be reached. It is not in the
-# installed package -- no Tessera::SyncServer target, no installed header, no
-# executable -- so it runs only inside a build tree, which is where the 461 sync
-# tests run it.
+# That is no longer the state of the code. The server verifies the token on the
+# WebSocket handshake, answers 401 when it is missing, unverifiable or expired,
+# requires Download at BIND and Upload at UPLOAD, and re-checks expiry at both.
+# So this check now passes on its first condition and does not constrain
+# installability.
 #
-# Making it installable is mechanical: 36 include sites and one header that is
-# not yet installed. Adding authentication is not. This check exists so the two
-# cannot be done in the wrong order by someone who has not read the finding,
-# because the mechanical half is the tempting one and doing it first would ship a
-# reachable server that authenticates nobody.
+# It is kept, rather than deleted, because what it guards is an ordering and not
+# a one-time state: the mechanical half of shipping a server is the tempting
+# half, and if the authentication were ever removed or refactored away, this is
+# what would notice before the package shipped. A check that currently passes is
+# not the same as a check that cannot fail. Canary-tested in three parts, and
+# the first result corrected a wrong sentence that stood here: removing the two
+# calls from server.cpp on its own does NOT fail, because the conjunction is
+# still unsatisfied and an unreachable server that authenticates nobody is the
+# safe pairing. It takes both halves:
+#
+#     A. auth calls removed only ................ PASS (safe pairing)
+#     B. auth removed AND an install rule added . FAIL
+#     C. install rule with auth restored ........ PASS (installability permitted)
 #
 # It is a conjunction, deliberately. Either half alone is fine: a server that
-# authenticates nothing and cannot be reached is what exists today, and a server
-# that authenticates properly may be installed freely. Only the combination is
-# refused.
+# authenticates nothing and cannot be reached is what existed before, and a
+# server that authenticates properly may be installed freely. Only the
+# combination is refused.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
