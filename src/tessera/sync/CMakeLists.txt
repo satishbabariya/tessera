@@ -64,7 +64,7 @@ set(NOINST_HEADERS
     noinst/sync_schema_migration.hpp
 )
 
-set(SYNC_HEADERS ${IMPL_INSTALL_HEADESR}
+set(SYNC_HEADERS ${IMPL_INSTALL_HEADERS}
     ${SYNC_INSTALL_HEADERS}
     ${SYNC_NETWORK_INSTALL_HEADERS}
     ${NOINST_HEADERS})
@@ -99,10 +99,6 @@ install(TARGETS Sync EXPORT tessera
     ARCHIVE COMPONENT devel
     PUBLIC_HEADER COMPONENT devel)
 
-install(FILES ${SYNC_INSTALL_HEADERS}
-        DESTINATION include/tessera/sync
-        COMPONENT devel)
-
 install(FILES ${IMPL_INSTALL_HEADERS}
         DESTINATION include/tessera/impl
         COMPONENT devel)
@@ -113,10 +109,6 @@ install(FILES ${SYNC_INSTALL_HEADERS}
 
 install(FILES ${SYNC_NETWORK_INSTALL_HEADERS}
         DESTINATION include/tessera/sync/network
-        COMPONENT devel)
-
-install(FILES ${UTIL_INSTALL_HEADERS}
-        DESTINATION include/tessera/util
         COMPONENT devel)
 
 install(FILES ../../external/mpark/variant.hpp
