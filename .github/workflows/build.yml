@@ -19,8 +19,22 @@ jobs:
   build:
     name: ${{ matrix.os }} ${{ matrix.compiler }} ${{ matrix.build_type }}
     runs-on: ${{ matrix.os }}
-    # No job timeout was set. A test that dead-locks would hold a runner for
-    # GitHub's six-hour default; the whole matrix finishes well inside 60.
+    # A test that dead-locks would otherwise hold a runner for GitHub's six-hour
+    # default; the whole matrix finishes well inside 60. This stays as a
+    # backstop, but the per-step timeouts below are what should fire first --
+    # a job killed by THIS one is reported as `cancelled`, which is the same
+    # word GitHub uses for a concurrency cancellation. A hanging ObjectStoreTests
+    # sat behind that ambiguity for two hours, read as "still running".
+    #
+    # A step killed by its own `timeout-minutes` is reported as `failure`.
+    # Measured, not assumed:
+    #
+    #     JOB probe: completed/failure
+    #         2. A step that finishes: completed/success
+    #         3. A step that overruns its own timeout: completed/failure
+    #         4. A step after the timeout: completed/skipped
+    #
+    # See docs/findings/0b-a-hang-should-look-like-a-failure.md.
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -75,11 +89,13 @@ jobs:
       # command-line tools, so a target-limited build silently excludes code
       # from verification. That has caused breakage twice in this project.
       - name: Build everything
+        timeout-minutes: 35
         run: cmake --build build --parallel
 
       # A fresh TMPDIR per run: the suites leak temporary directories, and a
       # large temp directory degrades some tests by four orders of magnitude.
       - name: CoreTests
+        timeout-minutes: 20
         run: |
           export TMPDIR="$(mktemp -d)/"
           "$(tools/verify/test-binary.sh build tessera-tests)"
@@ -114,6 +130,7 @@ jobs:
           esac
 
       - name: ObjectStoreTests
+        timeout-minutes: 20
         run: |
           export TMPDIR="$(mktemp -d)/"
           "$(tools/verify/test-binary.sh build tessera-object-store-tests)"
@@ -123,6 +140,7 @@ jobs:
       # locally gave 4.2s, 680.6s (failing), 13.7s and 0.011s. A merge gate that
       # fails on DNS conditions trains everyone to ignore red builds.
       - name: SyncTests
+        timeout-minutes: 25
         run: |
           export TMPDIR="$(mktemp -d)/"
           "$(tools/verify/test-binary.sh build tessera-sync-tests)"
@@ -130,4 +148,5 @@ jobs:
           UNITTEST_THREADS: 1
 
       - name: Consumer smoke test
+        timeout-minutes: 10
         run: tools/verify/consumer-smoke-test.sh build

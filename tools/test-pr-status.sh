@@ -16,8 +16,9 @@ cd "$(dirname "$0")/.."
 
 expect() {
     local fixture="$1" want="$2" got
-    got=$(PR_STATUS_FIXTURE="tools/testdata/pr-status/$fixture.json" ./tools/pr-status.sh 0 \
-          | sed 's/^PR0  *//')
+    got=$(PR_STATUS_FIXTURE="tools/testdata/pr-status/$fixture.json" \
+          PR_STATUS_RUNS_FIXTURE="${RUNS_FIXTURE:-tools/testdata/pr-status/runs-none.txt}" \
+          ./tools/pr-status.sh 0 | sed 's/^PR0  *//')
     if [[ "$got" != "$want" ]]; then
         echo "FAIL $fixture" >&2
         echo "  expected: $want" >&2
@@ -38,6 +39,7 @@ expect nomatrix  '2 passed  <- NO BUILD MATRIX: these checks do not include a bu
 
 # The whole point: these two must not render the same. The poll this replaces
 # printed "5 of 7" for both.
+export PR_STATUS_RUNS_FIXTURE=tools/testdata/pr-status/runs-none.txt
 a=$(PR_STATUS_FIXTURE=tools/testdata/pr-status/cancelled.json ./tools/pr-status.sh 0)
 b=$(PR_STATUS_FIXTURE=tools/testdata/pr-status/running.json   ./tools/pr-status.sh 0)
 if [[ "$a" == "$b" ]]; then
@@ -46,5 +48,11 @@ if [[ "$a" == "$b" ]]; then
 else
     echo "  ok  cancelled and running are distinguishable"
 fi
+
+# The same checks, with a build run that exists for the head commit. This is a
+# pull request seconds after a push: the changelog check is in, the matrix is
+# created but has reported nothing. It must not be called NO BUILD MATRIX.
+RUNS_FIXTURE=tools/testdata/pr-status/runs-one.txt \
+    expect nomatrix '2 passed  <- build queued for this commit but not yet reported' || failures=1
 
 exit "$failures"
