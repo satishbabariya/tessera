@@ -46,6 +46,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <string_view>
 #include <functional>
 #include <locale>
 #include <map>
@@ -1704,15 +1705,14 @@ util::Optional<AccessToken> m_access_token;
     /// client with no token produces.
     static std::string extract_handshake_token(StringData path)
     {
-        static const char* key = "baas_at=";
-        const std::size_t key_len = std::strlen(key);
+        constexpr std::string_view key = "baas_at=";
         std::string_view p{path.data(), path.size()};
         std::size_t pos = p.find(key);
         while (pos != std::string_view::npos) {
             // Only a value introduced by ? or & is a parameter; "xbaas_at=" is
             // not one.
             if (pos == 0 || p[pos - 1] == '?' || p[pos - 1] == '&') {
-                std::string_view rest = p.substr(pos + key_len);
+                std::string_view rest = p.substr(pos + key.size());
                 std::size_t end = rest.find('&');
                 return std::string{end == std::string_view::npos ? rest : rest.substr(0, end)};
             }
@@ -2560,6 +2560,22 @@ public:
         TESSERA_ASSERT(!unbind_message_received());
         TESSERA_ASSERT(!error_occurred());
         TESSERA_ASSERT(!m_error_message_sent);
+
+        // Upload is checked here rather than at BIND. Refusing it at bind would
+        // lock out read-only sessions, which have every right to connect and
+        // receive the server's history; what they may not do is send changesets.
+        // BIND checks Download, which is the floor for binding at all. See
+        // docs/findings/0b-server-has-no-auth.md.
+        if (const util::Optional<AccessToken>& token = m_connection.get_access_token()) {
+            const AccessControl& access_control = m_connection.get_server().get_access_control();
+            const std::string& virt_path = m_server_file->get_virt_path();
+            if (!access_control.can(*token, Privilege::Upload, virt_path)) {
+                logger.error("Rejected: UPLOAD(path='%1') -- the token grants no write access",
+                             virt_path); // Throws
+                error = ProtocolError::permission_denied;
+                return false;
+            }
+        }
 
         logger.detail("Received: UPLOAD(progress_client_version=%1, progress_server_version=%2, "
                       "locked_server_version=%3, num_changesets=%4)",
