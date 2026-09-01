@@ -61,6 +61,22 @@
 
 ### Fixed
 
+* A hanging test now reports as a failure rather than a cancellation. GitHub
+  reports a job killed by `timeout-minutes` as `cancelled` -- the same word it
+  uses when `concurrency.cancel-in-progress` supersedes a run -- so an
+  `ObjectStoreTests` deadlock read as "still running" for about two hours. A
+  *step*-level timeout is reported as `failure` instead, which was measured with
+  a throwaway workflow rather than assumed, so every long step in `build.yml`
+  now carries its own cap several times its observed duration. The job-level 60
+  stays as a backstop.
+
+* `tools/pr-status.sh` no longer announces `NO BUILD MATRIX` for a pull request
+  whose build has not registered yet. Right after a push the changelog check can
+  be green while the matrix is still being created, and nothing is pending, so a
+  verdict drawn from the check list alone called the build absent. It now asks
+  whether a build run exists for the head commit and reports the two cases
+  differently. See `docs/findings/0b-a-hang-should-look-like-a-failure.md`.
+
 * The `pre-push` hook no longer rejects this repository. Inherited from
   realm-sync, it compared the push destination against four permitted
   `realm-sync` remotes and aborted otherwise, so it refused every push to

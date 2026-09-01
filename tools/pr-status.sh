@@ -30,6 +30,28 @@ fetch_checks() {
         --json name,state,bucket 2>/dev/null || echo '[]'
 }
 
+# Whether a build-workflow run exists for the pull request's head commit.
+#
+# The check list alone cannot tell "this pull request gets no build" from
+# "the build has not registered yet". Immediately after a push the changelog
+# check can be reported and green while the matrix is still being created, and
+# nothing is pending -- so a verdict drawn from the check list alone announces
+# NO BUILD MATRIX for a pull request whose build is seconds from appearing.
+# That happened, on a pull request that was fine.
+#
+# This asks the question the check list cannot answer.
+build_run_count() {
+    if [[ -n "${PR_STATUS_RUNS_FIXTURE:-}" ]]; then
+        cat "$PR_STATUS_RUNS_FIXTURE"
+        return
+    fi
+    local pr="$1" repo="${PR_STATUS_REPO:-satishbabariya/tessera}" head branch
+    head=$(gh pr view "$pr" --repo "$repo" --json headRefOid --jq .headRefOid 2>/dev/null) || { echo 0; return; }
+    branch=$(gh pr view "$pr" --repo "$repo" --json headRefName --jq .headRefName 2>/dev/null) || { echo 0; return; }
+    gh run list --repo "$repo" --branch "$branch" --workflow build --limit 10 \
+        --json headSha --jq "[.[]|select(.headSha==\"$head\")]|length" 2>/dev/null || echo 0
+}
+
 status_line() {
     local pr="$1" json
     json=$(fetch_checks "$pr")
@@ -72,7 +94,13 @@ status_line() {
     elif (( cancel && pending == 0 )); then
         verdict="  <- WAITING ON NOTHING: re-run it"
     elif (( matrix == 0 )); then
-        verdict="  <- NO BUILD MATRIX: these checks do not include a build"
+        local runs
+        runs=$(build_run_count "$pr")
+        if (( runs > 0 )); then
+            verdict="  <- build queued for this commit but not yet reported"
+        else
+            verdict="  <- NO BUILD MATRIX: these checks do not include a build"
+        fi
     elif (( total && total == pass )); then
         verdict="  <- ready"
     fi
