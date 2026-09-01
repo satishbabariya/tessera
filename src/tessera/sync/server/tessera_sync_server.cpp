@@ -38,6 +38,8 @@ void usage(const char* argv0)
                  "  --root DIR             where the server keeps its databases (required)\n"
                  "  --public-key PATH      PEM public key used to verify access tokens\n"
                  "  --listen ADDR          address to bind (default: localhost)\n"
+                 "  --tls-cert PATH        PEM certificate chain; enables TLS\n"
+                 "  --tls-key PATH         PEM private key for --tls-cert\n"
                  "  --port PORT            port to bind, empty for a system-assigned one\n"
                  "                         (default: 7800)\n"
                  "  --id ID                server id, reported in the backup protocol\n"
@@ -46,6 +48,9 @@ void usage(const char* argv0)
                  "  --authenticate-nobody  run without a public key. The server will then\n"
                  "                         verify nothing, require no token from anyone and\n"
                  "                         apply no permissions. For tests only.\n"
+                 "  --allow-cleartext      bind a non-loopback address without TLS. Clients\n"
+                 "                         send their token in the WebSocket URL, so this\n"
+                 "                         puts credentials on the wire in the clear.\n"
                  "  -h, --help             this text\n",
                  argv0);
 }
@@ -86,8 +91,9 @@ void wait_for_signal_then_stop()
 int main(int argc, char** argv)
 {
     std::string root, public_key_path, listen_address = "localhost", listen_port = "7800", id = "tessera";
+    std::string tls_cert_path, tls_key_path;
     util::Logger::Level level = util::Logger::Level::info;
-    bool authenticate_nobody = false;
+    bool authenticate_nobody = false, allow_cleartext = false;
 
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
@@ -103,6 +109,8 @@ int main(int argc, char** argv)
         else if (arg == "--listen")              listen_address = value("--listen");
         else if (arg == "--port")                listen_port = value("--port");
         else if (arg == "--id")                  id = value("--id");
+        else if (arg == "--tls-cert")            tls_cert_path = value("--tls-cert");
+        else if (arg == "--tls-key")             tls_key_path = value("--tls-key");
         else if (arg == "--log-level") {
             std::string l = value("--log-level");
             if (!parse_log_level(l, level)) {
@@ -111,6 +119,7 @@ int main(int argc, char** argv)
             }
         }
         else if (arg == "--authenticate-nobody") authenticate_nobody = true;
+        else if (arg == "--allow-cleartext")     allow_cleartext = true;
         else if (arg == "-h" || arg == "--help") { usage(argv[0]); return 0; }
         else {
             std::fprintf(stderr, "%s: unrecognised argument '%s'\n", argv[0], arg.c_str());
@@ -144,6 +153,37 @@ int main(int argc, char** argv)
         return 2;
     }
 
+    // TLS takes a certificate and its key or neither.
+    if (tls_cert_path.empty() != tls_key_path.empty()) {
+        std::fprintf(stderr, "%s: --tls-cert and --tls-key must be given together\n", argv[0]);
+        return 2;
+    }
+    const bool tls = !tls_cert_path.empty();
+
+    // The second decision, and the same shape as the first. A client sends its
+    // access token in the WebSocket URL -- `?baas_at=<token>`, which is how the
+    // server authenticates it at all -- so a connection without TLS carries the
+    // credential across the network in the clear. On loopback that is between a
+    // process and itself; on any other interface it is on the wire.
+    //
+    // So binding a non-loopback address without TLS has to be asked for, in the
+    // same way that running without a public key does.
+    const bool loopback = listen_address == "localhost" || listen_address == "127.0.0.1" ||
+                          listen_address == "::1" || listen_address == "ip6-localhost";
+    if (!tls && !loopback && !allow_cleartext) {
+        std::fprintf(stderr,
+                     "%s: refusing to bind %s without TLS.\n"
+                     "\n"
+                     "Clients send their access token in the WebSocket URL, so a connection\n"
+                     "without TLS puts credentials on the wire in the clear. On loopback that\n"
+                     "is a process talking to itself; on %s it is not.\n"
+                     "\n"
+                     "Pass --tls-cert PATH --tls-key PATH to serve over TLS, or\n"
+                     "--allow-cleartext if that is genuinely what you want.\n",
+                     argv[0], listen_address.c_str(), listen_address.c_str());
+        return 2;
+    }
+
     // Block the signals before any thread exists, so every thread inherits the
     // mask and only the waiter below receives them.
     sigset_t set;
@@ -164,6 +204,11 @@ int main(int argc, char** argv)
         config.listen_address = listen_address;
         config.listen_port = listen_port;
         config.id = id;
+        config.ssl = tls;
+        if (tls) {
+            config.ssl_certificate_path = tls_cert_path;
+            config.ssl_certificate_key_path = tls_key_path;
+        }
 
         util::Optional<sync::PKey> public_key;
         if (!public_key_path.empty())
@@ -175,7 +220,8 @@ int main(int argc, char** argv)
         sync::Server server(root, std::move(public_key), std::move(config));
         g_server = &server;
         server.start();
-        logger->info("Listening on %1:%2", listen_address, server.listen_endpoint().port());
+        logger->info("Listening on %1:%2 (%3)", listen_address, server.listen_endpoint().port(),
+                     tls ? "TLS" : "no TLS");
 
         std::thread signals(wait_for_signal_then_stop);
         server.run();

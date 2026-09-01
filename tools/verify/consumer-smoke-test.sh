@@ -151,6 +151,23 @@ grep -q "no --public-key given" "$WORK/refuse.log" || {
     echo "FAIL: the server refused without saying why"; cat "$WORK/refuse.log"; exit 1
 }
 
+# The same shape of refusal for the other credential hazard. A client sends its
+# access token in the WebSocket URL, so binding a non-loopback address without
+# TLS puts credentials on the wire in the clear.
+set +e
+"$SERVER_BIN" --root "$WORK/refuse2" --authenticate-nobody --listen 0.0.0.0 \
+    > "$WORK/refuse2.log" 2>&1
+CLEARTEXT_STATUS=$?
+set -e
+[ "$CLEARTEXT_STATUS" -eq 2 ] || {
+    echo "FAIL: the server bound a non-loopback address without TLS (exit $CLEARTEXT_STATUS)"
+    cat "$WORK/refuse2.log"
+    exit 1
+}
+grep -q "refusing to bind" "$WORK/refuse2.log" || {
+    echo "FAIL: the server refused the bind without saying why"; cat "$WORK/refuse2.log"; exit 1
+}
+
 DBFILE="$WORK/smoke.tess"
 OUT=$("$WORK/build/consumer" "$DBFILE")
 [ "$OUT" = "1 42" ] || { echo "FAIL: consumer produced '$OUT', expected '1 42'"; exit 1; }
@@ -173,3 +190,4 @@ echo "PASS: installed package is consumable, exports $EXPECTED_TARGETS,"
 echo "      api.hpp and engine.hpp are self-contained, file magic is TESS,"
 echo "      the README example works,"
 echo "      and the installed server refuses to run unauthenticated"
+echo "      or to bind a public address in the clear"
