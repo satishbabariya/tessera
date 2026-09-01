@@ -126,6 +126,31 @@ case "$SRV_OUT" in
   *) echo "FAIL: the installed server could not be constructed: $SRV_OUT"; exit 1 ;;
 esac
 
+# The installed server binary. A library you link is not a server you run, and
+# the package shipped five inspector tools and no server until this existed.
+#
+# What is asserted is the refusal, not the start-up: a server given no public key
+# verifies no signature, demands no token and applies no permissions, and a
+# binary that entered that mode silently on a port would reintroduce at the
+# command line exactly what #29-#35 removed from the server. Starting it here
+# would also bind a port, and a merge gate that fails when a port is busy trains
+# everyone to ignore it.
+SERVER_BIN=$(find "$PREFIX/bin" -maxdepth 1 -name 'tessera-sync-server*' -type f | head -1)
+[ -n "$SERVER_BIN" ] || { echo "FAIL: no tessera-sync-server in the installed package"; exit 1; }
+
+set +e
+"$SERVER_BIN" --root "$WORK/refuse" > "$WORK/refuse.log" 2>&1
+REFUSE_STATUS=$?
+set -e
+[ "$REFUSE_STATUS" -eq 2 ] || {
+    echo "FAIL: the server started without a public key (exit $REFUSE_STATUS)"
+    cat "$WORK/refuse.log"
+    exit 1
+}
+grep -q "no --public-key given" "$WORK/refuse.log" || {
+    echo "FAIL: the server refused without saying why"; cat "$WORK/refuse.log"; exit 1
+}
+
 DBFILE="$WORK/smoke.tess"
 OUT=$("$WORK/build/consumer" "$DBFILE")
 [ "$OUT" = "1 42" ] || { echo "FAIL: consumer produced '$OUT', expected '1 42'"; exit 1; }
@@ -146,4 +171,5 @@ esac
 
 echo "PASS: installed package is consumable, exports $EXPECTED_TARGETS,"
 echo "      api.hpp and engine.hpp are self-contained, file magic is TESS,"
-echo "      and the README example works"
+echo "      the README example works,"
+echo "      and the installed server refuses to run unauthenticated"
