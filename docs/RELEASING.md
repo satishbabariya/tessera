@@ -28,7 +28,7 @@ TMPDIR="$CLEAN/" ./build.release/test/tessera-tests.app/Contents/MacOS/tessera-t
 TMPDIR="$CLEAN/" UNITTEST_THREADS=1 ./build.release/test/tessera-sync-tests.app/Contents/MacOS/tessera-sync-tests
 TMPDIR="$CLEAN/" ./build.release/test/object-store/tessera-object-store-tests.app/Contents/MacOS/tessera-object-store-tests
 
-for c in tools/check-*.sh; do
+for c in tools/check-*.sh tools/test-*.sh; do
   case "$c" in
     *copyright*) "$c" 560 ;;
     *)           "$c"     ;;
@@ -40,7 +40,14 @@ tools/verify/clean-clone-test.sh
 
 The loop is deliberate. This list named five checks when there were five, and
 went on naming five when there were twelve -- a gate that enumerates its own
-members drifts behind them. `tools/README.md` says what each one does.
+members drifts behind them.
+
+The glob drifted anyway, which is worth admitting here rather than quietly
+fixing. It matched `check-*.sh` only, and the two suites added for
+`pr-status.sh` and `pre-push` are named `test-*.sh`, so a loop written to stop
+enumerating its members went back to missing two of them on a naming
+convention. Both patterns are matched now. `tools/README.md` says what each one
+does.
 
 Expected counts move whenever tests are added, so treat the table below as the
 last measured values rather than as constants, and check it against a recent
@@ -80,11 +87,28 @@ Expected counts, which differ legitimately between configurations:
 | Suite | Debug | Release |
 |---|---|---|
 | CoreTests | 1664 | 1659 |
-| SyncTests | 461 | 460 |
+| SyncTests | 477 | 476 |
 | ObjectStoreTests | 343 | 343 |
 | Tests disabled by `TEST_IF` | 32 | 36 |
 
-Measured on macOS, 2026-08-29, at `feea4f54b`. Linux Debug agrees on 1664 and
+Assertion counts, for the staleness check below. These are noisier than the test
+counts -- several suites randomise -- so treat a small drift as normal and a
+factor as worth explaining:
+
+| Suite | Debug | Release |
+|---|---|---|
+| CoreTests | 117,023,043 | 102,273,888 |
+| SyncTests | 40,400 | 127,236 |
+| ObjectStoreTests | 70,129 | 370,586 |
+
+The two suites where Release is several times Debug are not a mistake and not a
+stale binary -- `build.release` was built from scratch for this measurement.
+Nobody has yet explained the ratio, which is why it is written down: the next
+person to see 370,586 should know it was 370,586 in 0.3.0 too.
+
+Measured on macOS, 2026-09-02, at `29ec34cbe`. The SyncTests rows moved from
+461/460 when the authentication work added sixteen tests; the one-test Debug to
+Release difference is unchanged. Linux Debug agrees on 1664 and
 reports 31 disabled rather than 32, because `Shared_RobustAgainstDeathDuringWrite`
 runs there and not on Apple platforms.
 
@@ -104,6 +128,25 @@ the same number of tests with a wildly different number of assertions is usually
 a stale binary rather than a passing run -- during Phase 0b an ObjectStoreTests
 run reported 343 passing with 53,540 assertions against a baseline of ~70,000,
 because the binary predated the changes being verified.
+
+## Run the suites one at a time
+
+CoreTests in Release hung once during the 0.3.0 gate, with SyncTests running
+single-threaded beside it and CoreTests using all eighteen cores. It stopped in
+`DBTestPathGuard::~DBTestPathGuard()` -> `File::remove`, holding an open
+descriptor on a `.realm.management` directory, with its CPU time frozen across
+three samples a minute apart. Not slow -- stopped.
+
+It did not reproduce. The same test passes alone, the whole suite passes alone
+(1659 tests, 102,273,888 checks), and the CI matrix runs both Release
+configurations on every pull request. So this is recorded as an observation
+rather than a diagnosis: a contention-sensitive stall in test cleanup that
+nobody has yet reproduced deliberately.
+
+The practical consequence is to run the suites in sequence rather than in
+parallel, which the commands above already do. If it happens again, sample the
+process rather than assuming it is slow -- frozen CPU time is the difference,
+and `ps -o time` shows it in one line.
 
 ## The clean-clone test
 
