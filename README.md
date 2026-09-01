@@ -169,6 +169,26 @@ A keyless server is a real mode and a useful one for tests, but a binary that
 entered it silently, on a port, would put back at the command line exactly what
 the sections above took out of the server. The smoke test asserts the refusal.
 
+It refuses a second thing for the same reason. A client sends its access token
+in the WebSocket URL -- `?baas_at=<token>`, which is how the server
+authenticates it at all -- so a connection without TLS carries the credential
+across the network in the clear:
+
+```console
+$ tessera-sync-server --root /srv/tessera --public-key pub.pem --listen 0.0.0.0
+tessera-sync-server: refusing to bind 0.0.0.0 without TLS.
+
+Clients send their access token in the WebSocket URL, so a connection
+without TLS puts credentials on the wire in the clear. On loopback that
+is a process talking to itself; on 0.0.0.0 it is not.
+
+Pass --tls-cert PATH --tls-key PATH to serve over TLS, or
+--allow-cleartext if that is genuinely what you want.
+```
+
+`--tls-cert` and `--tls-key` take a PEM certificate chain and its private key,
+and are what you want for anything reachable from another machine.
+
 See [docs/findings/0b-server-has-no-auth.md](docs/findings/0b-server-has-no-auth.md)
 for what was missing and
 [docs/findings/0b-keyless-still-demanded-a-token.md](docs/findings/0b-keyless-still-demanded-a-token.md)

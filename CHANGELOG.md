@@ -4,6 +4,22 @@
 
 ### Added
 
+* **TLS for `tessera-sync-server`.** `--tls-cert PATH` and `--tls-key PATH` take
+  a PEM certificate chain and its key; the binary previously exposed none of
+  `Server::Config`'s TLS fields, so serving over TLS meant writing your own
+  `main`. Verified with a real handshake -- TLSv1.2,
+  ECDHE-RSA-AES256-GCM-SHA384 -- rather than by trusting the startup line.
+
+* The server refuses to bind a non-loopback address without TLS unless
+  `--allow-cleartext` is given by name. A client sends its access token in the
+  WebSocket URL, `?baas_at=<token>`, which is how the server authenticates it at
+  all, so a connection without TLS carries the credential across the network in
+  the clear. On loopback that is a process talking to itself; on any other
+  interface it is not. `tools/verify/consumer-smoke-test.sh` asserts the refusal.
+
+
+### Added
+
 * **A server you can run.** `tessera-sync-server` is installed to `bin` beside
   the inspector tools. It takes `--root`, `--public-key`, `--listen`, `--port`,
   `--id` and `--log-level`, and stops cleanly on `SIGINT` or `SIGTERM` -- the
