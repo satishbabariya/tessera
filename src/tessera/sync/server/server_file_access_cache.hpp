@@ -11,7 +11,7 @@
 #include <tessera/util/logger.hpp>
 #include <tessera/db.hpp>
 #include <tessera/util/optional.hpp>
-#include <tessera/sync/noinst/server/server_history.hpp>
+#include <tessera/sync/server/server_history.hpp>
 
 namespace tessera {
 namespace _impl {

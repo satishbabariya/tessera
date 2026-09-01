@@ -1,7 +1,7 @@
 #include "test.hpp"
 
 #include <tessera/sync/history.hpp>
-#include <tessera/sync/noinst/server/server_history.hpp>
+#include <tessera/sync/server/server_history.hpp>
 #include <tessera/sync/noinst/client_history_impl.hpp>
 #include <tessera/db.hpp>
 

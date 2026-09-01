@@ -36,3 +36,28 @@ elseif(TESSERA_HAVE_OPENSSL)
 else()
     target_sources(SyncServer PRIVATE crypto_server_stub.cpp)
 endif()
+
+# The public face of the server: exactly what is needed to compile server.hpp,
+# and nothing else. Publishing a header is a promise about it, so the promise is
+# kept as small as the API allows.
+#
+#   server.hpp        the API -- Server, its Config, start/stop
+#   clock.hpp         Config::token_expiration_clock is a Clock*
+#   crypto_server.hpp the constructor takes util::Optional<PKey>
+#
+# The remaining seven headers stay private: they are the history, the file
+# cache, the directory layout and the access-control internals, none of which a
+# caller names.
+set(SERVER_INSTALL_HEADERS
+    server.hpp
+    clock.hpp
+    crypto_server.hpp
+)
+
+install(TARGETS SyncServer EXPORT tessera
+    ARCHIVE DESTINATION lib
+    COMPONENT devel)
+
+install(FILES ${SERVER_INSTALL_HEADERS}
+        DESTINATION include/tessera/sync/server
+        COMPONENT devel)

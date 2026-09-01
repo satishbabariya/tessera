@@ -1,4 +1,4 @@
-#include <tessera/sync/noinst/server/server.hpp>
+#include <tessera/sync/server/server.hpp>
 
 #include <tessera/binary_data.hpp>
 #include <tessera/impl/simulated_failure.hpp>
@@ -13,10 +13,10 @@
 #include <tessera/sync/network/websocket.hpp>
 #include <tessera/sync/noinst/client_history_impl.hpp>
 #include <tessera/sync/noinst/protocol_codec.hpp>
-#include <tessera/sync/noinst/server/access_control.hpp>
-#include <tessera/sync/noinst/server/server_dir.hpp>
-#include <tessera/sync/noinst/server/server_file_access_cache.hpp>
-#include <tessera/sync/noinst/server/server_impl_base.hpp>
+#include <tessera/sync/server/access_control.hpp>
+#include <tessera/sync/server/server_dir.hpp>
+#include <tessera/sync/server/server_file_access_cache.hpp>
+#include <tessera/sync/server/server_impl_base.hpp>
 #include <tessera/merge/transform.hpp>
 #include <tessera/util/base64.hpp>
 #include <tessera/util/bind_ptr.hpp>

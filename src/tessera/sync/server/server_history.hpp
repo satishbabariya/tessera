@@ -15,12 +15,12 @@
 #include <tessera/impl/cont_transact_hist.hpp>
 #include <tessera/replication.hpp>
 #include <tessera/transaction.hpp>
-#include <tessera/sync/noinst/server/clock.hpp>
+#include <tessera/sync/server/clock.hpp>
 #include <tessera/sync/history.hpp>
 #include <tessera/merge/object_id.hpp>
 #include <tessera/merge/transform.hpp>
 #include <tessera/merge/instruction_replication.hpp>
-#include <tessera/sync/noinst/server/permissions.hpp>
+#include <tessera/sync/server/permissions.hpp>
 #include <tessera/array_integer.hpp>
 #include <tessera/array_ref.hpp>
 

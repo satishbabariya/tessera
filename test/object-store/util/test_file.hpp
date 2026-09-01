@@ -29,7 +29,7 @@
 #include <tessera/object-store/sync/sync_manager.hpp>
 #include <tessera/sync/client.hpp>
 #include <tessera/sync/config.hpp>
-#include <tessera/sync/noinst/server/server.hpp>
+#include <tessera/sync/server/server.hpp>
 #endif // TESSERA_ENABLE_SYNC
 
 #include <thread>

@@ -5,8 +5,8 @@
 
 #include <tessera/util/base64.hpp>
 #include <tessera/util/json_parser.hpp>
-#include <tessera/sync/noinst/server/permissions.hpp>
-#include <tessera/sync/noinst/server/access_token.hpp>
+#include <tessera/sync/server/permissions.hpp>
+#include <tessera/sync/server/access_token.hpp>
 
 using namespace tessera;
 using namespace tessera::util;

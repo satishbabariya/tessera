@@ -1,6 +1,6 @@
 #include <locale>
 
-#include <tessera/sync/noinst/server/server_dir.hpp>
+#include <tessera/sync/server/server_dir.hpp>
 
 using namespace tessera;
 

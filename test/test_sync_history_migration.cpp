@@ -5,7 +5,7 @@
 #include <tessera/db.hpp>
 #include <tessera/sync/history.hpp>
 #include <tessera/sync/noinst/client_history_impl.hpp>
-#include <tessera/sync/noinst/server/server_history.hpp>
+#include <tessera/sync/server/server_history.hpp>
 
 #include "test.hpp"
 #include "util/compare_groups.hpp"

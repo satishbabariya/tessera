@@ -4,6 +4,21 @@
 
 ### Added
 
+* **The sync server is installable.** `src/tessera/sync/noinst/server/` is now
+  `src/tessera/sync/server/`, and `find_package(Tessera)` exports
+  `Tessera::SyncServer` alongside the five existing targets. Three headers are
+  installed -- `server.hpp`, `clock.hpp`, `crypto_server.hpp` -- which is the
+  whole closure needed to compile the API. The other seven stay private:
+  publishing a header is a promise about it.
+
+  `server.hpp`'s include of `tessera/util/time.hpp` is deleted rather than
+  promoted. It looked like the rename would force a utility header into the
+  public API; the include is simply unused.
+
+  `tools/verify/consumer-smoke-test.sh` now builds a program outside the tree
+  that calls `find_package`, includes the server header, constructs a `Server`
+  and links the target. See `docs/findings/0b-private-by-directory-name.md`.
+
 * **Token expiry outlives the handshake.** The server checked
   `AccessToken::expired` once, while deciding whether to upgrade the WebSocket,
   and never again -- a connection accepted with a token expiring a second later

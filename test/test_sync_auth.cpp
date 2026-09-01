@@ -3,10 +3,10 @@
 #include <condition_variable>
 
 #include <tessera/binary_data.hpp>
-#include <tessera/sync/noinst/server/crypto_server.hpp>
+#include <tessera/sync/server/crypto_server.hpp>
 #include <tessera/sync/client.hpp>
-#include <tessera/sync/noinst/server/access_token.hpp>
-#include <tessera/sync/noinst/server/access_control.hpp>
+#include <tessera/sync/server/access_token.hpp>
+#include <tessera/sync/server/access_control.hpp>
 
 #include <tessera/db.hpp>
 #include <tessera/sync/noinst/client_history_impl.hpp>

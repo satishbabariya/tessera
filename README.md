@@ -94,16 +94,10 @@ auto results = table->where().greater(table->get_column_key("age"), 30).find_all
 ## Self-hosting
 
 Sync needs a server, and Tessera's is the one Realm shipped: it lives in
-`src/tessera/sync/noinst/server/`, is built as a static library, and runs inside
+`src/tessera/sync/server/`, is built as a static library, and runs inside
 477 passing tests including an in-process client-server round trip.
 
-It is not installable. `find_package(Tessera)` exports `Tessera::Storage`,
-`Tessera::Sync`, `Tessera::Merge`, `Tessera::ObjectStore` and
-`Tessera::QueryParser` -- there is no `Tessera::SyncServer`, no server header is
-installed, and there is no server executable. To run one today you must build
-Tessera from source and link the in-tree target.
-
-Two things stood in the way. One of them is now done.
+Both of the things that stood in the way are now done.
 
 **The server authenticates and authorizes, provided you give it a public key.**
 It reads the credential the client carries on the WebSocket handshake --
@@ -121,18 +115,41 @@ above are skipped in their entirety. That is the documented test mode -- see
 `Sync_RunServerWithoutPublicKey` -- and it is not a configuration to run
 anything real on.
 
-What remains is the packaging. The headers still sit under a path named
-`noinst`, which cannot become a public include path without a rename, and that
-rename fixes an interface -- publishing a header is a promise about it.
+It is installable. `find_package(Tessera)` exports `Tessera::SyncServer`
+alongside `Tessera::Storage`, `Tessera::Sync`, `Tessera::Merge`,
+`Tessera::ObjectStore` and `Tessera::QueryParser`, and three headers come with
+it:
+
+```cpp
+#include <tessera/sync/server/server.hpp>   // Server, its Config, start/stop
+#include <tessera/sync/server/clock.hpp>    // Config::token_expiration_clock
+#include <tessera/sync/server/crypto_server.hpp>  // PKey, for the constructor
+```
+
+Three rather than the ten the directory holds. The other seven are the history
+format, the file-access cache, the on-disk directory layout and the
+access-control internals -- nothing a caller names, and the things most likely
+to change. Publishing a header is a promise about it.
+
+`tools/verify/consumer-smoke-test.sh` builds a program outside the tree that
+does exactly this: `find_package`, include, construct a `Server`, link. It runs
+on every pull request, so the claim on this line is checked rather than
+asserted.
+
+What is still missing is a server you can *run*. The package ships a static
+library and five inspector binaries; there is no `tessera-sync-server`
+executable, so self-hosting today means writing the twenty-line program that
+constructs a `Server` and starts it.
 
 See [docs/findings/0b-server-has-no-auth.md](docs/findings/0b-server-has-no-auth.md)
 for what was missing and
 [docs/findings/0b-keyless-still-demanded-a-token.md](docs/findings/0b-keyless-still-demanded-a-token.md)
 for why the keyless case is a branch of its own.
 
-Until the rename, read "self-hostable" as a property of the licence and the
-architecture -- nothing here phones home, and the code is yours -- rather than
-as a package you can install today.
+So "self-hostable" now means what it says for anyone willing to write a `main`:
+install the package, link `Tessera::SyncServer`, and run your own sync server
+with no cloud account and no vendor. It does not yet mean a binary you can
+install and start, which is the next thing.
 
 ## The two API tiers
 
