@@ -1,5 +1,22 @@
 # The sync server authenticates nothing
 
+> **Addressed.** This describes the state of the code before #29, #30, #31 and
+> #35. The server now verifies the handshake token against the configured public
+> key and answers 401 when it is missing, unverifiable or expired (#29); requires
+> `Privilege::Download` at BIND (#30) and `Privilege::Upload` at UPLOAD (#31);
+> and re-checks expiry at both, because the handshake can only answer for the
+> moment it ran (#35).
+>
+> A server given no public key still authenticates nobody and now authorizes
+> nothing -- it demands no token and stores none. That is the documented test
+> mode, and getting its boundary wrong hung `ObjectStoreTests` on every platform:
+> see [0b-keyless-still-demanded-a-token.md](0b-keyless-still-demanded-a-token.md).
+>
+> The document is kept as written. What it records -- how far a credential can
+> travel through a system that never once looks at it, and how little that
+> resembles a bug from the inside -- is the part worth not losing.
+
+
 The bundled sync server performs no authentication and no authorization. It
 accepts a `signed_user_token` on every BIND message, logs it, and never refers to
 it again.

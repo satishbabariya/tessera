@@ -22,8 +22,9 @@ yet recommended for production data you cannot regenerate.
   changed, not merely that something did.
 - **Convergent sync.** A production-tested operational-transform engine and a
   sync client, both installable today, with no cloud account and no vendor. A
-  sync server is in the tree and exercised by 461 tests, but it is not yet part
-  of the installed package -- see [Self-hosting](#self-hosting).
+  sync server is in the tree, authenticates and authorizes when given a public
+  key, and is exercised by 477 tests, but it is not yet part of the installed
+  package -- see [Self-hosting](#self-hosting).
 - **Encryption at rest.** Optional AES-256, applied per page below the engine.
 
 The trade-off worth knowing up front: **one write transaction at a time**, across
@@ -94,7 +95,7 @@ auto results = table->where().greater(table->get_column_key("age"), 30).find_all
 
 Sync needs a server, and Tessera's is the one Realm shipped: it lives in
 `src/tessera/sync/noinst/server/`, is built as a static library, and runs inside
-461 passing tests including an in-process client-server round trip.
+477 passing tests including an in-process client-server round trip.
 
 It is not installable. `find_package(Tessera)` exports `Tessera::Storage`,
 `Tessera::Sync`, `Tessera::Merge`, `Tessera::ObjectStore` and
@@ -102,26 +103,36 @@ It is not installable. `find_package(Tessera)` exports `Tessera::Storage`,
 installed, and there is no server executable. To run one today you must build
 Tessera from source and link the in-tree target.
 
-Two things stand in the way.
+Two things stood in the way. One of them is now done.
 
-The headers sit under a path named `noinst`, which cannot become a public include
-path without a rename, and that rename fixes an interface.
+**The server authenticates and authorizes, provided you give it a public key.**
+It reads the credential the client carries on the WebSocket handshake --
+`?baas_at=<token>`, appended by `ClientImpl::Connection::get_http_request_path`
+-- verifies it against the key passed to the `Server` constructor, and answers
+HTTP 401 before upgrading the connection if the token is missing, malformed,
+unverifiable or expired. At BIND it requires `Privilege::Download` for the path
+being asked for; at UPLOAD it requires `Privilege::Upload`. Both re-check
+expiry, because the handshake can only answer for the moment it ran and sessions
+are multiplexed over a connection that may outlive its token.
 
-**The server has no authentication and no authorization.** It accepts a
-`signed_user_token` on every bind, writes it to the log, and never looks at it
-again. `AccessToken::verify_access_token` is never called, `AccessControl::can`
-is never called, the public key passed to the `Server` constructor is stored and
-never read, and the `Authorization` header name in its configuration is used once
--- to log its own value at startup. Anyone who can reach the port can bind to any
-database path and read and write it.
+**A server given no public key authenticates nobody and authorizes nothing.** It
+can verify no signature, so it demands no token and stores none, and the checks
+above are skipped in their entirety. That is the documented test mode -- see
+`Sync_RunServerWithoutPublicKey` -- and it is not a configuration to run
+anything real on.
 
-Nothing is exposed by this today, because the server is not installable and
-cannot be reached from outside a build tree. It does mean the next milestone is
-to *add* an authentication model rather than to replace one, and that shipping
-the server without doing so would be worse than not shipping it. See
-[docs/findings/0b-server-has-no-auth.md](docs/findings/0b-server-has-no-auth.md).
+What remains is the packaging. The headers still sit under a path named
+`noinst`, which cannot become a public include path without a rename, and that
+rename fixes an interface. `server.hpp` also includes `tessera/util/time.hpp`,
+which is deliberately not installed, so making the server public means promoting
+that header to the public API as well.
 
-Until then, read "self-hostable" as a property of the licence and the
+See [docs/findings/0b-server-has-no-auth.md](docs/findings/0b-server-has-no-auth.md)
+for what was missing and
+[docs/findings/0b-keyless-still-demanded-a-token.md](docs/findings/0b-keyless-still-demanded-a-token.md)
+for why the keyless case is a branch of its own.
+
+Until the rename, read "self-hostable" as a property of the licence and the
 architecture -- nothing here phones home, and the code is yours -- rather than
 as a package you can install today.
 

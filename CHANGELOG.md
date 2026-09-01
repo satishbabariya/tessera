@@ -86,6 +86,14 @@
   complaint, so a misspelling is a silent omission rather than an error.
   Verified with `cmake --install` to a clean prefix before and after: the same
   260 files, so the removed rules were shipping nothing.
+* The README said the server had no authentication and no authorization. That
+  stopped being true with #29, #30, #31 and #35, and a README that understates
+  what a server does is as wrong as one that overstates it -- someone reading it
+  would conclude a public key was pointless. It now states what the server
+  checks and where, and says plainly that a server given no public key
+  authenticates nobody and authorizes nothing, which is a test mode and not a
+  configuration to run anything real on. The stale test counts (461) are
+  corrected to the 477 the sync suite runs today.
 
 * A hanging test now reports as a failure rather than a cancellation. GitHub
   reports a job killed by `timeout-minutes` as `cancelled` -- the same word it
