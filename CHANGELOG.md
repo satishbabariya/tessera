@@ -76,6 +76,17 @@
 
 ### Fixed
 
+* Three defects in the sync install rules. `set(SYNC_HEADERS
+  ${IMPL_INSTALL_HEADESR} ...)` was a typo, so the `Sync` target's source list
+  silently omitted the impl headers; an `install(FILES ${SYNC_INSTALL_HEADERS}
+  DESTINATION include/tessera/sync)` rule appeared twice verbatim; and
+  `install(FILES ${UTIL_INSTALL_HEADERS} ...)` referenced a variable defined
+  nowhere in the project, installing an empty list. All three are the same
+  failure mode -- CMake expands an undefined variable to nothing without
+  complaint, so a misspelling is a silent omission rather than an error.
+  Verified with `cmake --install` to a clean prefix before and after: the same
+  260 files, so the removed rules were shipping nothing.
+
 * A hanging test now reports as a failure rather than a cancellation. GitHub
   reports a job killed by `timeout-minutes` as `cancelled` -- the same word it
   uses when `concurrency.cancel-in-progress` supersedes a run -- so an
