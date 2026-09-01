@@ -123,9 +123,7 @@ anything real on.
 
 What remains is the packaging. The headers still sit under a path named
 `noinst`, which cannot become a public include path without a rename, and that
-rename fixes an interface. `server.hpp` also includes `tessera/util/time.hpp`,
-which is deliberately not installed, so making the server public means promoting
-that header to the public API as well.
+rename fixes an interface -- publishing a header is a promise about it.
 
 See [docs/findings/0b-server-has-no-auth.md](docs/findings/0b-server-has-no-auth.md)
 for what was missing and
