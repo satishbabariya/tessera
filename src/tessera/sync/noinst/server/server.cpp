@@ -1317,6 +1317,24 @@ public:
         return m_access_token;
     }
 
+    /// Whether the token this connection was accepted with has since lapsed.
+    ///
+    /// Expiry was checked once, at the handshake, and never again. Because the
+    /// credential travels on the WebSocket URL rather than in a protocol
+    /// message -- upstream removed the REFRESH message in realm-core #5151, so
+    /// a client presenting a new token reconnects rather than sending one --
+    /// nothing after the upgrade ever looked at the clock. A connection held
+    /// open kept every privilege its token had, for as long as it stayed open,
+    /// however long ago that token expired.
+    ///
+    /// Sessions ask this where they ask about privileges. It is deliberately
+    /// not a timer: an idle connection is not the hazard, a connection still
+    /// being used is, and every use passes through BIND or UPLOAD.
+    bool access_token_expired() const noexcept
+    {
+        return bool(m_access_token) && m_access_token->expired(m_server.token_expiration_clock_now());
+    }
+
 private:
     ServerImpl& m_server;
     const int_fast64_t m_id;
@@ -2387,7 +2405,13 @@ public:
         //
         // The token was verified when this connection's handshake was accepted.
         // What is decided here is the part that needs the path: whether this
-        // token may reach *this* database.
+        // token may reach *this* database -- and whether the token is still
+        // valid, which the handshake could only answer for the moment it ran.
+        if (m_connection.access_token_expired()) {
+            logger.error("Rejected: BIND(path='%1') -- the access token has expired", path); // Throws
+            error = ProtocolError::token_expired;
+            return false;
+        }
         if (const util::Optional<AccessToken>& token = m_connection.get_access_token()) {
             const AccessControl& access_control = server.get_access_control();
 
@@ -2566,6 +2590,12 @@ public:
         // receive the server's history; what they may not do is send changesets.
         // BIND checks Download, which is the floor for binding at all. See
         // docs/findings/0b-server-has-no-auth.md.
+        if (m_connection.access_token_expired()) {
+            logger.error("Rejected: UPLOAD(path='%1') -- the access token has expired",
+                         m_server_file->get_virt_path()); // Throws
+            error = ProtocolError::token_expired;
+            return false;
+        }
         if (const util::Optional<AccessToken>& token = m_connection.get_access_token()) {
             const AccessControl& access_control = m_connection.get_server().get_access_control();
             const std::string& virt_path = m_server_file->get_virt_path();

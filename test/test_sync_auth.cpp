@@ -374,3 +374,151 @@ TEST(Sync_Auth_AVerifyingServerRejectsAClientWithNoToken)
     }
     CHECK(did_fail);
 }
+
+
+// The handshake can only answer "is this token valid *now*". A connection then
+// stays open, and until these tests the answer was never asked again: a session
+// bound with a token expiring a second later kept every privilege it had for as
+// long as the socket lived. The credential travels on the WebSocket URL rather
+// than in a protocol message -- upstream removed REFRESH in realm-core #5151 --
+// so nothing after the upgrade had any reason to look at the clock.
+//
+// Sending token_expired is only survivable because of the mapping added in
+// docs/findings/0b-client-terminates-on-errors.md. Before that, this error fell
+// through to TESSERA_UNREACHABLE() and a server enforcing expiry would have
+// aborted the client instead of disconnecting it.
+TEST(Sync_Auth_ATokenThatExpiresMidSessionCannotUpload)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db);
+    bool did_fail = false;
+    {
+        fixtures::ClientServerFixture fixture(dir, test_context);
+        fixture.set_client_side_error_handler([&](Status, bool) {
+            did_fail = true;
+            fixture.stop();
+        });
+        fixture.start();
+
+        // Bind while the token is still good. g_signed_test_user_token_expiration_specified
+        // expires at 3000000000, and the fixture's clock starts before it.
+        Session session =
+            fixture.make_bound_session(db, "/test", fixtures::g_signed_test_user_token_expiration_specified);
+        session.wait_for_download_complete_or_client_stopped();
+        CHECK_NOT(did_fail);
+
+        // The connection is established and authorised. Now let the token lapse
+        // underneath it.
+        fixture.set_fake_token_expiration_time(3000000001);
+
+        {
+            WriteTransaction wt{db};
+            wt.get_group().add_table_with_primary_key("class_foo", type_Int, "id"); // Throws
+            wt.commit();
+        }
+        session.wait_for_upload_complete_or_client_stopped();
+    }
+    CHECK(did_fail);
+}
+
+
+// The complement. Identical but for the clock, which does not move: the same
+// session, the same write, the same upload must go through. Without this, the
+// test above would pass against a server that refused every upload.
+TEST(Sync_Auth_ATokenThatHasNotExpiredMayStillUpload)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db);
+    bool did_fail = false;
+    {
+        fixtures::ClientServerFixture fixture(dir, test_context);
+        fixture.set_client_side_error_handler([&](Status, bool) {
+            did_fail = true;
+            fixture.stop();
+        });
+        fixture.start();
+        Session session =
+            fixture.make_bound_session(db, "/test", fixtures::g_signed_test_user_token_expiration_specified);
+        session.wait_for_download_complete_or_client_stopped();
+        {
+            WriteTransaction wt{db};
+            wt.get_group().add_table_with_primary_key("class_foo", type_Int, "id"); // Throws
+            wt.commit();
+        }
+        session.wait_for_upload_complete_or_client_stopped();
+    }
+    CHECK_NOT(did_fail);
+}
+
+
+// Sessions are multiplexed over one connection, so a connection that has been
+// open long enough for its token to lapse can still be asked to bind a new
+// session. The handshake cannot catch that -- it ran once, before the token
+// expired -- so the check has to be at BIND.
+//
+// The assertion is on the error code, not merely on failure. An expired token
+// presented to a *fresh* connection is refused by the handshake with HTTP 401,
+// which also fails; only ErrorCodes::AuthError carried by a protocol ERROR
+// message shows the rejection came from BIND on the live connection. The server
+// log for this case reads:
+//
+//     Session[2]: Rejected: BIND(path='/b') -- the access token has expired
+//     Session[2]: Protocol error: Access token expired (error_code=202)
+TEST(Sync_Auth_ASecondSessionOnALiveConnectionSeesTheExpiry)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db1);
+    TEST_CLIENT_DB(db2);
+    util::Optional<ErrorCodes::Error> failure;
+    {
+        fixtures::ClientServerFixture fixture(dir, test_context);
+        fixture.set_client_side_error_handler([&](Status status, bool) {
+            failure = status.code();
+            fixture.stop();
+        });
+        fixture.start();
+
+        Session first =
+            fixture.make_bound_session(db1, "/a", fixtures::g_signed_test_user_token_expiration_specified);
+        first.wait_for_download_complete_or_client_stopped();
+        CHECK_NOT(failure);
+
+        // The connection is now established and its token verified. Let it lapse,
+        // then ask the same connection for another session.
+        fixture.set_fake_token_expiration_time(3000000001);
+
+        Session second =
+            fixture.make_bound_session(db2, "/b", fixtures::g_signed_test_user_token_expiration_specified);
+        second.wait_for_download_complete_or_client_stopped();
+    }
+    CHECK(failure);
+    if (failure)
+        CHECK_EQUAL(ErrorCodes::AuthError, *failure);
+}
+
+
+// The complement: the same two sessions on the same connection, with the clock
+// left alone. Both must bind. Without this the test above would pass against a
+// server that refused every second session.
+TEST(Sync_Auth_ASecondSessionBindsWhileTheTokenIsStillGood)
+{
+    TEST_DIR(dir);
+    TEST_CLIENT_DB(db1);
+    TEST_CLIENT_DB(db2);
+    util::Optional<ErrorCodes::Error> failure;
+    {
+        fixtures::ClientServerFixture fixture(dir, test_context);
+        fixture.set_client_side_error_handler([&](Status status, bool) {
+            failure = status.code();
+            fixture.stop();
+        });
+        fixture.start();
+        Session first =
+            fixture.make_bound_session(db1, "/a", fixtures::g_signed_test_user_token_expiration_specified);
+        first.wait_for_download_complete_or_client_stopped();
+        Session second =
+            fixture.make_bound_session(db2, "/b", fixtures::g_signed_test_user_token_expiration_specified);
+        second.wait_for_download_complete_or_client_stopped();
+    }
+    CHECK_NOT(failure);
+}
