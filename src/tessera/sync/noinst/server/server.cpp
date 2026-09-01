@@ -1081,12 +1081,14 @@ public:
     SyncConnection(ServerImpl& serv, std::int_fast64_t id, std::unique_ptr<network::Socket>&& socket,
                    std::unique_ptr<network::ssl::Stream>&& ssl_stream,
                    std::unique_ptr<network::ReadAheadBuffer>&& read_ahead_buffer, int client_protocol_version,
-                   std::string client_user_agent, std::string remote_endpoint, std::string appservices_request_id)
+                   std::string client_user_agent, std::string remote_endpoint, std::string appservices_request_id,
+                   util::Optional<AccessToken> access_token)
         : logger_ptr{std::make_shared<util::PrefixLogger>(util::LogCategory::server, make_logger_prefix(id),
                                                           serv.logger_ptr)} // Throws
         , logger{*logger_ptr}
         , m_server{serv}
         , m_id{id}
+        , m_access_token{std::move(access_token)}
         , m_socket{std::move(socket)}
         , m_ssl_stream{std::move(ssl_stream)}
         , m_read_ahead_buffer{std::move(read_ahead_buffer)}
@@ -1305,9 +1307,19 @@ public:
     void send_log_message(util::Logger::Level level, const std::string&& message, session_ident_type sess_ident = 0,
                           std::optional<std::string> co_id = std::nullopt);
 
+    /// The token verified when this connection's WebSocket handshake was
+    /// accepted. Sessions consult it at BIND, which is the first point at which
+    /// the path being requested is known. Empty only if the server is running
+    /// without a public key, where nothing was verified to begin with.
+    const util::Optional<AccessToken>& get_access_token() const noexcept
+    {
+        return m_access_token;
+    }
+
 private:
     ServerImpl& m_server;
     const int_fast64_t m_id;
+    const util::Optional<AccessToken> m_access_token;
     std::unique_ptr<network::Socket> m_socket;
     std::unique_ptr<network::ssl::Stream> m_ssl_stream;
     std::unique_ptr<network::ReadAheadBuffer> m_read_ahead_buffer;
@@ -1603,6 +1615,7 @@ public:
     }
 
 private:
+util::Optional<AccessToken> m_access_token;
     ServerImpl& m_server;
     const int_fast64_t m_id;
     const ObjectId m_appservices_request_id = ObjectId::gen();
@@ -1759,6 +1772,11 @@ private:
                 handle_401_unauthorized(request, "The access token has expired\n"); // Throws
                 return;
             }
+
+            // Kept for the sessions on this connection. Authentication is
+            // answered here, once; authorisation is answered at BIND, because
+            // the path being asked for is not known until then.
+            m_access_token = std::move(token);
         }
 
         util::Optional<std::string> sec_websocket_protocol = websocket::read_sec_websocket_protocol(request);
@@ -1951,7 +1969,7 @@ private:
                 std::unique_ptr<SyncConnection> sync_conn = std::make_unique<SyncConnection>(
                     m_server, m_id, std::move(m_socket), std::move(m_ssl_stream), std::move(m_read_ahead_buffer),
                     protocol_version, std::move(user_agent), std::move(m_remote_endpoint),
-                    get_appservices_request_id()); // Throws
+                    get_appservices_request_id(), std::move(m_access_token)); // Throws
                 SyncConnection& sync_conn_ref = *sync_conn;
                 m_server.add_sync_connection(m_id, std::move(sync_conn));
                 m_server.remove_http_connection(m_id);
@@ -2362,7 +2380,29 @@ public:
             return false;
         }
 
-        // The user has proper permissions at this stage.
+        // Authorise. The comment here used to read "The user has proper
+        // permissions at this stage", asserting a check that did not exist --
+        // upstream removed it in realm-core #5151 and App Services took it over.
+        // A self-hosted server has to make the decision itself.
+        //
+        // The token was verified when this connection's handshake was accepted.
+        // What is decided here is the part that needs the path: whether this
+        // token may reach *this* database.
+        if (const util::Optional<AccessToken>& token = m_connection.get_access_token()) {
+            const AccessControl& access_control = server.get_access_control();
+
+            // Download is the floor. A session that cannot download cannot
+            // usefully bind, because even an upload-only client receives the
+            // server's history. Upload is not checked here: refusing it at bind
+            // would lock out read-only sessions, and its place is where an
+            // UPLOAD message arrives.
+            if (!access_control.can(*token, Privilege::Download, path)) {
+                logger.error("Rejected: BIND(path='%1') -- the token does not grant access to it",
+                             path); // Throws
+                error = ProtocolError::permission_denied;
+                return false;
+            }
+        }
 
         m_server_file = server.get_or_create_file(path); // Throws
 

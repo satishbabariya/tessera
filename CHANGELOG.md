@@ -28,17 +28,28 @@
   costs one check per connection instead of one per session, it can refuse with an
   HTTP status before any protocol state exists, and BIND's token field was emptied
   upstream on purpose. See `docs/findings/0b-auth-belongs-at-the-handshake.md`.
-  **This is authentication, not authorization.** `AccessControl::can` is still
-  never called and the token's `path` claim and `access` bits are still not
-  consulted, so any token that verifies grants access to every path with every
-  privilege. `g_signed_test_user_token_for_path` is scoped to `/valid` and can
-  still bind `/other`; `g_signed_test_user_token_readonly` grants download only
-  and can still upload. Closing that is a separate change, and it belongs at BIND
-  rather than the handshake, because the path is not known until then.
+  **Authorisation is separate and follows below.** `AccessControl::can` is still
+  never called at that point: the handshake settles *who* is connected, and the
+  path being asked for is not known until BIND.
+
+* **The sync server authorises access to a path.** The token verified at the
+  handshake is carried on the connection, and `AccessControl::can` is consulted
+  at BIND with the requested path -- the first call that function has had since
+  upstream removed its caller in realm-core #5151. A token scoped to one path is
+  refused for any other, with `permission_denied`.
+
+  `Privilege::Download` is the floor: a session that cannot download cannot
+  usefully bind, since even an upload-only client receives the server's history.
+  Upload is deliberately not checked at bind, because refusing it there would
+  lock out read-only sessions; its place is where an UPLOAD message arrives, and
+  that check does not exist yet.
 
 * `Sync_Auth_HandshakeRejectsABadSignature`, `...RejectsAnExpiredToken` and
   `...AcceptsAValidToken`. The third is not redundant: without it the first two
   would pass against a server that refused every connection.
+* `Sync_Auth_APathScopedTokenIsRefusedElsewhere` and `...WorksOnItsOwnPath`.
+  `g_signed_test_user_token_for_path` carries `"path": "/valid"` and had sat in
+  `sync_fixtures.hpp` with no test to belong to.
 
 ### Fixed
 
