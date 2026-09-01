@@ -118,7 +118,7 @@ install(FILES ../../external/json/json.hpp
         DESTINATION include/external/json
         COMPONENT devel)
 
-add_subdirectory(noinst/server)
+add_subdirectory(server)
 
 if(NOT TESSERA_BUILD_LIB_ONLY AND NOT CMAKE_SYSTEM_NAME MATCHES "^Windows")
     add_subdirectory(tools)

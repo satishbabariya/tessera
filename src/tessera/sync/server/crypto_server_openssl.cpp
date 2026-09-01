@@ -1,4 +1,4 @@
-#include <tessera/sync/noinst/server/crypto_server.hpp>
+#include <tessera/sync/server/crypto_server.hpp>
 
 #include <openssl/bio.h>
 #include <openssl/pem.h>

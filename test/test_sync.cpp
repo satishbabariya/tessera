@@ -31,9 +31,9 @@
 #include <tessera/sync/network/network.hpp>
 #include <tessera/sync/network/websocket.hpp>
 #include <tessera/sync/noinst/protocol_codec.hpp>
-#include <tessera/sync/noinst/server/server.hpp>
-#include <tessera/sync/noinst/server/server_dir.hpp>
-#include <tessera/sync/noinst/server/server_history.hpp>
+#include <tessera/sync/server/server.hpp>
+#include <tessera/sync/server/server_dir.hpp>
+#include <tessera/sync/server/server_history.hpp>
 #include <tessera/merge/object_id.hpp>
 #include <tessera/sync/protocol.hpp>
 #include <tessera/merge/transform.hpp>

@@ -1,7 +1,7 @@
 #include "test.hpp"
 
 #include <tessera/util/file.hpp>
-#include <tessera/sync/noinst/server/server_dir.hpp>
+#include <tessera/sync/server/server_dir.hpp>
 
 using namespace tessera;
 using namespace tessera::_impl;

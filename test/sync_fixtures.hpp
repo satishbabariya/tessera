@@ -11,8 +11,8 @@
 #include <tessera/sync/network/network.hpp>
 #include <tessera/sync/noinst/client_history_impl.hpp>
 #include <tessera/sync/noinst/protocol_codec.hpp>
-#include <tessera/sync/noinst/server/server.hpp>
-#include <tessera/sync/noinst/server/server_dir.hpp>
+#include <tessera/sync/server/server.hpp>
+#include <tessera/sync/server/server_dir.hpp>
 #include <tessera/transaction.hpp>
 #include <tessera/version.hpp>
 

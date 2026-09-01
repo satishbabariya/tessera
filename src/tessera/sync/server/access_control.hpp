@@ -2,9 +2,9 @@
 #define TESSERA_SYNC_ACCESS_CONTROL_HPP
 
 #include <tessera/string_data.hpp>
-#include <tessera/sync/noinst/server/access_token.hpp>
-#include <tessera/sync/noinst/server/crypto_server.hpp>
-#include <tessera/sync/noinst/server/permissions.hpp>
+#include <tessera/sync/server/access_token.hpp>
+#include <tessera/sync/server/crypto_server.hpp>
+#include <tessera/sync/server/permissions.hpp>
 
 namespace tessera {
 namespace sync {

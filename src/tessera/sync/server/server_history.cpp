@@ -6,7 +6,7 @@
 #include <tessera/merge/changeset_parser.hpp>
 #include <tessera/sync/impl/clamped_hex_dump.hpp>
 #include <tessera/merge/instruction_applier.hpp>
-#include <tessera/sync/noinst/server/server_history.hpp>
+#include <tessera/sync/server/server_history.hpp>
 #include <tessera/table_view.hpp>
 #include <tessera/util/hex_dump.hpp>
 #include <tessera/util/input_stream.hpp>

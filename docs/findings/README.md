@@ -31,6 +31,7 @@ Read these before changing the area they describe.
 | [0b-expiry-stops-at-the-handshake.md](0b-expiry-stops-at-the-handshake.md) | **A token expired and the session kept its privileges.** Expiry was checked once, at the WebSocket upgrade, and never again; `AccessControl::can` takes no clock and the server never emitted `token_expired` anywhere. Sessions multiplex, so a lapsed connection could still bind new ones |
 | [0b-self-hostable.md](0b-self-hostable.md) | The README promised a self-hostable sync server. The package exports no server target, installs no server header, and there is no server executable. The server exists only inside the build tree |
 | [0b-server-installability-cost.md](0b-server-installability-cost.md) | What it would actually take to ship the server: 36 include sites, one header not yet installed, and 761 lines of App Services authentication behind four call sites |
+| [0b-private-by-directory-name.md](0b-private-by-directory-name.md) | **The server was kept out of the package by a directory called `noinst`.** Moving it meant choosing a public surface: three headers, not the ten it holds. The include that looked like it would force a utility header into the public API turned out to be unused |
 | [0a-app-services.md](0a-app-services.md) | The identity and configuration model Phase 0a removed. Phase 1 must supply a replacement, not repoint a URL |
 | [0b-merge-carve.md](0b-merge-carve.md) | How `tessera-merge` was separated, and how its central claim was false for a while |
 

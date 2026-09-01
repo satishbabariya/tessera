@@ -29,7 +29,7 @@ test -f "$PREFIX/share/cmake/Tessera/TesseraConfig.cmake" \
 # Listing the targets here rather than deriving them is the point. A derived
 # list agrees with whatever the package happens to export, which is exactly the
 # thing under test.
-EXPECTED_TARGETS="Merge ObjectStore QueryParser Storage Sync"
+EXPECTED_TARGETS="Merge ObjectStore QueryParser Storage Sync SyncServer"
 ACTUAL_TARGETS=$(grep -ohE 'add_library\(Tessera::[A-Za-z0-9_]+' \
     "$PREFIX"/share/cmake/Tessera/*.cmake \
   | sed 's/.*Tessera:://' | sort -u | tr '\n' ' ' | sed 's/ $//')
@@ -54,6 +54,8 @@ add_executable(readme_example readme_example.cpp)
 target_link_libraries(readme_example PRIVATE Tessera::Storage)
 add_executable(tiers tiers.cpp)
 target_link_libraries(tiers PRIVATE Tessera::Storage Tessera::ObjectStore)
+add_executable(server_consumer server_consumer.cpp)
+target_link_libraries(server_consumer PRIVATE Tessera::SyncServer)
 CM
 
 # README: "Anything not reachable from these two headers carries no stability
@@ -63,6 +65,30 @@ cat > "$WORK/tiers.cpp" <<'CPP'
 #include <tessera/api.hpp>
 #include <tessera/engine.hpp>
 int main() { return 0; }
+CPP
+
+# The point of the whole exercise: a self-hoster can find_package, include the
+# server header and construct a server, without a build tree. Until this target
+# existed the package exported no server at all, and the README said so.
+#
+# It constructs but does not start: starting binds a port, and a merge gate that
+# depends on a free port fails for reasons unrelated to the change. Construction
+# is what proves the three installed headers are self-contained and the library
+# links.
+cat > "$WORK/server_consumer.cpp" <<'CPP'
+#include <tessera/sync/server/server.hpp>
+#include <tessera/util/logger.hpp>
+#include <cstdio>
+int main(int, char** argv)
+{
+    tessera::sync::Server::Config config;
+    config.logger = tessera::util::Logger::get_default_logger();
+    config.listen_address = "127.0.0.1";
+    config.listen_port = "0";
+    tessera::sync::Server server(argv[1], tessera::util::none, config);
+    std::printf("server constructed\n");
+    return 0;
+}
 CPP
 
 cat > "$WORK/main.cpp" <<'CPP'
@@ -91,6 +117,14 @@ CPP
 cp "$(dirname "$0")/readme-example.cpp" "$WORK/readme_example.cpp"
 cmake -S "$WORK" -B "$WORK/build" -DCMAKE_PREFIX_PATH="$PREFIX" > /dev/null
 cmake --build "$WORK/build" -j"$(getconf _NPROCESSORS_ONLN)" > /dev/null
+
+SRVDIR="$WORK/server-root"
+mkdir -p "$SRVDIR"
+SRV_OUT=$("$WORK/build/server_consumer" "$SRVDIR" 2>&1 || true)
+case "$SRV_OUT" in
+  *"server constructed"*) ;;
+  *) echo "FAIL: the installed server could not be constructed: $SRV_OUT"; exit 1 ;;
+esac
 
 DBFILE="$WORK/smoke.tess"
 OUT=$("$WORK/build/consumer" "$DBFILE")

@@ -1,6 +1,6 @@
 #include <tessera/string_data.hpp>
 #include <tessera/util/sha_crypto.hpp>
-#include <tessera/sync/noinst/server/crypto_server.hpp>
+#include <tessera/sync/server/crypto_server.hpp>
 
 #include "test.hpp"
 

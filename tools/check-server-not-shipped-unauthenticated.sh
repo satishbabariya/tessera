@@ -34,7 +34,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-SERVER=src/tessera/sync/noinst/server/server.cpp
+SERVER=src/tessera/sync/server/server.cpp
 [ -f "$SERVER" ] || { echo "FAIL: $SERVER not found; this check cannot see what it claims to"; exit 1; }
 
 # Does the server consult a token for any decision? Comments and the accessor
@@ -52,7 +52,7 @@ reasons=""
 if grep -rn "install(TARGETS[^)]*SyncServer" --include=CMakeLists.txt src > /dev/null 2>&1; then
     installable=1; reasons="$reasons\n    SyncServer has an install(TARGETS) rule"
 fi
-if grep -rn "add_executable" src/tessera/sync/noinst/server/CMakeLists.txt > /dev/null 2>&1; then
+if grep -rn "add_executable" src/tessera/sync/server/CMakeLists.txt > /dev/null 2>&1; then
     installable=1; reasons="$reasons\n    the server directory declares an executable"
 fi
 

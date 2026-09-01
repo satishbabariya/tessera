@@ -22,7 +22,7 @@
 #include <tessera/group.hpp>
 #include <tessera/version.hpp>
 #include <tessera/merge/changeset_parser.hpp>
-#include <tessera/sync/noinst/server/server_history.hpp>
+#include <tessera/sync/server/server_history.hpp>
 #include <tessera/sync/protocol.hpp>
 
 using namespace tessera;

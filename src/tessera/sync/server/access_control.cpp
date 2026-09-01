@@ -1,4 +1,4 @@
-#include <tessera/sync/noinst/server/access_control.hpp>
+#include <tessera/sync/server/access_control.hpp>
 
 using namespace tessera;
 using namespace tessera::sync;
