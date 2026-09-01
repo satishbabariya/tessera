@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.3.0 (2026-09-02)
+
 ### Added
 
 * **TLS for `tessera-sync-server`.** `--tls-cert PATH` and `--tls-key PATH` take
@@ -16,9 +18,6 @@
   all, so a connection without TLS carries the credential across the network in
   the clear. On loopback that is a process talking to itself; on any other
   interface it is not. `tools/verify/consumer-smoke-test.sh` asserts the refusal.
-
-
-### Added
 
 * **A server you can run.** `tessera-sync-server` is installed to `bin` beside
   the inspector tools. It takes `--root`, `--public-key`, `--listen`, `--port`,
