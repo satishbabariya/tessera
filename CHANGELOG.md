@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.4.0 (2026-09-02)
+
 ### Added
 
 * **Signing on Apple's Security framework**, so `tessera-token` builds and works
