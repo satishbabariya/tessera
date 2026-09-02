@@ -168,6 +168,49 @@ grep -q "refusing to bind" "$WORK/refuse2.log" || {
     echo "FAIL: the server refused the bind without saying why"; cat "$WORK/refuse2.log"; exit 1
 }
 
+# The token tool, where it ships. Signing lives in the OpenSSL backend, so this
+# binary exists on Linux and on a macOS build configured with
+# -DTESSERA_FORCE_OPENSSL=ON, and not otherwise -- see the guard in
+# src/tessera/sync/server/CMakeLists.txt. Absent is a valid outcome; wrong is
+# not.
+TOKEN_BIN=$(find "$PREFIX/bin" -maxdepth 1 -name 'tessera-token*' -type f | head -1)
+if [ -n "$TOKEN_BIN" ] && command -v openssl > /dev/null 2>&1; then
+    openssl genrsa -out "$WORK/private.pem" 2048 2> /dev/null
+    openssl rsa -in "$WORK/private.pem" -pubout -out "$WORK/public.pem" 2> /dev/null
+
+    # --verify runs the minted token back through the server's own AccessControl,
+    # so a pass here means the server would accept it, not merely that bytes were
+    # printed.
+    # set +e around this deliberately. The tool exits non-zero when --verify
+    # rejects what it just signed, and under set -e a command substitution that
+    # fails kills the script before the diagnostic below can run -- which is how
+    # this check first behaved: it failed with exit 1 and printed nothing at all
+    # about why.
+    set +e
+    TOKEN=$("$TOKEN_BIN" --key "$WORK/private.pem" --identity smoke \
+            --access download,upload --expires-in 3600 \
+            --verify "$WORK/public.pem" 2> "$WORK/token.err")
+    TOKEN_STATUS=$?
+    set -e
+    [ "$TOKEN_STATUS" -eq 0 ] || {
+        echo "FAIL: tessera-token exited $TOKEN_STATUS"
+        cat "$WORK/token.err"
+        exit 1
+    }
+    grep -q "verified: identity=smoke" "$WORK/token.err" || {
+        echo "FAIL: tessera-token could not verify the token it just signed"
+        cat "$WORK/token.err"
+        exit 1
+    }
+    case "$TOKEN" in
+      *:*) ;;
+      *) echo "FAIL: the minted token is not payload:signature -- '$TOKEN'"; exit 1 ;;
+    esac
+    TOKEN_RESULT="minted and verified a token"
+else
+    TOKEN_RESULT="no token tool in this build (signing needs the OpenSSL backend)"
+fi
+
 DBFILE="$WORK/smoke.tess"
 OUT=$("$WORK/build/consumer" "$DBFILE")
 [ "$OUT" = "1 42" ] || { echo "FAIL: consumer produced '$OUT', expected '1 42'"; exit 1; }
@@ -190,4 +233,5 @@ echo "PASS: installed package is consumable, exports $EXPECTED_TARGETS,"
 echo "      api.hpp and engine.hpp are self-contained, file magic is TESS,"
 echo "      the README example works,"
 echo "      and the installed server refuses to run unauthenticated"
-echo "      or to bind a public address in the clear"
+echo "      or to bind a public address in the clear,"
+echo "      and $TOKEN_RESULT"

@@ -76,4 +76,29 @@ if(NOT TESSERA_BUILD_LIB_ONLY AND NOT CMAKE_SYSTEM_NAME MATCHES "^Windows")
     install(TARGETS TesseraSyncServer
             COMPONENT runtime
             DESTINATION bin)
+
+    # Mints the tokens the server verifies. v0.3.0 shipped a server that refuses
+    # to start without a public key and nothing that could produce a token for
+    # it, which made the authentication unusable rather than merely incomplete.
+    #
+    # Built only where signing exists. PKey::load_private and PKey::sign are
+    # implemented in the OpenSSL backend; the Apple backend implements neither
+    # and its can_sign() says so. Building this against Apple's Security
+    # framework does not fail at runtime, it fails to link:
+    #
+    #     Undefined symbols for architecture arm64:
+    #       "tessera::sync::PKey::sign(...)"
+    #
+    # so the guard is a build guard rather than a runtime check. Configure with
+    # -DTESSERA_FORCE_OPENSSL=ON to get a signing build on macOS.
+    if(TESSERA_HAVE_OPENSSL AND (NOT APPLE OR TESSERA_FORCE_OPENSSL))
+    add_executable(TesseraToken tessera_token.cpp)
+    set_target_properties(TesseraToken PROPERTIES
+                          OUTPUT_NAME "tessera-token"
+                          DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}")
+    target_link_libraries(TesseraToken PRIVATE SyncServer)
+    install(TARGETS TesseraToken
+            COMPONENT runtime
+            DESTINATION bin)
+    endif()
 endif()

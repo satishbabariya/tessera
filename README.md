@@ -189,6 +189,31 @@ Pass --tls-cert PATH --tls-key PATH to serve over TLS, or
 `--tls-cert` and `--tls-key` take a PEM certificate chain and its private key,
 and are what you want for anything reachable from another machine.
 
+### Issuing a token
+
+The server verifies tokens; `tessera-token` mints them. Generate a key pair,
+give the public half to the server and keep the private half wherever you issue
+credentials from:
+
+```console
+$ openssl genrsa -out private.pem 2048
+$ openssl rsa -in private.pem -pubout -out public.pem
+
+$ tessera-token --key private.pem --identity alice \
+      --access download,upload --expires-in 86400 --verify public.pem
+verified: identity=alice path=<any> expires=1788327484
+eyJpZGVudGl0eSI6ImFsaWNlIiwiYWNjZXNzIjpbImRvd25sb2FkIiwidXBsb2FkIl0s...
+```
+
+`--path /some/db` restricts a token to one database; without it the token is
+valid for every path the server serves. `--verify` runs the result back through
+the server's own `AccessControl`, so the tool can say the token was *accepted*
+rather than merely printed.
+
+Signing needs a build with the OpenSSL backend. On macOS the default backend is
+Apple's Security framework, which does not implement signing and says so;
+configure with `-DTESSERA_FORCE_OPENSSL=ON` if you want to mint tokens there.
+
 See [docs/findings/0b-server-has-no-auth.md](docs/findings/0b-server-has-no-auth.md)
 for what was missing and
 [docs/findings/0b-keyless-still-demanded-a-token.md](docs/findings/0b-keyless-still-demanded-a-token.md)
