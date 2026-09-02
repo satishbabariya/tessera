@@ -18,6 +18,7 @@ expect() {
     local fixture="$1" want="$2" got
     got=$(PR_STATUS_FIXTURE="tools/testdata/pr-status/$fixture.json" \
           PR_STATUS_RUNS_FIXTURE="${RUNS_FIXTURE:-tools/testdata/pr-status/runs-none.txt}" \
+          PR_STATUS_MERGESTATE_FIXTURE="${MERGE_FIXTURE:-tools/testdata/pr-status/merge-mergeable.txt}" \
           ./tools/pr-status.sh 0 | sed 's/^PR0  *//')
     if [[ "$got" != "$want" ]]; then
         echo "FAIL $fixture" >&2
@@ -54,5 +55,13 @@ fi
 # created but has reported nothing. It must not be called NO BUILD MATRIX.
 RUNS_FIXTURE=tools/testdata/pr-status/runs-one.txt \
     expect nomatrix '2 passed  <- build queued for this commit but not yet reported' || failures=1
+
+# A conflicting pull request gets no workflow runs at all, because GitHub cannot
+# compute the merge ref a `pull_request` event builds. #45 sat in that state and
+# was reported as "NO BUILD MATRIX" -- true, and useless, because the cause was
+# one query away. Same check list, opposite verdict.
+MERGE_FIXTURE=tools/testdata/pr-status/merge-conflicting.txt \
+    expect nomatrix '2 passed  <- CONFLICTS with the base: GitHub runs nothing until it is rebased' \
+    || failures=1
 
 exit "$failures"
