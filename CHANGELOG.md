@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+### Added
+
+* **`tessera-token`, and the signing it needs.** v0.3.0 shipped a server that
+  refuses to start without a public key and nothing that could produce a token
+  for it, so standing one up left you unable to let anybody in.
+
+  The reason was that the private-key half of `PKey` -- `load_private`,
+  `can_sign`, `sign` -- was declared in `crypto_server.hpp` and implemented by
+  no shipping backend. The Apple backend says it cannot sign, honestly. The
+  OpenSSL backend's `can_sign()` returned true whenever a private key was
+  loaded, and there was no `sign` to call, so a caller who checked first got a
+  link error rather than a runtime failure. Nothing called it, so nothing
+  linked it. `load_private` and `sign` are now implemented for OpenSSL, using
+  SHA-256 to match `verify` beside them.
+
+  `tessera-token --key private.pem --identity alice --access download,upload
+  --expires-in 86400 --verify public.pem` mints a token and runs it back through
+  the server's own `AccessControl` before printing it. Signing requires the
+  OpenSSL backend; on macOS configure with `-DTESSERA_FORCE_OPENSSL=ON`. See
+  `docs/findings/0b-a-signature-nothing-could-produce.md`.
+
+
 ### Fixed
 
 * A crash told the user to report it to a different project. Tessera's terminate

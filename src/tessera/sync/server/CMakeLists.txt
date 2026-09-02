@@ -76,4 +76,16 @@ if(NOT TESSERA_BUILD_LIB_ONLY AND NOT CMAKE_SYSTEM_NAME MATCHES "^Windows")
     install(TARGETS TesseraSyncServer
             COMPONENT runtime
             DESTINATION bin)
+
+    # Mints the tokens the server verifies. v0.3.0 shipped a server that refuses
+    # to start without a public key and nothing that could produce a token for
+    # it, which made the authentication unusable rather than merely incomplete.
+    add_executable(TesseraToken tessera_token.cpp)
+    set_target_properties(TesseraToken PROPERTIES
+                          OUTPUT_NAME "tessera-token"
+                          DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}")
+    target_link_libraries(TesseraToken PRIVATE SyncServer)
+    install(TARGETS TesseraToken
+            COMPONENT runtime
+            DESTINATION bin)
 endif()
