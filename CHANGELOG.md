@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+### Fixed
+
+* `tools/pr-status.sh` says when a pull request's checks are stale. After a
+  force-push the previous head's checks stay attached until the new run reports,
+  so the tool showed seven green checks for a commit that was no longer at the
+  head of `release/v0.4.0`, minutes before it would have been tagged. `ready`
+  was true of a commit that no longer existed there.
+
+  It now compares the newest build run's `headSha` against the pull request head
+  and says so when they differ. Every failure path in that comparison returns
+  success with no output, because "cannot tell" is not "stale" -- and because
+  the first version returned non-zero, which under `set -e` killed the caller and
+  stopped the test suite halfway through with no message.
+
+
 ## 0.4.0 (2026-09-02)
 
 ### Added

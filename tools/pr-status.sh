@@ -67,6 +67,37 @@ merge_state() {
         --json mergeable --jq '.mergeable' 2>/dev/null || echo UNKNOWN
 }
 
+# Whether the newest build run was produced by the commit currently at the head
+# of the pull request.
+#
+# After a force-push the previous head's checks stay attached to the pull request
+# until the new run reports, so the tool showed seven green checks for a commit
+# that was no longer there. On a release decision that is the one failure that
+# matters: a stale green invites tagging a commit nothing verified.
+#
+# Returns "stale <sha>" when they differ, and nothing when they agree or when the
+# question cannot be answered.
+stale_against_head() {
+    if [[ -n "${PR_STATUS_STALE_FIXTURE:-}" ]]; then
+        cat "$PR_STATUS_STALE_FIXTURE"
+        return
+    fi
+    # Every failure path returns 0 with no output: "cannot tell" is not "stale",
+    # and a non-zero return here kills the caller under set -e. The first version
+    # of this used `|| return`, which did exactly that -- the suite stopped
+    # halfway through with no message, on the assertions that call this script
+    # without a fixture.
+    local pr="$1" repo="${PR_STATUS_REPO:-satishbabariya/tessera}" head branch run
+    head=$(gh pr view "$pr" --repo "$repo" --json headRefOid --jq .headRefOid 2>/dev/null) || return 0
+    branch=$(gh pr view "$pr" --repo "$repo" --json headRefName --jq .headRefName 2>/dev/null) || return 0
+    run=$(gh run list --repo "$repo" --branch "$branch" --workflow build --limit 1 \
+          --json headSha --jq '.[0].headSha' 2>/dev/null) || return 0
+    if [[ -n "$run" && -n "$head" && "$run" != "$head" ]]; then
+        echo "stale ${run:0:9}"
+    fi
+    return 0
+}
+
 status_line() {
     local pr="$1" json
     json=$(fetch_checks "$pr")
@@ -101,8 +132,13 @@ status_line() {
     local matrix
     matrix=$(jq '[.[]|select(.name|test("ubuntu-latest|macos-latest|windows-latest"))]|length' <<<"$json")
 
-    local verdict=""
-    if (( total == 0 )); then
+    local verdict="" stale
+    stale=$(stale_against_head "$pr" || true)
+    if [[ -n "$stale" ]]; then
+        # Said first, because every other verdict below describes checks that
+        # belong to a commit which is no longer the head.
+        verdict="  <- STALE: these checks ran against ${stale#stale }, not the current head"
+    elif (( total == 0 )); then
         verdict="  <- nothing reported yet"
     elif (( fail )); then
         verdict="  <- failing"
