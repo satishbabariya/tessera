@@ -47,7 +47,18 @@ jobs:
           - { os: macos-latest,  compiler: clang, cc: clang,    cxx: clang++,    build_type: Release }
 
     steps:
+      # #37 put a timeout on every step that does work, because a job killed by
+      # the job-level timeout reports as `cancelled` -- the same word GitHub uses
+      # for a concurrency cancellation -- while a step killed by its own timeout
+      # reports `failure`. It did not cover the step that fetches the work, and
+      # that is where the next hang landed: `macos-latest clang Debug` sat in
+      # checkout for 32 minutes while the other four jobs finished, and would
+      # have run to the job's 60 and reported `cancelled`.
+      #
+      # Ten minutes is generous. A healthy checkout of this repository, including
+      # the Catch2 submodule, takes about seven seconds.
       - uses: actions/checkout@v4
+        timeout-minutes: 10
         with:
           submodules: recursive   # the test suites need Catch2
 

@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Fixed
+
+* The checkout step has a timeout. #37 gave every step that does work its own
+  `timeout-minutes`, because a job killed by the job-level timeout reports as
+  `cancelled` -- indistinguishable from a concurrency cancellation -- while a
+  step killed by its own timeout reports `failure`. It did not cover
+  `actions/checkout`, and that is where the next hang landed: one job sat in
+  checkout for 32 minutes while the other four finished, and would have run to
+  the job's 60 and reported `cancelled`. The steps that do the work were
+  guarded; the step that fetches the work was not.
+
 ## 0.3.0 (2026-09-02)
 
 ### Added
