@@ -81,17 +81,11 @@ if(NOT TESSERA_BUILD_LIB_ONLY AND NOT CMAKE_SYSTEM_NAME MATCHES "^Windows")
     # to start without a public key and nothing that could produce a token for
     # it, which made the authentication unusable rather than merely incomplete.
     #
-    # Built only where signing exists. PKey::load_private and PKey::sign are
-    # implemented in the OpenSSL backend; the Apple backend implements neither
-    # and its can_sign() says so. Building this against Apple's Security
-    # framework does not fail at runtime, it fails to link:
-    #
-    #     Undefined symbols for architecture arm64:
-    #       "tessera::sync::PKey::sign(...)"
-    #
-    # so the guard is a build guard rather than a runtime check. Configure with
-    # -DTESSERA_FORCE_OPENSSL=ON to get a signing build on macOS.
-    if(TESSERA_HAVE_OPENSSL AND (NOT APPLE OR TESSERA_FORCE_OPENSSL))
+    # Signing exists in every backend now: the OpenSSL one implements
+    # load_private/sign, and the Apple one does too rather than reporting
+    # can_sign() == false as it did through v0.4.0. The stub cannot, so the tool
+    # is not built where the stub is in use.
+    if(APPLE OR TESSERA_HAVE_OPENSSL)
     add_executable(TesseraToken tessera_token.cpp)
     set_target_properties(TesseraToken PROPERTIES
                           OUTPUT_NAME "tessera-token"
