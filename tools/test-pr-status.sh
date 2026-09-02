@@ -19,6 +19,7 @@ expect() {
     got=$(PR_STATUS_FIXTURE="tools/testdata/pr-status/$fixture.json" \
           PR_STATUS_RUNS_FIXTURE="${RUNS_FIXTURE:-tools/testdata/pr-status/runs-none.txt}" \
           PR_STATUS_MERGESTATE_FIXTURE="${MERGE_FIXTURE:-tools/testdata/pr-status/merge-mergeable.txt}" \
+          PR_STATUS_STALE_FIXTURE="${STALE_FIXTURE:-tools/testdata/pr-status/stale-no.txt}" \
           ./tools/pr-status.sh 0 | sed 's/^PR0  *//')
     if [[ "$got" != "$want" ]]; then
         echo "FAIL $fixture" >&2
@@ -62,6 +63,14 @@ RUNS_FIXTURE=tools/testdata/pr-status/runs-one.txt \
 # one query away. Same check list, opposite verdict.
 MERGE_FIXTURE=tools/testdata/pr-status/merge-conflicting.txt \
     expect nomatrix '2 passed  <- CONFLICTS with the base: GitHub runs nothing until it is rebased' \
+    || failures=1
+
+# After a force-push the previous head's checks stay attached until the new run
+# reports. The tool showed seven green checks for a commit that was no longer at
+# the head of release/v0.4.0, minutes before it would have been tagged. Same
+# check list, and the verdict has to change.
+STALE_FIXTURE=tools/testdata/pr-status/stale-yes.txt \
+    expect realgreen '7 passed  <- STALE: these checks ran against abc123def, not the current head' \
     || failures=1
 
 exit "$failures"
