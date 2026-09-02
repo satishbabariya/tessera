@@ -12,6 +12,27 @@
   checkout for 32 minutes while the other four finished, and would have run to
   the job's 60 and reported `cancelled`. The steps that do the work were
   guarded; the step that fetches the work was not.
+### Added
+
+* **A load test that compiles.** `test/benchmark-sync/load_test.cpp` included a
+  `load_tester.hpp` that exists nowhere in this repository or its history, so it
+  could never have built -- and nothing noticed, because
+  `test/benchmark-sync/CMakeLists.txt` named only `bench_transform.cpp`. It sat
+  in a directory called `benchmark-sync` while the release notes correctly said
+  no load testing had been done, and the two facts never met.
+
+  The replacement drives N concurrent sessions against a running server over a
+  real socket using only the installed public API, each committing M write
+  transactions with primary keys unique per client, and prints the count beside
+  the rate because a rate without its denominator cannot be checked. It exits
+  non-zero if any client fails or any transaction goes missing.
+
+  First numbers, against `tessera-sync-server` on loopback: **1,821
+  transactions/second at 16 clients in Release**, easing to 1,659/s at 32. The
+  Debug figures are lower and fall sharply at 32 clients, which is the build and
+  not the server -- see `docs/findings/0b-a-load-test-that-never-built.md`, where
+  both tables are kept because the pair is the point.
+
 
 ## 0.3.0 (2026-09-02)
 
