@@ -19,18 +19,23 @@
 
 ### Fixed
 
-* The load numbers published in 0.4.0 measure cold start, and say so now. Every
-  figure was one process started, run once and stopped, so each included an
-  empty file cache and a database being created rather than opened. Ten rounds
-  against a single long-lived server give 675/s, 810/s, then about 2,800/s
-  stable at eight clients; sixteen clients settle near 3,500/s against the
-  1,821/s a single round reports.
+* **Withdrawn, and corrected below.** An entry here said the 0.4.0 load numbers
+  measure cold start, and that ten rounds against one long-lived server showed a
+  steady state roughly twice the published figure. That was one confounded
+  experiment.
 
-  Neither figure is wrong -- they answer "how long does one burst take against a
-  fresh server" and "what does this sustain" -- but only the second is what
-  anyone deploying it wants, and it was not measured because the load test had
-  never been run twice in a row. 18,600 transactions across sixteen rounds, all
-  committed, no client failures, nothing at error level in the server log.
+  The load test wrote primary keys of `index * 1000000 + i`, identical on every
+  run, so a second run against the same server path rewrote the first run's rows
+  instead of inserting new ones. The "steady state" was the cost of updating
+  eight hundred existing objects.
+
+* `tessera-load-test --key-base N` offsets the primary keys, which separates
+  three cases that had been one. Against a fresh server the rate is flat at about
+  2,300/s, repeatably. Against a server whose database is growing, insert
+  throughput *declines* -- 1,097/s to 400/s across four thousand rows -- and each
+  new client must download everything already there. A figure quoted without
+  saying which of those it measured is not a figure about the server. See
+  `docs/findings/0b-a-load-test-that-never-built.md`.
 
 
 ### Fixed

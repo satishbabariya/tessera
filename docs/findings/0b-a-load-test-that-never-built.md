@@ -105,32 +105,51 @@ test. Had the Debug run been the only one, "throughput collapses beyond sixteen
 clients" would have gone into the documentation as a property of the server,
 and it is a property of the build.
 
-## And both tables measure cold start
+## Correction: what the repeated-round numbers actually measured
 
-Every figure above is one process, started, run once, and stopped. Running ten
-rounds against a single long-lived server says something different:
+An earlier version of this section, and the changelog entry that shipped with
+it, said that ten rounds against one long-lived server showed a steady state of
+about 2,800/s against a published 1,208/s, and concluded that the published
+figures understate sustained throughput by roughly a factor of two.
 
-| round | 8 clients |
-|---|---|
-| 1 | 675/s |
-| 2 | 810/s |
-| 3-10 | ~2,800/s, stable |
+That was drawn from one confounded experiment and is withdrawn.
 
-and at sixteen clients the steady state is about 3,500/s against the 1,821/s a
-single round reports. So the published numbers understate sustained throughput
-by roughly a factor of two, because they include the cost of a cold server: an
-empty file cache, a database being created rather than opened, pages not yet
-resident.
+The load test writes primary keys of `index * 1000000 + i`. Those are identical
+on every run, so a second run against the same server path **rewrites the first
+run's rows instead of inserting new ones**. The "steady state" was the cost of
+updating eight hundred existing objects, not of inserting eight hundred.
 
-Neither figure is wrong. They answer different questions -- "how long does one
-burst take against a fresh server" and "what does this sustain" -- and only the
-second is what anyone deploying it wants to know. The first was the only one
-measured because the load test had never been run twice in a row.
+`--key-base` offsets the keys, which separates three cases that had been one:
 
-18,600 transactions across those sixteen rounds, every one committed and
-uploaded, no client failures, nothing in the server log at error level or above,
-and a data directory of 1.0M. That is the first evidence this project has that
-the server survives being used more than once.
+| round | fresh server, fresh keys | same server, fresh keys | same server, same keys |
+|---|---|---|---|
+| 1 | 2128/s | 1097/s | 1153/s |
+| 2 | 2198/s | 835/s | 2254/s |
+| 3 | 2397/s | 620/s | 1784/s |
+| 4 | 2533/s | 517/s | 1564/s |
+| 5 | 2426/s | 400/s | 1217/s |
+
+Against a fresh server the rate is flat at about 2,300/s, repeatably. Against a
+server whose database is growing, insert throughput **declines** -- 1,097/s to
+400/s across four thousand rows -- and each new client must also download
+everything already there.
+
+So the supportable statements are narrower than the withdrawn one:
+
+- a fresh server sustains about 2,300/s for this shape of write, repeatably;
+- insert throughput falls as the database grows, at least in this range;
+- a figure quoted without saying which of those it measured is not a figure
+  about the server.
+
+The withdrawn claim is corrected in the changelog rather than deleted, because a
+number that was wrong for a stated reason is more useful than one that quietly
+disappeared.
+
+The wider lesson is the one this file already carried, one level up. Its first
+version said the load test's first act was to correct an inference drawn from
+the load test. Its second act was to correct an inference drawn from its own
+correction, and the cause both times was the same: a measurement whose
+conditions were not stated, and therefore not checked.
 
 Both tables are kept, because the pair is the useful artefact. What they
 establish is the thing that did not exist before: a number to compare the next
