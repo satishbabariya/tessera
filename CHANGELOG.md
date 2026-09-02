@@ -4,6 +4,22 @@
 
 ### Fixed
 
+* The load numbers published in 0.4.0 measure cold start, and say so now. Every
+  figure was one process started, run once and stopped, so each included an
+  empty file cache and a database being created rather than opened. Ten rounds
+  against a single long-lived server give 675/s, 810/s, then about 2,800/s
+  stable at eight clients; sixteen clients settle near 3,500/s against the
+  1,821/s a single round reports.
+
+  Neither figure is wrong -- they answer "how long does one burst take against a
+  fresh server" and "what does this sustain" -- but only the second is what
+  anyone deploying it wants, and it was not measured because the load test had
+  never been run twice in a row. 18,600 transactions across sixteen rounds, all
+  committed, no client failures, nothing at error level in the server log.
+
+
+### Fixed
+
 * `tools/pr-status.sh` says when a pull request's checks are stale. After a
   force-push the previous head's checks stay attached until the new run reports,
   so the tool showed seven green checks for a commit that was no longer at the
