@@ -61,6 +61,7 @@ Read these before changing the area they describe.
 | [0b-certificate-expiry.md](0b-certificate-expiry.md) | The SSL tests' certificates were 57 days from expiry, and had lapsed five times before. The failure would have shown as a cluster of socket tests failing on every platform with no commit to blame |
 | [0a-include-hygiene.md](0a-include-hygiene.md) | An include can be unused by its host file and load-bearing for its consumers. Seven such dependencies have had to be made explicit |
 | [0b-identity-strings.md](0b-identity-strings.md) | The rename renamed the code, not what the code says. The product name, the sync User-Agent, the HTTP Server header, a WebSocket subprotocol, five error categories and six tools' help text still said realm |
+| [0b-report-it-to-whom.md](0b-report-it-to-whom.md) | **A crash told the user to report it to realm-core.** Shipped in v0.3.0; the rename check could not see it because it is a URL, not an identifier. The new check refuses Realm URLs in strings and keeps them in comments, and two versions of it passed against the defect before the canary caught them |
 | [0b-rename-blind-spots.md](0b-rename-blind-spots.md) | What a code-identifier rename cannot see: message strings, a wire identifier, a Keychain item, a log-category API, and comments it turned into false claims |
 | [0a-existing-documentation.md](0a-existing-documentation.md) | `doc/` was not cruft. It holds a 1,126-line protocol specification and the formal merge algebra |
 

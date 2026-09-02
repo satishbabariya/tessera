@@ -4,6 +4,27 @@
 
 ### Fixed
 
+* A crash told the user to report it to a different project. Tessera's terminate
+  handler ended every abort with "Please report this at
+  https://github.com/realm/realm-core/issues/new/choose", which shipped in
+  v0.3.0. `tools/check-rename-residue.sh` could not see it: that check looks for
+  pre-rename identifiers and identity strings, and this is a URL, which survived
+  a tree-wide rename precisely because the rename had no reason to touch it.
+
+  One URL had been touched and wrongly -- `sync_manager.hpp` cited
+  `realm-sync/blob/develop/src/tessera/sync/client.hpp`, a path realm-sync never
+  had, because the rename rewrote the path inside a citation. Restored.
+
+  `tools/check-no-upstream-urls-in-output.sh` refuses a Realm URL in a string
+  literal and ignores one in a comment, because the comment is provenance and
+  the string is something a user can be shown. Two versions of that check passed
+  against the defect before the canary caught them, both because a URL contains
+  `//` and is very good at looking like a comment. See
+  `docs/findings/0b-report-it-to-whom.md`.
+
+
+### Fixed
+
 * The checkout step has a timeout. #37 gave every step that does work its own
   `timeout-minutes`, because a job killed by the job-level timeout reports as
   `cancelled` -- indistinguishable from a concurrency cancellation -- while a
