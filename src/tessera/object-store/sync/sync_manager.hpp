@@ -61,7 +61,7 @@ public:
 
     // Sets the application level user agent string.
     // This should have the format specified here:
-    // https://github.com/realm/realm-sync/blob/develop/src/tessera/sync/client.hpp#L126 The user agent can only be set
+    // https://github.com/realm/realm-sync/blob/develop/src/realm/sync/client.hpp#L126 The user agent can only be set
     // up  until the  point the Sync Client is created. This happens when the first Session is created.
     void set_user_agent(std::string user_agent) REQUIRES(!m_mutex);
 
