@@ -4,6 +4,26 @@
 
 ### Added
 
+* `tools/verify/authorization-end-to-end.sh` checks the authorization model
+  through the shipped binaries, over a socket, in CI. A real server, a token
+  minted by `tessera-token`, a real client: a token scoped to `/allowed` works
+  there, the same token is refused on `/denied`, and a download-only token is
+  refused when it uploads.
+
+  All of that was covered in-process by the test suite and none of it end to end,
+  which is the same gap that hid every finding in `docs/findings/`: a thing
+  verified in one configuration and never in the one people use.
+
+  It binds port 0 so it cannot collide, and polls the server log rather than
+  sleeping -- a fixed sleep long enough on a laptop is not necessarily long
+  enough on a loaded runner, and a gate that fails for unrelated reasons is one
+  everybody learns to ignore. Under two seconds. Each assertion canaried
+  separately: removing path scoping fails only that one, removing upload
+  privilege fails only its own.
+
+
+### Added
+
 * `tessera-load-test --converge` checks that the data arrives. Uploading proves
   the server accepted a write; it does not prove anyone else will ever see it,
   which is the entire promise of a sync engine and had never been checked
