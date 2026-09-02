@@ -52,6 +52,21 @@ build_run_count() {
         --json headSha --jq "[.[]|select(.headSha==\"$head\")]|length" 2>/dev/null || echo 0
 }
 
+# Whether GitHub considers the pull request mergeable.
+#
+# A conflicting pull request gets no workflow runs at all: GitHub cannot compute
+# the merge ref that a `pull_request` event builds, so nothing triggers. The
+# check list is then empty of builds, and the missing-matrix verdict below is
+# true but useless -- it reports a symptom whose cause is one query away.
+merge_state() {
+    if [[ -n "${PR_STATUS_MERGESTATE_FIXTURE:-}" ]]; then
+        cat "$PR_STATUS_MERGESTATE_FIXTURE"
+        return
+    fi
+    gh pr view "$1" --repo "${PR_STATUS_REPO:-satishbabariya/tessera}" \
+        --json mergeable --jq '.mergeable' 2>/dev/null || echo UNKNOWN
+}
+
 status_line() {
     local pr="$1" json
     json=$(fetch_checks "$pr")
@@ -94,9 +109,12 @@ status_line() {
     elif (( cancel && pending == 0 )); then
         verdict="  <- WAITING ON NOTHING: re-run it"
     elif (( matrix == 0 )); then
-        local runs
+        local runs state
         runs=$(build_run_count "$pr")
-        if (( runs > 0 )); then
+        state=$(merge_state "$pr")
+        if [[ "$state" == "CONFLICTING" ]]; then
+            verdict="  <- CONFLICTS with the base: GitHub runs nothing until it is rebased"
+        elif (( runs > 0 )); then
             verdict="  <- build queued for this commit but not yet reported"
         else
             verdict="  <- NO BUILD MATRIX: these checks do not include a build"

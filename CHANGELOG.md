@@ -4,6 +4,13 @@
 
 ### Fixed
 
+* `tools/pr-status.sh` says when a pull request conflicts. A conflicting pull
+  request gets no workflow runs at all -- GitHub cannot compute the merge ref a
+  `pull_request` event builds, so nothing triggers -- and the tool reported that
+  as `NO BUILD MATRIX`, which is true and useless: it named a symptom whose
+  cause was one query away. #45 sat in that state, and the missing build looked
+  like a CI fault rather than a rebase.
+
 * A crash told the user to report it to a different project. Tessera's terminate
   handler ended every abort with "Please report this at
   https://github.com/realm/realm-core/issues/new/choose", which shipped in
