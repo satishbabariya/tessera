@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+### Added
+
+* `tessera-load-test --converge` checks that the data arrives. Uploading proves
+  the server accepted a write; it does not prove anyone else will ever see it,
+  which is the entire promise of a sync engine and had never been checked
+  against a deployed server -- only in-process, by the test suite. With the flag,
+  every client waits for every other client's uploads, then for its own
+  downloads, and asserts it can see all `clients x transactions` rows.
+
+  Verified at 4, 8 and 16 clients: sixteen clients each confirming they hold all
+  800 rows written by all sixteen. Canaried by expecting one row too many, which
+  reports `client 0: sees 20 rows, expected 21` -- a convergence check that has
+  never failed is not a check.
+
+
 ### Fixed
 
 * The load numbers published in 0.4.0 measure cold start, and say so now. Every

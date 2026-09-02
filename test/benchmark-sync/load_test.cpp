@@ -30,6 +30,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <condition_variable>
+#include <mutex>
 #include <thread>
 #include <vector>
 
@@ -46,6 +48,7 @@ struct Options {
     int clients = 4;
     int transactions = 50;
     bool verbose = false;
+    bool converge = false;
 };
 
 void usage(const char* argv0)
@@ -63,15 +66,42 @@ void usage(const char* argv0)
                  "  --token TOKEN      signed access token presented by every client\n"
                  "  --clients N        concurrent sessions (default: 4)\n"
                  "  --transactions N   write transactions per session (default: 50)\n"
-                 "  --verbose          log at debug level\n",
+                 "  --verbose          log at debug level\n"
+                 "  --converge         after uploading, wait for download and check that\n"
+                 "                     every client can see every other client\'s rows\n",
                  argv0);
 }
 
 // One session: its own database, its own table, its own row per transaction.
 // Returns the number of transactions that were committed and uploaded, so the
 // caller can tell a partial run from a complete one rather than assuming.
+// A pair of barriers, so that every client waits for every other client's
+// uploads before checking what it can see. Without them the first client to
+// finish would look for rows nobody has written yet and report a convergence
+// failure that is really a race in the test.
+class Latch {
+public:
+    explicit Latch(int n) : m_remaining(n) {}
+    void count_down()
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        if (--m_remaining == 0)
+            m_cv.notify_all();
+    }
+    void wait()
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_cv.wait(lock, [&] { return m_remaining <= 0; });
+    }
+
+private:
+    std::mutex m_mutex;
+    std::condition_variable m_cv;
+    int m_remaining;
+};
+
 int run_one_client(const Options& opt, int index, std::atomic<int>& failures,
-                   const std::shared_ptr<util::Logger>& logger)
+                   const std::shared_ptr<util::Logger>& logger, Latch& everyone_uploaded)
 {
     try {
         std::string path = opt.root + "/client" + std::to_string(index) + ".tess";
@@ -121,6 +151,28 @@ int run_one_client(const Options& opt, int index, std::atomic<int>& failures,
             std::fprintf(stderr, "client %d: stopped before its uploads completed\n", index);
             ++failures;
         }
+
+        // Uploading proves the server accepted the writes. It does not prove
+        // anyone else will ever see them, which is the entire promise of a sync
+        // engine and was, until this flag, never checked end to end against a
+        // deployed server -- only in-process, by the test suite.
+        if (opt.converge) {
+            everyone_uploaded.count_down();
+            everyone_uploaded.wait();
+            if (!session.wait_for_download_complete_or_client_stopped()) {
+                std::fprintf(stderr, "client %d: stopped before its downloads completed\n", index);
+                ++failures;
+            }
+            auto rt = db->start_read();
+            ConstTableRef table = rt->get_table("class_load");
+            std::size_t rows = table ? table->size() : 0;
+            std::size_t expected = std::size_t(opt.clients) * std::size_t(opt.transactions);
+            if (rows != expected) {
+                std::fprintf(stderr, "client %d: sees %zu rows, expected %zu\n", index, rows, expected);
+                ++failures;
+            }
+        }
+
         client.shutdown_and_wait();
         return committed;
     }
@@ -153,6 +205,7 @@ int main(int argc, char** argv)
         else if (arg == "--clients")     opt.clients = std::stoi(value("--clients"));
         else if (arg == "--transactions") opt.transactions = std::stoi(value("--transactions"));
         else if (arg == "--verbose")     opt.verbose = true;
+        else if (arg == "--converge")    opt.converge = true;
         else if (arg == "-h" || arg == "--help") { usage(argv[0]); return 0; }
         else {
             std::fprintf(stderr, "%s: unrecognised argument '%s'\n", argv[0], arg.c_str());
@@ -181,8 +234,11 @@ int main(int argc, char** argv)
     std::vector<std::thread> threads;
     auto started = std::chrono::steady_clock::now();
 
+    Latch everyone_uploaded{opt.clients};
     for (int i = 0; i < opt.clients; ++i)
-        threads.emplace_back([&, i] { committed += run_one_client(opt, i, failures, logger); });
+        threads.emplace_back([&, i] {
+            committed += run_one_client(opt, i, failures, logger, everyone_uploaded);
+        });
     for (auto& t : threads)
         t.join();
 
