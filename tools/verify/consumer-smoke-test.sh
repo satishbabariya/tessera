@@ -181,9 +181,22 @@ if [ -n "$TOKEN_BIN" ] && command -v openssl > /dev/null 2>&1; then
     # --verify runs the minted token back through the server's own AccessControl,
     # so a pass here means the server would accept it, not merely that bytes were
     # printed.
+    # set +e around this deliberately. The tool exits non-zero when --verify
+    # rejects what it just signed, and under set -e a command substitution that
+    # fails kills the script before the diagnostic below can run -- which is how
+    # this check first behaved: it failed with exit 1 and printed nothing at all
+    # about why.
+    set +e
     TOKEN=$("$TOKEN_BIN" --key "$WORK/private.pem" --identity smoke \
             --access download,upload --expires-in 3600 \
             --verify "$WORK/public.pem" 2> "$WORK/token.err")
+    TOKEN_STATUS=$?
+    set -e
+    [ "$TOKEN_STATUS" -eq 0 ] || {
+        echo "FAIL: tessera-token exited $TOKEN_STATUS"
+        cat "$WORK/token.err"
+        exit 1
+    }
     grep -q "verified: identity=smoke" "$WORK/token.err" || {
         echo "FAIL: tessera-token could not verify the token it just signed"
         cat "$WORK/token.err"
