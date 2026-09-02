@@ -210,9 +210,10 @@ valid for every path the server serves. `--verify` runs the result back through
 the server's own `AccessControl`, so the tool can say the token was *accepted*
 rather than merely printed.
 
-Signing needs a build with the OpenSSL backend. On macOS the default backend is
-Apple's Security framework, which does not implement signing and says so;
-configure with `-DTESSERA_FORCE_OPENSSL=ON` if you want to mint tokens there.
+Signing works on both crypto backends -- OpenSSL and Apple's Security
+framework -- so `tessera-token` is built wherever the server is. A token minted
+on one verifies on the other: the two sign SHA-256 over the same bytes, which is
+what lets you mint on a Mac and serve from Linux.
 
 See [docs/findings/0b-server-has-no-auth.md](docs/findings/0b-server-has-no-auth.md)
 for what was missing and

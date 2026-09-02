@@ -4,6 +4,28 @@
 
 ### Added
 
+* **Signing on Apple's Security framework**, so `tessera-token` builds and works
+  wherever the server does rather than only on OpenSSL builds. `PKey::Impl`
+  already carried a `private_key` member that nothing assigned -- a field
+  declared for a capability never implemented, one level below the missing
+  `sign` itself.
+
+  `SecItemImport` needed a correction a symmetric reading of the public loader
+  would have got wrong: naming the format exactly rejects the PKCS#1 "BEGIN RSA
+  PRIVATE KEY" that `openssl genrsa` writes by default, with
+  `errSecUnknownFormat` (-25257). Those parameters are in/out hints, so leaving
+  them unknown lets `SecItemImport` identify the key, covering PKCS#1 and PKCS#8
+  alike; the returned type is then checked so a public key handed to `--key` is
+  still refused.
+
+  Both backends sign SHA-256 over the same bytes, so a token minted on either
+  verifies on both -- checked with an Apple-minted token against an
+  OpenSSL-built server, which is the case that matters when people mint on a Mac
+  and serve from Linux.
+
+
+### Added
+
 * **`tessera-token`, and the signing it needs.** v0.3.0 shipped a server that
   refuses to start without a public key and nothing that could produce a token
   for it, so standing one up left you unable to let anybody in.

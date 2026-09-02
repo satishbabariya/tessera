@@ -168,11 +168,10 @@ grep -q "refusing to bind" "$WORK/refuse2.log" || {
     echo "FAIL: the server refused the bind without saying why"; cat "$WORK/refuse2.log"; exit 1
 }
 
-# The token tool, where it ships. Signing lives in the OpenSSL backend, so this
-# binary exists on Linux and on a macOS build configured with
-# -DTESSERA_FORCE_OPENSSL=ON, and not otherwise -- see the guard in
-# src/tessera/sync/server/CMakeLists.txt. Absent is a valid outcome; wrong is
-# not.
+# The token tool. Both real crypto backends sign now, so this binary ships
+# wherever the server does; only a stub build lacks it. Absent is still treated
+# as a valid outcome rather than a failure, because the stub build is a real
+# configuration -- but wrong is not.
 TOKEN_BIN=$(find "$PREFIX/bin" -maxdepth 1 -name 'tessera-token*' -type f | head -1)
 if [ -n "$TOKEN_BIN" ] && command -v openssl > /dev/null 2>&1; then
     openssl genrsa -out "$WORK/private.pem" 2048 2> /dev/null

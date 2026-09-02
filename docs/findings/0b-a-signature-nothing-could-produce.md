@@ -60,10 +60,36 @@ and `util::Buffer::set_size` is documented, three lines above its declaration, a
 meant to trim. `resize(len, 0, len, 0)` retains the range. Reading the header
 rather than assuming the name is the only reason that was caught.
 
-The Apple backend still cannot sign. `can_sign()` there returns false and says
-so, which is the correct behaviour for an unimplemented function; the token tool
-reports it plainly rather than failing obscurely. Building with
-`-DTESSERA_FORCE_OPENSSL=ON` gives a signing build on macOS.
+The Apple backend signs too, added straight after. `Impl` already carried a
+`private_key` member that nothing assigned -- a field declared for a capability
+that was never implemented, which is the same finding one level down.
+
+`SecItemImport` needed one correction that a symmetric reading of the public
+loader would have got wrong. Naming the format exactly, as
+`load_public_from_data` does with `kSecFormatPEMSequence` and
+`kSecItemTypePublicKey`, rejects the PKCS#1 "BEGIN RSA PRIVATE KEY" that
+`openssl genrsa` writes by default:
+
+```
+Could not import PEM private key: The operation couldn't be completed.
+(OSStatus error -25257.)
+```
+
+`-25257` is `errSecUnknownFormat`. Those parameters are in/out hints rather than
+assertions, so leaving them unknown lets `SecItemImport` identify what it was
+handed, covering PKCS#1 and PKCS#8 alike. The returned `itemType` is then
+checked, so a public key handed to `--key` is still refused.
+
+Both backends sign SHA-256 over the same bytes, so a token minted on either
+verifies on both. Confirmed rather than assumed: a token minted by the
+Apple-built tool, against a server built with OpenSSL --
+
+```
+committed 20 of 20 transactions in 0.08s (252/s), 0 client failures
+```
+
+-- which is the case that matters, since people mint on a Mac and serve from
+Linux.
 
 ## The general form
 
