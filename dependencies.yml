@@ -3,7 +3,7 @@ PACKAGE_NAME: tessera
 # Realm's 14.x: this is a different database with an incompatible file format,
 # and inheriting the version number would imply an upgrade path that does not
 # exist. The fork point was realm-core v14.14.0; see FORK.md.
-VERSION: 0.3.0
+VERSION: 0.4.0
 # Tessera: minimum acceptable OpenSSL supplied by the environment. Formerly
 # OPENSSL_VERSION, which pinned a prebuilt tarball fetched from static.realm.io.
 OPENSSL_MIN_VERSION: 3.0.0
