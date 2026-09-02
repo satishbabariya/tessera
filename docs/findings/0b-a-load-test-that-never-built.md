@@ -105,6 +105,33 @@ test. Had the Debug run been the only one, "throughput collapses beyond sixteen
 clients" would have gone into the documentation as a property of the server,
 and it is a property of the build.
 
+## And both tables measure cold start
+
+Every figure above is one process, started, run once, and stopped. Running ten
+rounds against a single long-lived server says something different:
+
+| round | 8 clients |
+|---|---|
+| 1 | 675/s |
+| 2 | 810/s |
+| 3-10 | ~2,800/s, stable |
+
+and at sixteen clients the steady state is about 3,500/s against the 1,821/s a
+single round reports. So the published numbers understate sustained throughput
+by roughly a factor of two, because they include the cost of a cold server: an
+empty file cache, a database being created rather than opened, pages not yet
+resident.
+
+Neither figure is wrong. They answer different questions -- "how long does one
+burst take against a fresh server" and "what does this sustain" -- and only the
+second is what anyone deploying it wants to know. The first was the only one
+measured because the load test had never been run twice in a row.
+
+18,600 transactions across those sixteen rounds, every one committed and
+uploaded, no client failures, nothing in the server log at error level or above,
+and a data directory of 1.0M. That is the first evidence this project has that
+the server survives being used more than once.
+
 Both tables are kept, because the pair is the useful artefact. What they
 establish is the thing that did not exist before: a number to compare the next
 one against, and a demonstration that the configuration has to be named beside
