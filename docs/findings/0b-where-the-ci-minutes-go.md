@@ -130,6 +130,37 @@ headline check total is mostly this one test's socket scheduling.
 (The test body is wrapped in `for (int i = 0; i < 1; ++i)`, a loop that runs
 once. Left alone: it is inert, and this was a measurement, not a cleanup.)
 
+## CoreTests is worse
+
+The same measurement, four runs of one Release binary at the same thread count:
+
+```
+93,027,810   12,417,707   10,188,745   48,889,143
+```
+
+A 9.1x spread, all 1659 tests passing every time. That has a consequence beyond
+this suite, because `docs/RELEASING.md` tabulated assertion counts as a
+pre-release baseline -- one Debug sample and one Release sample each -- and drew
+inferences from the differences:
+
+> The two suites where Release is several times Debug are not a mistake and not a
+> stale binary [...] Nobody has yet explained the ratio, which is why it is
+> written down.
+
+The ratio may not exist. CoreTests' recorded Debug-to-Release gap is 1.14x,
+inside a 9.1x noise band. SyncTests' recorded Debug 40,400 and Release 127,236
+both fall inside the range Release alone produces, so those two numbers are not
+evidence of a Debug-to-Release difference; they are two draws from one
+distribution. And the recorded Release figures, 102,273,888 for CoreTests and
+127,236 for SyncTests, are each above every run measured here.
+
+The document was honest about the numbers being noisy -- "treat a small drift as
+normal and a factor as worth explaining" -- and then explained a factor that was
+noise. The fix is not a better number. It is to stop comparing them: test counts
+are stable at 1659 / 476 / 343 every run and are the ones to check, and a test
+that stops asserting anything is what `tools/analyse-zero-check-tests.sh` is
+for, counting per test rather than per suite.
+
 ## The consequence
 
 This project uses check-count baselines to detect tests that stop checking

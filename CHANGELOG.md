@@ -58,6 +58,28 @@
 
 ### Added
 
+* `docs/RELEASING.md` no longer treats assertion counts as a pre-release
+  baseline. It recorded one Debug and one Release sample per suite and drew
+  inferences from the differences; measured as repeat runs of a single binary in
+  one configuration, CoreTests ranges over 10,188,745 to 93,027,810 checks -- a
+  factor of 9.1 -- and SyncTests over 39,039 to 125,116, with every test passing
+  every time. The Debug-to-Release ratios the document asked someone to explain
+  are inside that noise, and its recorded Release figures are above every run
+  measured. Test counts are stable at 1659 / 476 / 343 and are the ones to check.
+
+* `test/CMakeLists.txt` records why `CombinedTests` exists and why no workflow
+  runs it: three binaries already run exactly those tests, and it is the only
+  target that links `ObjectStoreTestLib`, `CoreTestLib` and `SyncTestLib`
+  together, so building it is what catches a collision between them. Run
+  directly it passes -- 2135 core and sync tests, then 343 object-store cases --
+  which had never been checked.
+
+* The fuzzing rationale in `nightly.yml` sat on the clean-clone job, two
+  comments having run together, so the reason for fuzzing was filed under
+  cloning and the fuzzers job had no stated reason at all. The clean-clone note
+  also said the script "has never run in CI" while attached to the job that runs
+  it.
+
 * `SyncTests` keeps `UNITTEST_THREADS=1` in the merge gate, now as a recorded
   decision rather than an inheritance. Twelve runs on macOS pass all 476 tests
   at 1, 4 and 8 threads, and 4 threads is three times faster -- but the step is
