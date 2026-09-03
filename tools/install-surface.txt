@@ -1,11 +1,16 @@
 # The public installed header surface, one path per line, relative to the
-# install prefix's include/ directory. Generated on macOS; paths that only
-# install on Apple platforms carry an "apple:" prefix.
+# install prefix's include/ directory. A line prefixed "apple:" installs only on
+# Apple platforms.
+#
+# No line carries that prefix today, and that is the point of recording it here:
+# the surface used to differ by platform, because one installed header included
+# two headers that only exist under if(APPLE). That header was internal and no
+# longer ships, so the macOS and Linux packages now offer the same API. The
+# prefix stays supported so the next such divergence is written down in the same
+# file as everything else rather than in a second list.
 #
 # A header appearing here is a promise: it ships, so its contents are public
 # API. Adding a line is a deliberate act that needs a CHANGELOG entry.
-apple:tessera/object-store/sync/impl/apple/network_reachability_observer.hpp
-apple:tessera/object-store/sync/impl/apple/system_configuration.hpp
 external/json/json.hpp
 external/mpark/variant.hpp
 tessera.hpp
@@ -120,9 +125,6 @@ tessera/object-store/set.hpp
 tessera/object-store/shared_db.hpp
 tessera/object-store/sync/async_open_task.hpp
 tessera/object-store/sync/generic_network_transport.hpp
-tessera/object-store/sync/impl/network_reachability.hpp
-tessera/object-store/sync/impl/sync_client.hpp
-tessera/object-store/sync/impl/sync_file.hpp
 tessera/object-store/sync/jwt.hpp
 tessera/object-store/sync/sync_client_config.hpp
 tessera/object-store/sync/sync_manager.hpp

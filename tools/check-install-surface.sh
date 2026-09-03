@@ -43,15 +43,16 @@ PREFIX="${1:-}"
 [ -d "$PREFIX/include" ] || { echo "SKIP: $PREFIX/include does not exist"; exit 0; }
 [ -f "$MANIFEST" ] || { echo "FAIL: no manifest at $MANIFEST" >&2; exit 2; }
 
-# Two headers are appended under `if(APPLE)` in
-# src/tessera/object-store/CMakeLists.txt -- sync/impl/apple/
-# network_reachability_observer.hpp and sync/impl/apple/system_configuration.hpp
-# -- and both are included by an installed header, so they are not removable:
-# the Apple package genuinely has a surface the Linux one does not. Code that
-# compiles against the macOS package may not compile against the Linux one.
+# The manifest marks platform-specific headers with an "apple:" prefix rather
+# than keeping two lists, so a header added to the common set cannot be added to
+# only one platform's expectations -- which is how the first version of this
+# check failed, its numbers recorded on macOS and asserted on Linux.
 #
-# The manifest marks those with an "apple:" prefix rather than keeping two
-# lists, so a header added to the common set cannot be added to only one of them.
+# Nothing carries that prefix today. Two headers appended under `if(APPLE)` did:
+# they were reachable only from sync/impl/sync_client.hpp, an internal header
+# that no longer ships, so the macOS and Linux packages now offer the same API.
+# The branch stays because the next divergence should land in the manifest and
+# not in a second list.
 if [ "$(uname -s)" = "Darwin" ]; then
     expected=$(grep -v '^#' "$MANIFEST" | sed 's|^apple:||' | sort)
 else
