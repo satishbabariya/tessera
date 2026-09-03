@@ -77,16 +77,71 @@ UNITTEST_RANDOM_SEED=1234, one thread:   107,180   123,057   123,252
 UNITTEST_RANDOM_SEED=1234, four threads: 119,866   103,380
 ```
 
-So the seed is not the cause, or not the only one. The shape of the numbers
-suggests two effects rather than one: a spread of roughly 20,000 that survives a
-pinned seed on a single thread, and a much larger drop to about 39,000 seen only
-at four and eight threads. Neither is explained. `Transform_Randomized`,
-`Network_StressTest` and `Util_Network_SSL_StressTest` were each measured in
-isolation and are stable, so the variable test is elsewhere and has not been
-identified.
+So the seed is not the cause. Bisecting by test-name prefix, three runs each,
+finds where the checks are and where they move:
 
-What this does settle is the consequence. This project uses check-count
-baselines to detect tests that stop checking anything -- the "green by absence"
-problem -- and for `SyncTests` such a baseline would be meaningless. The
-tempting fix, pinning the seed, has been tried and does not produce a
-reproducible count, so a baseline here cannot be rescued that way.
+```
+Sync*         1916    1916    1916
+Transform*     608     608     608
+Util*         1679    1679    1679
+ClientReset*   580     580     580
+Network*    120080  116776  112135
+```
+
+`Network*` holds almost the entire check count of the suite, and all of the
+variance. Within it:
+
+```
+Network_RepeatedCancelAndRestartRead   84220   67377   85395
+Network_AsyncReadWriteLargeAmount      16646   16646   16646
+Network_ReadWriteLargeAmount           16390   16390   16390
+```
+
+One test, about 70% of the suite's checks, and unstable by tens of thousands.
+
+## Why that test cannot have a stable count
+
+`Network_RepeatedCancelAndRestartRead` pushes 64 MiB through a socket pair. Its
+read handler checks the error code and re-arms itself:
+
+```cpp
+auto handler = [&](std::error_code ec, size_t n) {
+    num_bytes_read += n;
+    if (ec == MiscExtErrors::end_of_input) { end_of_input_seen = true; return; }
+    CHECK(!ec || ec == error::operation_aborted);
+    initiate_read();
+};
+```
+
+So the check count *is* the number of read completions. Meanwhile the writer
+loops, writing a random 1-1024 bytes at a time and posting a
+`socket_2.cancel()` after each write, while the reader runs `service_2.run()`
+on another thread.
+
+How many times that handler fires is decided by the kernel's socket buffering
+and by how the cancels interleave with the reads across two threads. Pinning
+the random seed fixes the write sizes and changes none of that, which is exactly
+what the measurement showed.
+
+The count is not flaky in the sense of a test that sometimes fails. It passes
+every time. It is simply not a quantity this test controls, and the suite's
+headline check total is mostly this one test's socket scheduling.
+
+(The test body is wrapped in `for (int i = 0; i < 1; ++i)`, a loop that runs
+once. Left alone: it is inert, and this was a measurement, not a cleanup.)
+
+## The consequence
+
+This project uses check-count baselines to detect tests that stop checking
+anything -- the "green by absence" problem -- and for `SyncTests` such a
+baseline would be meaningless. Pinning the seed does not rescue it, because the
+variance is not in the seed.
+
+What would work is a baseline that excludes
+`Network_RepeatedCancelAndRestartRead`, or a per-test count for the other 475.
+`tools/analyse-zero-check-tests.sh` already runs tests one at a time, because
+the framework tracks `num_executed_checks` only in its `Summary` and never per
+test -- so a per-test baseline is possible today, just not cheap.
+
+Neither is built here. What is established is that the suite total cannot serve
+as one, and precisely why.

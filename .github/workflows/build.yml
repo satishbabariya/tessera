@@ -182,11 +182,17 @@ jobs:
       #
       # Incidentally, this suite's check count is not reproducible: twelve runs
       # gave totals from 39,039 to 125,116 with all 476 tests passing every
-      # time, at every thread count including 1. Pinning UNITTEST_RANDOM_SEED,
-      # which the framework otherwise draws nondeterministically, was measured
-      # and does not fix it. Any check-count baseline for SyncTests would be
-      # meaningless, which matters because this project uses such baselines
-      # elsewhere.
+      # time, at every thread count including 1. It is one test --
+      # Network_RepeatedCancelAndRestartRead, about 70% of the suite's checks,
+      # measured at 84,220, 67,377 and 85,395 in isolation. It pushes 64 MiB
+      # through a socket pair and CHECKs once per read completion, so its count
+      # is however many times the kernel and the thread scheduler decide to
+      # complete a read. Pinning UNITTEST_RANDOM_SEED fixes the write sizes and
+      # not that, which is why it was measured and did not help.
+      #
+      # So a check-count baseline for SyncTests would be meaningless, which
+      # matters because this project uses such baselines elsewhere. One that
+      # excluded that test, or counted per test, would work.
       - name: SyncTests
         timeout-minutes: 25
         run: |

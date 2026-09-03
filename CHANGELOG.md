@@ -66,10 +66,13 @@
   platform's evidence.
 
   The same twelve runs produced check-count totals from 39,039 to 125,116 with
-  every test passing, so a check-count baseline for this suite would be
-  meaningless. Pinning `UNITTEST_RANDOM_SEED` -- the obvious cause, since the
-  framework otherwise seeds nondeterministically -- was measured and does not
-  produce a reproducible count either. See
+  every test passing. It is one test: `Network_RepeatedCancelAndRestartRead`,
+  about 70% of the suite's checks, which pushes 64 MiB through a socket pair and
+  checks once per read completion -- so its count is however many reads the
+  kernel and the scheduler decide to complete. Pinning `UNITTEST_RANDOM_SEED`
+  fixes the write sizes and not that, which is why it was measured and did not
+  help. A check-count baseline for this suite is therefore meaningless, though
+  one excluding that test would work. See
   `docs/findings/0b-where-the-ci-minutes-go.md`.
 
 * The `reports DNS error` test resolves `host.invalid` instead of
