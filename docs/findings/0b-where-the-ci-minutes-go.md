@@ -195,7 +195,18 @@ from it and testing that prediction, is the same mistake as trusting a check
 that has never failed.
 
 What is established: the count is exactly right at one thread and short by up to
-89 million at two. The mechanism is not established.
+89 million at two.
+
+**Since resolved.** The mechanism was the one described above, applied to the
+right case: at one thread every test goes into `no_concur_tests`, because the
+partition is `test.allow_concur && num_threads > 1`, so the discarded
+concurrent-phase counters are empty and nothing is lost. At two threads they are
+not empty. The prediction that failed was mine, not the mechanism's.
+
+That also means failures were being discarded, not just checks, and the suite
+could exit 0 with a failing test in it -- measured at two runs in four. See
+`docs/findings/0b-a-failure-that-was-not-counted.md` for the fix and the
+before-and-after numbers.
 
 ## The consequence
 
