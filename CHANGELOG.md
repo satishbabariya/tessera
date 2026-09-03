@@ -66,6 +66,17 @@
   `#ifdef __EMSCRIPTEN__`, and that header installs only on Emscripten builds,
   so every other platform's package referred to a file it did not contain. No CI
   job builds that target.
+* The release gate runs `tools/verify/authorization-end-to-end.sh` and
+  `tools/verify/survives-a-hard-kill.sh`. CI ran both on every pull request, so
+  nothing looked wrong, and the gate that decides whether to tag a build checked
+  neither the authorization model nor crash durability -- five of the seven
+  properties verified through the shipped binaries.
+
+* Both scripts check that the load test in the build directory accepts the flags
+  they pass it, and name the missing flag when it does not. Run against a
+  `build.release` that predated `--converge`, they reported `FAIL: the deployed
+  path does not hold` for a server behaving correctly: the load test printed its
+  usage, and the script blamed the property it had never exercised.
 
 * `tools/check-repo-hygiene.sh` also checks that every document in
   `docs/findings/` is listed in that directory's `README.md`, and that no row
