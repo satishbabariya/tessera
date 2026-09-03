@@ -182,9 +182,11 @@ jobs:
       #
       # Incidentally, this suite's check count is not reproducible: twelve runs
       # gave totals from 39,039 to 125,116 with all 476 tests passing every
-      # time, at every thread count including 1. Any check-count baseline for
-      # SyncTests would be meaningless, which matters because this project uses
-      # such baselines elsewhere.
+      # time, at every thread count including 1. Pinning UNITTEST_RANDOM_SEED,
+      # which the framework otherwise draws nondeterministically, was measured
+      # and does not fix it. Any check-count baseline for SyncTests would be
+      # meaningless, which matters because this project uses such baselines
+      # elsewhere.
       - name: SyncTests
         timeout-minutes: 25
         run: |

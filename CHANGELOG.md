@@ -67,7 +67,10 @@
 
   The same twelve runs produced check-count totals from 39,039 to 125,116 with
   every test passing, so a check-count baseline for this suite would be
-  meaningless. See `docs/findings/0b-where-the-ci-minutes-go.md`.
+  meaningless. Pinning `UNITTEST_RANDOM_SEED` -- the obvious cause, since the
+  framework otherwise seeds nondeterministically -- was measured and does not
+  produce a reproducible count either. See
+  `docs/findings/0b-where-the-ci-minutes-go.md`.
 
 * The `reports DNS error` test resolves `host.invalid` instead of
   `invalid.com`. RFC 6761 reserves the `.invalid` TLD and guarantees names under
