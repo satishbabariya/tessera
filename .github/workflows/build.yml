@@ -167,6 +167,13 @@ jobs:
         timeout-minutes: 10
         run: tools/verify/survives-a-hard-kill.sh build
 
+      - name: The installed surface is what we recorded
+        timeout-minutes: 10
+        run: |
+          PREFIX="$(mktemp -d)/tessera"
+          cmake --install build --prefix "$PREFIX" > /dev/null
+          tools/check-install-surface.sh "$PREFIX"
+
       - name: Consumer smoke test
         timeout-minutes: 10
         run: tools/verify/consumer-smoke-test.sh build
