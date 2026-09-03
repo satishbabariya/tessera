@@ -137,6 +137,22 @@ else
     say "a token past its expiry" "FAIL: accepted"; failures=1
 fi
 
+# Conflicting writes. Every client writes the same keys with a different value,
+# so the merge engine has to reconcile them and the clients have to end up
+# holding the same thing. A convergence test where each client owns a disjoint
+# range never reaches that case, which is the one the engine exists for.
+contend_dir=$(mktemp -d)
+if "$LT" --root "$contend_dir" --port "$PORT" --clients 4 --transactions 20 \
+         --token "$SCOPED" --path /allowed --contend --converge > "$contend_dir/out" 2>&1; then
+    say "four clients contending on one key range" \
+        "$(grep -o 'every client sees [0-9]* rows summing [0-9-]*' "$contend_dir/out" || echo ok)"
+else
+    say "four clients contending on one key range" "FAIL"
+    cat "$contend_dir/out"
+    failures=1
+fi
+rm -rf "$contend_dir"
+
 # TLS. The certificates come from certificate-authority/, which already holds a
 # chain issued for localhost -- test_sync.cpp uses the same ones. A self-signed
 # CN=Test certificate is refused by the client, correctly, and using one here
@@ -209,4 +225,4 @@ if [ "$failures" -ne 0 ]; then
     exit 1
 fi
 
-echo "PASS: path scoping, upload privilege, expiry and TLS sync hold end to end"
+echo "PASS: path scoping, upload privilege, expiry, conflict convergence and TLS sync hold end to end"
