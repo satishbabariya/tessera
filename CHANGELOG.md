@@ -19,6 +19,20 @@
 
 ### Added
 
+* A documented answer to how to back the server up. `cp -R` of a live `--root`
+  directory yields an openable database holding committed writes up to some
+  point: five copies taken a second apart under continuous write load all opened,
+  none corrupt, each holding a prefix of the writes.
+
+  The engine being copy-on-write and multi-version made that plausible; it had
+  never been measured. It is a snapshot rather than a fence -- writes in flight
+  when the copy began may or may not be included -- and if a definite cut is
+  wanted, `SIGTERM` stops the server cleanly first. See
+  `docs/findings/0b-copying-a-live-database.md`.
+
+
+### Added
+
 * `tessera-load-test --contend`, and a conflicting-writes case in
   `tools/verify/authorization-end-to-end.sh`. Every client writes the *same*
   keys with a different value, so the merge engine has to reconcile them and the
