@@ -11,6 +11,10 @@
 #
 # A header appearing here is a promise: it ships, so its contents are public
 # API. Adding a line is a deliberate act that needs a CHANGELOG entry.
+#
+# tools/api-entry-points.txt says which of these a consumer is meant to include,
+# and tools/check-surface-is-reachable.sh requires that every line here is
+# reachable from one of them.
 external/mpark/variant.hpp
 tessera.hpp
 tessera/aggregate_ops.hpp
@@ -30,7 +34,6 @@ tessera/array_decimal128.hpp
 tessera/array_direct.hpp
 tessera/array_fixed_bytes.hpp
 tessera/array_integer.hpp
-tessera/array_integer_tpl.hpp
 tessera/array_key.hpp
 tessera/array_list.hpp
 tessera/array_mixed.hpp
@@ -40,7 +43,6 @@ tessera/array_string_short.hpp
 tessera/array_timestamp.hpp
 tessera/array_typed_link.hpp
 tessera/array_unsigned.hpp
-tessera/array_with_find.hpp
 tessera/binary_data.hpp
 tessera/bplustree.hpp
 tessera/chunked_binary.hpp
@@ -67,7 +69,6 @@ tessera/exceptions.hpp
 tessera/geospatial.hpp
 tessera/global_key.hpp
 tessera/group.hpp
-tessera/group_writer.hpp
 tessera/handover_defs.hpp
 tessera/history.hpp
 tessera/impl/array_writer.hpp
@@ -86,7 +87,6 @@ tessera/merge/changeset_parser.hpp
 tessera/merge/instruction_applier.hpp
 tessera/merge/instruction_replication.hpp
 tessera/merge/instructions.hpp
-tessera/merge/integer_codec.hpp
 tessera/merge/object_id.hpp
 tessera/merge/transform.hpp
 tessera/mixed.hpp
@@ -106,7 +106,6 @@ tessera/object-store/impl/collection_change_builder.hpp
 tessera/object-store/impl/collection_notifier.hpp
 tessera/object-store/impl/deep_change_checker.hpp
 tessera/object-store/index_set.hpp
-tessera/object-store/keypath_helpers.hpp
 tessera/object-store/list.hpp
 tessera/object-store/object.hpp
 tessera/object-store/object_accessor.hpp
@@ -159,8 +158,6 @@ tessera/sync/history.hpp
 tessera/sync/network/default_socket.hpp
 tessera/sync/network/http.hpp
 tessera/sync/network/network.hpp
-tessera/sync/network/network_ssl.hpp
-tessera/sync/network/websocket.hpp
 tessera/sync/network/websocket_error.hpp
 tessera/sync/protocol.hpp
 tessera/sync/server/clock.hpp
@@ -171,7 +168,6 @@ tessera/sync/subscriptions.hpp
 tessera/table.hpp
 tessera/table_ref.hpp
 tessera/table_view.hpp
-tessera/tessera_nmmintrin.h
 tessera/timestamp.hpp
 tessera/transaction.hpp
 tessera/unicode.hpp
@@ -179,7 +175,6 @@ tessera/util/aes_cryptor.hpp
 tessera/util/any.hpp
 tessera/util/assert.hpp
 tessera/util/backtrace.hpp
-tessera/util/base64.hpp
 tessera/util/basic_system_errors.hpp
 tessera/util/bind_ptr.hpp
 tessera/util/bson/bson.hpp
@@ -190,45 +185,32 @@ tessera/util/bson/mongo_timestamp.hpp
 tessera/util/bson/regular_expression.hpp
 tessera/util/buffer.hpp
 tessera/util/buffer_stream.hpp
-tessera/util/cf_ptr.hpp
 tessera/util/checked_mutex.hpp
-tessera/util/compression.hpp
 tessera/util/config.h
 tessera/util/encrypted_file_mapping.hpp
-tessera/util/errno.hpp
 tessera/util/features.h
-tessera/util/fifo_helper.hpp
 tessera/util/file.hpp
 tessera/util/file_mapper.hpp
-tessera/util/fixed_size_buffer.hpp
 tessera/util/flat_map.hpp
 tessera/util/function_ref.hpp
 tessera/util/functional.hpp
 tessera/util/future.hpp
-tessera/util/hex_dump.hpp
 tessera/util/input_stream.hpp
 tessera/util/interprocess_condvar.hpp
 tessera/util/interprocess_mutex.hpp
 tessera/util/logger.hpp
-tessera/util/memory_stream.hpp
-tessera/util/misc_errors.hpp
 tessera/util/misc_ext_errors.hpp
 tessera/util/optional.hpp
 tessera/util/overload.hpp
-tessera/util/platform_info.hpp
-tessera/util/priority_queue.hpp
-tessera/util/random.hpp
 tessera/util/safe_int_ops.hpp
 tessera/util/scope_exit.hpp
 tessera/util/serializer.hpp
-tessera/util/sha_crypto.hpp
 tessera/util/span.hpp
 tessera/util/tagged_bool.hpp
 tessera/util/terminate.hpp
 tessera/util/thread.hpp
 tessera/util/to_string.hpp
 tessera/util/type_traits.hpp
-tessera/util/uri.hpp
 tessera/utilities.hpp
 tessera/uuid.hpp
 tessera/version.hpp

@@ -259,6 +259,10 @@ set(OBJECT_STORE_INTERNAL_HEADERS
     # is publishing them as API nobody asked for.
     util/aligned_union.hpp
     util/tagged_string.hpp
+
+    # Reachable from no declared entry point, and included by no installed
+    # header. See tools/api-entry-points.txt.
+    keypath_helpers.hpp
 )
 
 set(OBJECT_STORE_INSTALL_HEADERS "")
