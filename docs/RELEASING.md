@@ -111,8 +111,13 @@ At one thread the total is exactly right. The suite splits into 1626 concurrent
 and 33 nonconcurrent tests, which measure 98,356,931 and 1,148,179 checks when
 run separately -- summing to 99,505,110 against full runs of 99,442,447 to
 99,655,290. At two threads the same binary reports as little as 10,188,745, so
-up to 89 million checks go uncounted whenever more than one thread runs. Why is
-not established. See `docs/findings/0b-where-the-ci-minutes-go.md`. So the numbers previously tabulated --
+up to 89 million checks went uncounted whenever more than one thread ran -- and
+so did failures, which meant the suite could exit 0 with a failing test in it.
+That is fixed. The figures in this section were measured before the fix and are
+kept as the record of what an unusable baseline looked like; test counts remain
+the ones to check. See `docs/findings/0b-a-failure-that-was-not-counted.md`.
+
+So the numbers previously tabulated --
 
 | Suite | Debug | Release |
 |---|---|---|
