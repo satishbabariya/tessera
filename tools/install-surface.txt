@@ -72,8 +72,6 @@ tessera/handover_defs.hpp
 tessera/history.hpp
 tessera/impl/array_writer.hpp
 tessera/impl/changeset_input_stream.hpp
-tessera/impl/clamped_hex_dump.hpp
-tessera/impl/clock.hpp
 tessera/impl/cont_transact_hist.hpp
 tessera/impl/destroy_guard.hpp
 tessera/impl/output_stream.hpp
@@ -129,12 +127,10 @@ tessera/object-store/sync/sync_manager.hpp
 tessera/object-store/sync/sync_session.hpp
 tessera/object-store/sync/sync_user.hpp
 tessera/object-store/thread_safe_reference.hpp
-tessera/object-store/util/aligned_union.hpp
 tessera/object-store/util/atomic_shared_ptr.hpp
 tessera/object-store/util/copyable_atomic.hpp
 tessera/object-store/util/event_loop_dispatcher.hpp
 tessera/object-store/util/scheduler.hpp
-tessera/object-store/util/tagged_string.hpp
 tessera/object-store/util/uuid.hpp
 tessera/object_id.hpp
 tessera/owned_data.hpp

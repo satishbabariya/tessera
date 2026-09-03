@@ -4,6 +4,21 @@
 
 ### Added
 
+* Four more headers no longer install, taking the package from 243 headers to
+  223.
+
+  `tessera/sync/impl/clock.hpp` and `tessera/sync/impl/clamped_hex_dump.hpp`
+  were installed to `include/tessera/impl/` -- not `include/tessera/sync/impl/`,
+  which is how every includer in the repository spells them. The installed
+  copies sat at a path no include directive names, inside a directory belonging
+  to the storage engine's own `impl/` headers. Nothing in the installed set
+  includes either, and `impl/` means internal everywhere else in the package.
+
+  `tessera/object-store/util/aligned_union.hpp` and
+  `.../util/tagged_string.hpp` are included by nothing in the repository at all.
+  They stay in the tree as removal candidates; what stops is publishing them as
+  API nobody asked for.
+
 * `tessera/object-store/audit_serializer.hpp` and the vendored
   `external/json/json.hpp` no longer install. The serializer is included by
   nothing in the repository, declares `AuditObjectSerializer` with no definition

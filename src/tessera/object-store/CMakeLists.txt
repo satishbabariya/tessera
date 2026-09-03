@@ -251,6 +251,14 @@ set(OBJECT_STORE_INTERNAL_HEADERS
     # extension point; the serializer for a backend that no longer exists does
     # not.
     audit_serializer.hpp
+
+    # Two headers that nothing in the repository includes -- no header, no
+    # source, no test -- and that no documented entry point reaches. Unlike
+    # audit_serializer.hpp they are self-contained and harmless, so they stay in
+    # the tree as removal candidates rather than being deleted here; what stops
+    # is publishing them as API nobody asked for.
+    util/aligned_union.hpp
+    util/tagged_string.hpp
 )
 
 set(OBJECT_STORE_INSTALL_HEADERS "")
