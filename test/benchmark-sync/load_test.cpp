@@ -50,6 +50,8 @@ struct Options {
     bool verbose = false;
     bool converge = false;
     std::int64_t key_base = 0;
+    bool tls = false;
+    std::string tls_trust;
 };
 
 void usage(const char* argv0)
@@ -68,6 +70,8 @@ void usage(const char* argv0)
                  "  --clients N        concurrent sessions (default: 4)\n"
                  "  --transactions N   write transactions per session (default: 50)\n"
                  "  --verbose          log at debug level\n"
+                 "  --tls              connect over TLS (wss) rather than plain ws\n"
+                 "  --tls-trust PATH   PEM trust anchor, for a self-signed server cert\n"
                  "  --key-base N       offset for the primary keys this run writes. Runs\n"
                  "                     against one server path collide without it, so a\n"
                  "                     repeat run updates rows instead of inserting them\n"
@@ -130,6 +134,15 @@ int run_one_client(const Options& opt, int index, std::atomic<int>& failures,
         session_config.realm_identifier = opt.path;
         session_config.service_identifier = "/tessera-sync";
         session_config.signed_user_token = opt.token;
+        if (opt.tls) {
+            // wss rather than ws. The server's --tls-cert/--tls-key put it on the
+            // other end; this is the half that had never been exercised: an
+            // openssl s_client handshake proves the server speaks TLS, not that
+            // a sync client can complete a session over it.
+            session_config.protocol_envelope = sync::ProtocolEnvelope::wss;
+            if (!opt.tls_trust.empty())
+                session_config.ssl_trust_certificate_path = opt.tls_trust;
+        }
 
         // Constructing the session binds it: the config carries the path, the
         // endpoint and the token, and there is no separate bind() to call.
@@ -225,6 +238,8 @@ int main(int argc, char** argv)
         else if (arg == "--verbose")     opt.verbose = true;
         else if (arg == "--converge")    opt.converge = true;
         else if (arg == "--key-base")    opt.key_base = std::stoll(value("--key-base"));
+        else if (arg == "--tls")         opt.tls = true;
+        else if (arg == "--tls-trust")   opt.tls_trust = value("--tls-trust");
         else if (arg == "-h" || arg == "--help") { usage(argv[0]); return 0; }
         else {
             std::fprintf(stderr, "%s: unrecognised argument '%s'\n", argv[0], arg.c_str());
