@@ -13,6 +13,7 @@
 #   a token scoped to /allowed          works on /allowed
 #   the same token                      is refused on /denied
 #   a download-only token               is refused when it uploads
+#   a token past its expiry             is refused at the handshake
 #
 # and then the same thing again over TLS, because --tls-cert was verified with an
 # openssl s_client handshake, which proves the server speaks TLS and not that a
@@ -125,6 +126,17 @@ if [ "$failures" -ne 0 ]; then
     exit 1
 fi
 
+# Expiry. Minted with a one-second life and used after it, so this is the token
+# being past its expiry rather than malformed -- the server distinguishes them
+# and says which, and the assertion is on that wording.
+EXPIRED=$("$TK" --key "$WORK/private.pem" --identity shortlived --expires-in 1)
+sleep 2
+if refused_with /expiry "$EXPIRED" "The access token has expired"; then
+    say "a token past its expiry" "refused"
+else
+    say "a token past its expiry" "FAIL: accepted"; failures=1
+fi
+
 # TLS. The certificates come from certificate-authority/, which already holds a
 # chain issued for localhost -- test_sync.cpp uses the same ones. A self-signed
 # CN=Test certificate is refused by the client, correctly, and using one here
@@ -197,4 +209,4 @@ if [ "$failures" -ne 0 ]; then
     exit 1
 fi
 
-echo "PASS: path scoping, upload privilege and TLS sync hold end to end"
+echo "PASS: path scoping, upload privilege, expiry and TLS sync hold end to end"

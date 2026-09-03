@@ -4,6 +4,12 @@
 
 ### Added
 
+* An expiry case in `tools/verify/authorization-end-to-end.sh`: a token minted
+  with a one-second life and used after it is refused at the handshake with "The
+  access token has expired", which the server distinguishes from a malformed
+  one. That is the last of the security properties to be checked through the
+  binaries rather than only in-process.
+
 * `tessera-load-test --tls` and `--tls-trust`, and a TLS case in
   `tools/verify/authorization-end-to-end.sh`. `--tls-cert` was verified with an
   `openssl s_client` handshake, which proves the server speaks TLS and not that a
