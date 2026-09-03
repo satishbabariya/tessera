@@ -235,6 +235,22 @@ set(OBJECT_STORE_INTERNAL_HEADERS
     sync/impl/network_reachability.hpp
     sync/impl/sync_client.hpp
     sync/impl/sync_file.hpp
+
+    # Not under impl/, and internal on stronger grounds than anything above it.
+    # audit_serializer.hpp is included by nothing -- no header, no source, no
+    # test. It declares AuditObjectSerializer, which has no definition anywhere
+    # in the tree and no symbol in the built library, so a consumer who used it
+    # would not link. It has no include guard, so including it twice does not
+    # compile. And it was the only installed header needing
+    # external/json/json.hpp, which is why a vendored third-party directory was
+    # published at the root of the include path.
+    #
+    # Audit is an inert extension point: make_audit_context terminates with
+    # "Audit is not implemented in this build" since the Apple-only App Services
+    # implementation was deleted. audit.hpp stays installed as the documented
+    # extension point; the serializer for a backend that no longer exists does
+    # not.
+    audit_serializer.hpp
 )
 
 set(OBJECT_STORE_INSTALL_HEADERS "")
