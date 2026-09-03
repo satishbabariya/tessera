@@ -114,9 +114,11 @@ install(FILES ${SYNC_NETWORK_INSTALL_HEADERS}
 install(FILES ../../external/mpark/variant.hpp
         DESTINATION include/external/mpark
         COMPONENT devel)
-install(FILES ../../external/json/json.hpp
-        DESTINATION include/external/json
-        COMPONENT devel)
+# external/json is not installed. Its only consumer in the installed set was
+# object-store/audit_serializer.hpp, which is internal now, so publishing a
+# vendored nlohmann/json at include/external/json/ put a generic directory on
+# every consumer's include path for nothing. mpark/variant.hpp above stays: it is
+# genuinely reached from the public headers.
 
 add_subdirectory(server)
 

@@ -108,5 +108,23 @@ if [ -f "$INDEX" ]; then
     rm -f /tmp/.findings-dangling.$$
 fi
 
+# 7. Every check and test script is invoked by a workflow. The workflow names
+#    them one per line rather than globbing, because the pre-configure step has
+#    no install tree to hand the two checks that need one -- so a script added to
+#    tools/ and not to the workflow runs nowhere, which is this project's most
+#    repeated finding in a new place.
+#
+#    docs/RELEASING.md solved the same problem with a glob and recorded why: a
+#    gate that enumerates its own members drifts behind them. This is that gate's
+#    enumeration, so it gets a check instead.
+for c in tools/check-*.sh tools/test-*.sh; do
+    b=$(basename "$c")
+    grep -rq -- "$b" .github/workflows/ 2>/dev/null || {
+        echo "FAIL: tools/$b is invoked by no workflow"
+        echo "  add it to .github/workflows/build.yml, or delete it"
+        FAIL=1
+    }
+done
+
 [ "$FAIL" -eq 0 ] && echo "PASS: repository surface is clean"
 exit "$FAIL"

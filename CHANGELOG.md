@@ -4,6 +4,36 @@
 
 ### Added
 
+* `tessera/object-store/audit_serializer.hpp` and the vendored
+  `external/json/json.hpp` no longer install. The serializer is included by
+  nothing in the repository, declares `AuditObjectSerializer` with no definition
+  anywhere and no symbol in the built library, and has no include guard -- so it
+  could not be linked against and could not be included twice. It was also the
+  only installed header needing the vendored json, which was published as
+  `include/external/json/json.hpp` and put a directory named `external` into
+  every consumer's include namespace.
+
+  `audit.hpp` still installs. Audit is an inert extension point --
+  `make_audit_context` terminates, since the Apple-only App Services
+  implementation was deleted -- but the extension point is documented. A
+  serializer for a backend that no longer exists is not.
+
+  `external/mpark/variant.hpp` still installs: it is reached from five installed
+  headers, so removing it is an API change rather than a packaging one.
+
+* `tools/check-include-root-is-clean.sh` checks the installed tree when given an
+  install prefix, and CI passes it the one the install-surface step builds. It
+  had been reading `install(FILES ...)` declarations out of `src/CMakeLists.txt`
+  and reporting "only tessera.hpp installs to the include root" while the tree
+  had an `external/` directory at top level, installed from a rule in a
+  different CMakeLists.
+
+* `tools/check-repo-hygiene.sh` checks that every `tools/check-*.sh` and
+  `tools/test-*.sh` is invoked by a workflow. CI names them one per line rather
+  than globbing, because the pre-configure step has no install tree for the two
+  that need one, so a script added to `tools/` and not to the workflow would run
+  nowhere.
+
 * Seven `sync/impl/` headers no longer install. `sync_client.hpp` and
   `sync_file.hpp` were included by no installed header -- only by four `.cpp`
   files in the library and one test helper, which compile against the source
