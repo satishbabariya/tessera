@@ -57,7 +57,7 @@ jobs:
       #
       # Ten minutes is generous. A healthy checkout of this repository, including
       # the Catch2 submodule, takes about seven seconds.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         timeout-minutes: 10
         with:
           submodules: recursive   # the test suites need Catch2
@@ -78,6 +78,7 @@ jobs:
         run: |
           tools/check-copyright-notices.sh 560
           tools/check-no-vendor-hosts.sh
+          tools/check-actions-are-pinned.sh
           tools/check-layering.sh
           tools/check-merge-deps.sh
           tools/check-header-tiers.sh
