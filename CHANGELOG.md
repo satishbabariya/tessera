@@ -65,10 +65,10 @@
   factor of 9.1 -- and SyncTests over 39,039 to 125,116, with every test passing
   every time. For CoreTests the cause is the thread count: at
   `UNITTEST_THREADS=1` the same binary reports 99,442,447 / 99,508,221 /
-  99,655,290, stable to 0.2%, and CI runs it with two. The framework also drops
-  one thread's concurrent-phase checks on every run -- the thread that goes on to
-  run the nonconcurrent tests returns without calling `finalize()`, and
-  `nonconcur_run()` then clears its counters. The Debug-to-Release ratios the document asked someone to explain
+  99,655,290, stable to 0.2%, and CI runs it with two. At one thread the total is
+  exactly right -- the suite's 1626 concurrent and 33 nonconcurrent tests measure
+  98,356,931 and 1,148,179 checks separately, summing to 99,505,110 -- while at
+  two threads up to 89 million checks go uncounted. Why is not established. The Debug-to-Release ratios the document asked someone to explain
   are inside that noise, and its recorded Release figures are above every run
   measured. Test counts are stable at 1659 / 476 / 343 and are the ones to check.
 

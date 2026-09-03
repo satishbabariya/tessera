@@ -105,13 +105,14 @@ within a single configuration is itself a factor:
 | SyncTests | 39,039 to 125,116 over twelve runs | 3.2x |
 
 Every run passed every test. For CoreTests the instability is the thread count,
-not a test: one thread is reproducible, two is not, and CI uses two. There is a
-matching accounting defect in the test framework -- the thread that goes on to
-run the nonconcurrent tests returns from `run()` without calling `finalize()`,
-and `nonconcur_run()` then calls `clear_counters()` -- so one thread's
-concurrent-phase checks are dropped on every run. That is demonstrable from the
-source; it is not on its own sufficient to explain the size or direction of the
-gap. See `docs/findings/0b-where-the-ci-minutes-go.md`. So the numbers previously tabulated --
+not a test: one thread is reproducible, two is not, and CI uses two.
+
+At one thread the total is exactly right. The suite splits into 1626 concurrent
+and 33 nonconcurrent tests, which measure 98,356,931 and 1,148,179 checks when
+run separately -- summing to 99,505,110 against full runs of 99,442,447 to
+99,655,290. At two threads the same binary reports as little as 10,188,745, so
+up to 89 million checks go uncounted whenever more than one thread runs. Why is
+not established. See `docs/findings/0b-where-the-ci-minutes-go.md`. So the numbers previously tabulated --
 
 | Suite | Debug | Release |
 |---|---|---|

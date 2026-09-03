@@ -154,75 +154,48 @@ groups measured single-threaded are `Table*` at 4.2M, `LangBindHelper*` at 3.5M
 and `EncryptedFile*` at 3.2M, all stable across repeat runs. Nothing in one test
 explains a swing of eighty million.
 
-### There is a real accounting defect in the framework
+### Where the checks are
 
-`test/util/unit_test.cpp`. Each thread accumulates into its own plain
-`num_checks` and folds it into the shared atomic total in `finalize()`. The
-thread that will go on to run the nonconcurrent tests does not do that:
+The suite splits into 1626 concurrent tests and 33 nonconcurrent ones
+(`NONCONCURRENT_TEST`). Measured separately at one thread:
 
-```cpp
-if (!shared_context.no_concur_tests.empty()) {
-    int num_remaining_threads = shared_context.num_threads - shared_context.num_ended_threads;
-    if (num_remaining_threads == 1) {
-        shared_context.last_thread_to_end = thread_index;
-        return;                       // <- returns without finalize(lock)
-    }
-}
-++shared_context.num_ended_threads;
-finalize(lock);
+```
+concurrent only      98,356,931
+nonconcurrent only    1,148,179
+                     ----------
+sum                  99,505,110
 ```
 
-and `nonconcur_run()`, which that thread runs next, begins by discarding what it
-was holding:
+against full single-threaded runs of 99,508,221, 99,442,447 and 99,655,290. The
+single-threaded total is the sum of its parts, to within the noise of the two
+tests that do vary slightly. Nothing is lost.
 
-```cpp
-void TestList::ThreadContextImpl::nonconcur_run()
-{
-    clear_counters();                 // <- num_checks = 0
-    ...
-    finalize(lock);
-}
-```
+At two threads the same binary reports as little as 10,188,745. So up to about
+89 million checks are not counted, and that happens only when more than one
+thread runs.
 
-So one thread's entire concurrent-phase check count is dropped on every run,
-single-threaded included. The counter itself is atomic and not racy; the checks
-are simply never added.
+### A mechanism was proposed here and was wrong
 
-### What that does not explain
+The first version of this finding claimed the cause: in
+`TestList::ThreadContextImpl::run()`, the thread that will go on to run the
+nonconcurrent tests returns before reaching `finalize()`, and `nonconcur_run()`
+then begins with `clear_counters()` -- so that thread's concurrent-phase count
+looked like it was being discarded.
 
-The direction. If a fixed share were dropped, the multi-threaded totals would
-straddle the single-threaded one rather than sitting far below it, and they
-would not vary by a factor of nine. Which thread ends last, and how much of the
-suite it happened to have run, varies with scheduling -- that accounts for
-instability but not obviously for a deficit of eighty million against the
-single-threaded figure.
+That reading predicts a single-threaded run reporting about 1.1 million checks,
+because with one thread that thread is every thread. It reports 99.5 million.
+The prediction is off by a factor of ninety, so whatever the code does, it is
+not that.
 
-So: the accounting is demonstrably wrong, the number moves by 9x with thread
-count, and the mechanism above is not sufficient on its own. What follows from
-that is the same either way -- the figure cannot be used -- and it is written
-down here rather than resolved, because resolving it means changing the test
-framework and that is not this change. That has a consequence beyond
-this suite, because `docs/RELEASING.md` tabulated assertion counts as a
-pre-release baseline -- one Debug sample and one Release sample each -- and drew
-inferences from the differences:
+The claim is withdrawn rather than repaired. It was published, and the
+measurement that disproves it -- splitting the suite by concurrency and adding
+the halves -- cost one command and should have come first. Reading a mechanism
+out of source and reporting it as the explanation, without deriving a prediction
+from it and testing that prediction, is the same mistake as trusting a check
+that has never failed.
 
-> The two suites where Release is several times Debug are not a mistake and not a
-> stale binary [...] Nobody has yet explained the ratio, which is why it is
-> written down.
-
-The ratio may not exist. CoreTests' recorded Debug-to-Release gap is 1.14x,
-inside a 9.1x noise band. SyncTests' recorded Debug 40,400 and Release 127,236
-both fall inside the range Release alone produces, so those two numbers are not
-evidence of a Debug-to-Release difference; they are two draws from one
-distribution. And the recorded Release figures, 102,273,888 for CoreTests and
-127,236 for SyncTests, are each above every run measured here.
-
-The document was honest about the numbers being noisy -- "treat a small drift as
-normal and a factor as worth explaining" -- and then explained a factor that was
-noise. The fix is not a better number. It is to stop comparing them: test counts
-are stable at 1659 / 476 / 343 every run and are the ones to check, and a test
-that stops asserting anything is what `tools/analyse-zero-check-tests.sh` is
-for, counting per test rather than per suite.
+What is established: the count is exactly right at one thread and short by up to
+89 million at two. The mechanism is not established.
 
 ## The consequence
 
