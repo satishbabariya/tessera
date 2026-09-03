@@ -58,6 +58,32 @@
 
 ### Added
 
+* `SECURITY.md`. Reports go through GitHub's private vulnerability reporting, so
+  no address has to be published or monitored. It says what is in scope --
+  the server's authorization model, token handling, the file format as untrusted
+  input, the sync protocol, TLS -- and what is not, including that a server
+  started with `--authenticate-nobody` authenticating nobody is the documented
+  behaviour of the flag. It also lists the six security problems already found
+  and fixed, because the shape of those is where to look: most were a check
+  declared and never executed.
+
+* `CONTRIBUTING.md` no longer documents a copyright check that cannot fail. It
+  said to run
+
+  ```sh
+  tools/check-copyright-notices.sh $(tools/check-copyright-notices.sh | cut -d' ' -f1)
+  ```
+
+  and the bare script prints how many notices it found, so feeding that back as
+  the expected count passes whatever it finds: delete ten notices and it reports
+  `PASS: 550 copyright notices intact`. CI has always passed the literal 560.
+  The invocation that was wrong was the one aimed at outside contributors, on the
+  same page that says removing a notice gets a patch rejected under Apache 2.0
+  section 4(b).
+
+  That block also enumerated five of the sixteen checks. It is the same glob as
+  `docs/RELEASING.md` now, with an install prefix handed to each one.
+
 * A documented answer to how to back the server up. `cp -R` of a live `--root`
   directory yields an openable database holding committed writes up to some
   point: five copies taken a second apart under continuous write load all opened,

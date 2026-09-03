@@ -43,16 +43,45 @@ Two things about that command that are not incidental:
 **Run the invariant checks:**
 
 ```sh
-tools/check-copyright-notices.sh $(tools/check-copyright-notices.sh | cut -d' ' -f1)
-tools/check-no-vendor-hosts.sh
-tools/check-layering.sh
-tools/check-merge-deps.sh
-tools/check-header-tiers.sh
+PREFIX="$(mktemp -d)/tessera"
+cmake --install build.debug --prefix "$PREFIX" > /dev/null
+
+for c in tools/check-*.sh tools/test-*.sh; do
+  case "$c" in
+    *copyright*) "$c" 560 ;;
+    *)           "$c" "$PREFIX" ;;
+  esac
+done
 tools/verify/consumer-smoke-test.sh build.debug
 ```
 
 Each encodes a structural decision. If one fails, the fix is usually to
 reconsider the change rather than to relax the check.
+
+Two things about that loop, both of which it got wrong before:
+
+- **It is a glob.** This section used to name five checks. There are sixteen,
+  and the five it named were the five that existed when it was written. A list
+  that enumerates its own members drifts behind them, which has now happened
+  three times in this repository -- here, in `docs/RELEASING.md`, and in the
+  workflow that runs these checks in CI.
+
+- **The copyright count is the literal 560.** It used to read
+
+  ```sh
+  tools/check-copyright-notices.sh $(tools/check-copyright-notices.sh | cut -d' ' -f1)
+  ```
+
+  The bare script prints how many notices it *found*. Feeding that number back
+  as the number it *expects* makes the check pass whatever it finds: delete ten
+  notices and it reports `PASS: 550 copyright notices intact`. It was a licence
+  compliance check a contributor could not fail. CI has always passed the
+  literal 560, so the two disagreed about what was being verified, and only the
+  contributor-facing one was wrong.
+
+Some of the checks want an installed tree, so the prefix is built first and
+handed to every one of them. The ones that do not want it ignore an extra
+argument.
 
 ## Things that will get a patch rejected
 
