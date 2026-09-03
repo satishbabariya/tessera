@@ -698,8 +698,25 @@ void TestList::ThreadContextImpl::run()
 
 void TestList::ThreadContextImpl::nonconcur_run()
 {
-    clear_counters();
-
+    // No clear_counters() here, deliberately.
+    //
+    // This runs on the thread that returned early from run() without calling
+    // finalize(), so it is still holding that thread's concurrent-phase
+    // num_checks, num_failed_checks and num_failed_tests. Clearing them here
+    // discarded all three, and finalize() below then folded in only what the
+    // nonconcurrent tests produced.
+    //
+    // The counts were the visible symptom: CoreTests reported anywhere from
+    // 10,188,745 to 93,027,810 checks across runs of one binary at two threads,
+    // against a true 99,505,110. The failures were the actual problem. The exit
+    // status is `shared_context.num_failed_tests == 0`, so a test that failed on
+    // this thread during the concurrent phase was not counted, and the suite
+    // reported success. With one deliberately failing test at two threads, two
+    // runs out of four printed "All 1660 tests passed" and exited 0.
+    //
+    // One thread was never affected, which is why this survived: with
+    // num_threads == 1 every test is placed in no_concur_tests, so the
+    // concurrent phase holds nothing and discarding it discards zero.
     UniqueLock lock(shared_context.mutex);
 
     for (auto entry : shared_context.no_concur_tests)
