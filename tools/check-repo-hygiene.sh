@@ -73,5 +73,40 @@ if [ -n "$ROOTPEM" ]; then
     echo "  test fixtures belong beside the tests that use them"; FAIL=1
 fi
 
+# 6. Every findings document is listed in docs/findings/README.md, and every row
+#    there points at a file that exists. The index is the only way anyone finds
+#    these documents; one written and not indexed is one nobody reads, which
+#    makes writing it a waste rather than a record.
+#
+#    Both directions matter. A missing row hides a document. A dangling row
+#    sends a reader to a 404 and, worse, reads as evidence that a question was
+#    settled somewhere.
+#
+#    Added after a document was very nearly committed unindexed. All
+#    forty-three present at the time were listed, so this check codifies a
+#    property the repository already had rather than repairing one it lacked --
+#    which is the cheapest moment to add a check and the easiest to skip.
+INDEX=docs/findings/README.md
+if [ -f "$INDEX" ]; then
+    for f in docs/findings/*.md; do
+        b=$(basename "$f")
+        [ "$b" = "README.md" ] && continue
+        grep -q "($b)" "$INDEX" || {
+            echo "FAIL: docs/findings/$b is not listed in $INDEX"; FAIL=1
+        }
+    done
+    grep -oE '\]\([0-9a-z][a-z0-9-]*\.md\)' "$INDEX" \
+        | sed -e 's|^](||' -e 's|)$||' | sort -u \
+        | while read -r n; do
+            [ -f "docs/findings/$n" ] || echo "DANGLING:$n"
+        done > /tmp/.findings-dangling.$$
+    if [ -s /tmp/.findings-dangling.$$ ]; then
+        echo "FAIL: $INDEX links to findings that do not exist:"
+        sed 's|^DANGLING:|  |' /tmp/.findings-dangling.$$
+        FAIL=1
+    fi
+    rm -f /tmp/.findings-dangling.$$
+fi
+
 [ "$FAIL" -eq 0 ] && echo "PASS: repository surface is clean"
 exit "$FAIL"

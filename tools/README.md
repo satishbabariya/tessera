@@ -20,7 +20,7 @@ structural violation should not wait on a build.
 | `check-layering.sh` | no upward includes between layers |
 | `check-merge-deps.sh` | `tessera-merge` depends only on storage |
 | `check-header-tiers.sh` | the public API does not leak private headers |
-| `check-repo-hygiene.sh` | no runtime artefacts, stray keys, or paths illegal on Windows |
+| `check-repo-hygiene.sh` | no runtime artefacts, stray keys, or paths illegal on Windows; every findings document is indexed |
 | `check-test-sources-listed.sh` | every test source is named by a `CMakeLists` |
 | `check-header-macros.sh` | no header decides on a macro only a `.cpp` defines |
 | `check-rename-residue.sh` | no pre-rename identifiers or identity strings |

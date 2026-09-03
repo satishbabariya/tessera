@@ -4,6 +4,15 @@
 
 ### Added
 
+* `tools/check-repo-hygiene.sh` also checks that every document in
+  `docs/findings/` is listed in that directory's `README.md`, and that no row
+  there points at a file that does not exist. The index is the only way anyone
+  finds those documents, so one written and not indexed is one nobody reads, and
+  a dangling row sends a reader to nothing while reading as evidence that a
+  question was settled somewhere. Added after a document was nearly committed
+  unindexed; all forty-three then present were listed, so it records a property
+  the repository already had.
+
 * `tools/check-install-surface.sh` fails when the set of installed headers
   differs from `tools/install-surface.txt`, naming every header that appeared or
   disappeared. Every installed header is a promise, and thirteen were published
