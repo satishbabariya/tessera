@@ -4,6 +4,24 @@
 
 ### Added
 
+* Seven `sync/impl/` headers no longer install. `sync_client.hpp` and
+  `sync_file.hpp` were included by no installed header -- only by four `.cpp`
+  files in the library and one test helper, which compile against the source
+  tree -- and `network_reachability.hpp`, the two Apple headers under
+  `if(APPLE)`, and the two Emscripten headers were reachable only through them.
+
+  The installed surface is now identical on macOS and Linux. It had differed
+  solely because `sync_client.hpp` included
+  `sync/impl/apple/network_reachability_observer.hpp`, so an internal header was
+  publishing its platform's implementation details; no manifest line carries the
+  `apple:` prefix any more.
+
+  This also fixes a package that could not be built for Emscripten:
+  `sync_client.hpp` includes `sync/impl/emscripten/socket_provider.hpp` under
+  `#ifdef __EMSCRIPTEN__`, and that header installs only on Emscripten builds,
+  so every other platform's package referred to a file it did not contain. No CI
+  job builds that target.
+
 * `tools/check-repo-hygiene.sh` also checks that every document in
   `docs/findings/` is listed in that directory's `README.md`, and that no row
   there points at a file that does not exist. The index is the only way anyone

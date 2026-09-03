@@ -211,6 +211,30 @@ set(OBJECT_STORE_INTERNAL_HEADERS
     impl/results_notifier.hpp
     impl/transact_log_handler.hpp
     impl/weak_realm_notifier.hpp
+
+    # The sync half, found the same way. sync/impl/sync_client.hpp was the only
+    # installed header reaching any of these, and nothing installed reaches it:
+    # its four includers are all .cpp files in this library, plus one test
+    # helper that compiles against the source tree.
+    #
+    # Removing it takes the rest with it. network_reachability.hpp was reachable
+    # only through sync_client.hpp and the two Apple headers, which were
+    # themselves reachable only through sync_client.hpp -- so the installed
+    # surface stops being platform-dependent, which it had been solely because
+    # of this one header.
+    #
+    # It was also broken where nobody looked. Under __EMSCRIPTEN__,
+    # sync_client.hpp includes sync/impl/emscripten/socket_provider.hpp, which
+    # never installed: a consumer building the package for Emscripten got a
+    # missing header. No CI job builds that target, so the package was
+    # unbuildable there for as long as it has existed.
+    sync/impl/apple/network_reachability_observer.hpp
+    sync/impl/apple/system_configuration.hpp
+    sync/impl/emscripten/network_transport.hpp
+    sync/impl/emscripten/socket_provider.hpp
+    sync/impl/network_reachability.hpp
+    sync/impl/sync_client.hpp
+    sync/impl/sync_file.hpp
 )
 
 set(OBJECT_STORE_INSTALL_HEADERS "")
