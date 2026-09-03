@@ -65,12 +65,28 @@ Across those twelve runs, with all 476 tests passing every time:
 113,335  118,762  122,761  124,383  124,463   125,116
 ```
 
-A 3.2x spread, at every thread count including one. Something in this suite
-loops against the clock rather than a fixed count.
+A 3.2x spread, at every thread count including one.
 
-That matters beyond curiosity: this project uses check-count baselines to detect
-tests that stop checking anything -- the "green by absence" problem -- and for
-`SyncTests` such a baseline would be meaningless. `Transform_Randomized`,
+The obvious explanation is wrong. `test_all.cpp` seeds the framework's random
+generator from `produce_nondeterministic_random_seed()` unless
+`UNITTEST_RANDOM_SEED` is set, so randomised tests do different work on every
+run -- which would explain all of this. Pinning the seed does not fix it:
+
+```
+UNITTEST_RANDOM_SEED=1234, one thread:   107,180   123,057   123,252
+UNITTEST_RANDOM_SEED=1234, four threads: 119,866   103,380
+```
+
+So the seed is not the cause, or not the only one. The shape of the numbers
+suggests two effects rather than one: a spread of roughly 20,000 that survives a
+pinned seed on a single thread, and a much larger drop to about 39,000 seen only
+at four and eight threads. Neither is explained. `Transform_Randomized`,
 `Network_StressTest` and `Util_Network_SSL_StressTest` were each measured in
 isolation and are stable, so the variable test is elsewhere and has not been
 identified.
+
+What this does settle is the consequence. This project uses check-count
+baselines to detect tests that stop checking anything -- the "green by absence"
+problem -- and for `SyncTests` such a baseline would be meaningless. The
+tempting fix, pinning the seed, has been tried and does not produce a
+reproducible count, so a baseline here cannot be rescued that way.
