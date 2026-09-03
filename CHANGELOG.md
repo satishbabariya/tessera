@@ -185,6 +185,33 @@
 
 ### Added
 
+* `docs/RELEASING.md` no longer treats assertion counts as a pre-release
+  baseline. It recorded one Debug and one Release sample per suite and drew
+  inferences from the differences; measured as repeat runs of a single binary in
+  one configuration, CoreTests ranges over 10,188,745 to 93,027,810 checks -- a
+  factor of 9.1 -- and SyncTests over 39,039 to 125,116, with every test passing
+  every time. For CoreTests the cause is the thread count: at
+  `UNITTEST_THREADS=1` the same binary reports 99,442,447 / 99,508,221 /
+  99,655,290, stable to 0.2%, and CI runs it with two. The framework also drops
+  one thread's concurrent-phase checks on every run -- the thread that goes on to
+  run the nonconcurrent tests returns without calling `finalize()`, and
+  `nonconcur_run()` then clears its counters. The Debug-to-Release ratios the document asked someone to explain
+  are inside that noise, and its recorded Release figures are above every run
+  measured. Test counts are stable at 1659 / 476 / 343 and are the ones to check.
+
+* `test/CMakeLists.txt` records why `CombinedTests` exists and why no workflow
+  runs it: three binaries already run exactly those tests, and it is the only
+  target that links `ObjectStoreTestLib`, `CoreTestLib` and `SyncTestLib`
+  together, so building it is what catches a collision between them. Run
+  directly it passes -- 2135 core and sync tests, then 343 object-store cases --
+  which had never been checked.
+
+* The fuzzing rationale in `nightly.yml` sat on the clean-clone job, two
+  comments having run together, so the reason for fuzzing was filed under
+  cloning and the fuzzers job had no stated reason at all. The clean-clone note
+  also said the script "has never run in CI" while attached to the job that runs
+  it.
+
 * `SyncTests` keeps `UNITTEST_THREADS=1` in the merge gate, now as a recorded
   decision rather than an inheritance. Twelve runs on macOS pass all 476 tests
   at 1, 4 and 8 threads, and 4 threads is three times faster -- but the step is
@@ -193,10 +220,13 @@
   platform's evidence.
 
   The same twelve runs produced check-count totals from 39,039 to 125,116 with
-  every test passing, so a check-count baseline for this suite would be
-  meaningless. Pinning `UNITTEST_RANDOM_SEED` -- the obvious cause, since the
-  framework otherwise seeds nondeterministically -- was measured and does not
-  produce a reproducible count either. See
+  every test passing. It is one test: `Network_RepeatedCancelAndRestartRead`,
+  about 70% of the suite's checks, which pushes 64 MiB through a socket pair and
+  checks once per read completion -- so its count is however many reads the
+  kernel and the scheduler decide to complete. Pinning `UNITTEST_RANDOM_SEED`
+  fixes the write sizes and not that, which is why it was measured and did not
+  help. A check-count baseline for this suite is therefore meaningless, though
+  one excluding that test would work. See
   `docs/findings/0b-where-the-ci-minutes-go.md`.
 
 * The `reports DNS error` test resolves `host.invalid` instead of
