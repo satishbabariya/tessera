@@ -35,6 +35,23 @@ openssl genrsa -out "$WORK/private.pem" 2048 2> /dev/null
 openssl rsa -in "$WORK/private.pem" -pubout -out "$WORK/public.pem" 2> /dev/null
 TOKEN=$("$TK" --key "$WORK/private.pem" --identity crash --expires-in 7200)
 
+# Client invocations are bounded. A sync client that cannot get what it needs
+# does not fail -- it retries, by design, because the server it wants may be
+# coming back. Pointed at a server whose directory has been wiped, the client
+# hangs rather than erroring, and an unbounded run turns a failed assertion into
+# a job timeout, which names nothing.
+run_bounded() {
+    local secs="$1" log="$2"; shift 2
+    "$@" > "$log" 2>&1 &
+    local pid=$!
+    ( sleep "$secs"; kill -9 "$pid" 2> /dev/null ) &
+    local watchdog=$! status=0
+    wait "$pid" || status=$?
+    kill "$watchdog" 2> /dev/null || true
+    wait "$watchdog" 2> /dev/null || true
+    return "$status"
+}
+
 start_server() {
     "$SRV" --root "$WORK/srv" --public-key "$WORK/public.pem" --port 0 > "$1" 2>&1 &
     SERVER_PID=$!
@@ -51,8 +68,9 @@ start_server() {
 WROTE=200
 start_server "$WORK/first.log"
 dir=$(mktemp -d)
-"$LT" --root "$dir" --port "$PORT" --clients 4 --transactions 50 --token "$TOKEN" > "$dir/out" 2>&1 || {
-    echo "FAIL: could not write the first $WROTE rows"; cat "$dir/out"; exit 1
+run_bounded 90 "$dir/out" \
+    "$LT" --root "$dir" --port "$PORT" --clients 4 --transactions 50 --token "$TOKEN" || {
+    echo "FAIL: could not write the first $WROTE rows"; tail -5 "$dir/out"; exit 1
 }
 rm -rf "$dir"
 
@@ -71,9 +89,10 @@ fi
 # A key base well clear of the first run, so this inserts rather than rewriting
 # what is being checked for.
 dir=$(mktemp -d)
-"$LT" --root "$dir" --port "$PORT" --clients 1 --transactions 1 --token "$TOKEN" \
-      --key-base 999000000 --converge > "$dir/out" 2>&1 || {
-    echo "FAIL: could not reconnect after the restart"; cat "$dir/out"; exit 1
+run_bounded 90 "$dir/out" \
+    "$LT" --root "$dir" --port "$PORT" --clients 1 --transactions 1 --token "$TOKEN" \
+    --key-base 999000000 --converge || {
+    echo "FAIL: could not reconnect after the restart"; tail -5 "$dir/out"; exit 1
 }
 SEEN=$(grep -oE 'every client sees [0-9]+ rows' "$dir/out" | grep -oE '[0-9]+' | head -1 || echo 0)
 rm -rf "$dir"
