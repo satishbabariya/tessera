@@ -163,6 +163,10 @@ jobs:
         timeout-minutes: 10
         run: tools/verify/authorization-end-to-end.sh build
 
+      - name: The server survives a hard kill
+        timeout-minutes: 10
+        run: tools/verify/survives-a-hard-kill.sh build
+
       - name: Consumer smoke test
         timeout-minutes: 10
         run: tools/verify/consumer-smoke-test.sh build

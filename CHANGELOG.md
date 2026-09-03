@@ -4,6 +4,21 @@
 
 ### Added
 
+* `tools/verify/survives-a-hard-kill.sh`. The engine has crash-safety tests and
+  CI asserts they ran; none of that covered the server. This writes 200 rows,
+  sends `SIGKILL` rather than `SIGTERM`, restarts on the same directory and
+  requires that a fresh client still sees them.
+
+  A clean shutdown proves much less: `tessera-sync-server` stops on `SIGTERM` by
+  waiting in `sigwait` and calling `Server::stop()`, which flushes. `SIGKILL`
+  gives it no such chance, and that is the case a machine losing power
+  resembles. 201 rows survive. Canaried by wiping the directory between the kill
+  and the restart, which reports `1 rows survived the kill, expected at least
+  201`.
+
+
+### Added
+
 * An expiry case in `tools/verify/authorization-end-to-end.sh`: a token minted
   with a one-second life and used after it is refused at the handshake with "The
   access token has expired", which the server distinguishes from a malformed
