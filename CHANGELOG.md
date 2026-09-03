@@ -27,6 +27,22 @@
 
 ### Fixed
 
+* `<engine.hpp>` is no longer installed at the root of the include path.
+  `install(FILES tessera.hpp tessera/engine.hpp DESTINATION include)` put a
+  second, byte-identical copy of `tessera/engine.hpp` there. Nothing referenced
+  it -- the README names the entry point as `<tessera/engine.hpp>` and every
+  test uses that -- so it was a duplicate occupying an extremely generic name in
+  the include path of everyone who links Tessera, where a collision with
+  somebody else's `engine.hpp` would be diagnosed from their side, with nothing
+  pointing back here.
+
+  `tessera.hpp` stays: it is the documented umbrella, retained because it
+  predates the tier split, and says so in its own docstring.
+  `tools/check-include-root-is-clean.sh` keeps the root to that one file.
+
+
+### Fixed
+
 * The client runs in `tools/verify/survives-a-hard-kill.sh` are bounded. A sync
   client that cannot get what it needs does not fail -- it retries, by design,
   because the server it wants may be coming back. Pointed at a server whose
