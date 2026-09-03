@@ -22,7 +22,9 @@ set(SYNC_SOURCES
     network/websocket.cpp
 )
 
-set(IMPL_INSTALL_HEADERS
+# Named INSTALL for historical reasons; these are no longer installed. They feed
+# SYNC_HEADERS below, which is a build input, not an install list.
+set(IMPL_HEADERS
     impl/clock.hpp
     impl/clamped_hex_dump.hpp
 )
@@ -64,7 +66,7 @@ set(NOINST_HEADERS
     noinst/sync_schema_migration.hpp
 )
 
-set(SYNC_HEADERS ${IMPL_INSTALL_HEADERS}
+set(SYNC_HEADERS ${IMPL_HEADERS}
     ${SYNC_INSTALL_HEADERS}
     ${SYNC_NETWORK_INSTALL_HEADERS}
     ${NOINST_HEADERS})
@@ -99,9 +101,18 @@ install(TARGETS Sync EXPORT tessera
     ARCHIVE COMPONENT devel
     PUBLIC_HEADER COMPONENT devel)
 
-install(FILES ${IMPL_INSTALL_HEADERS}
-        DESTINATION include/tessera/impl
-        COMPONENT devel)
+# impl/clock.hpp and impl/clamped_hex_dump.hpp are not installed.
+#
+# They were, and to the wrong place. Their source path is tessera/sync/impl/,
+# which is how every includer in this repository spells them, but the rule sent
+# them to include/tessera/impl/ -- so the installed copies sat at a path no
+# include directive names, in a directory belonging to the storage engine's own
+# impl/ headers. A consumer could neither find them where they asked nor had
+# reason to: nothing in the installed set includes either one, and impl/ means
+# internal everywhere else in this package.
+#
+# Two ways to be unusable at once, which is why nobody noticed: a header at the
+# wrong path that nothing wants produces no symptom.
 
 install(FILES ${SYNC_INSTALL_HEADERS}
         DESTINATION include/tessera/sync
