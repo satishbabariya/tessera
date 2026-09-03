@@ -17,6 +17,14 @@
   that needs per-header judgment, and a pattern-based guess at it broke the
   package once already.
 
+  Its first CI run found something: **the installed surface is
+  platform-dependent.** Linux ships 229 headers and macOS 231. Two are appended
+  under `if(APPLE)` -- `sync/impl/apple/network_reachability_observer.hpp` and
+  `sync/impl/apple/system_configuration.hpp` -- and both are included by an
+  installed header, so they are not removable. Code that compiles against the
+  macOS package may not compile against the Linux one, which nobody had
+  written down.
+
 
 ### Changed
 

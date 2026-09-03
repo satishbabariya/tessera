@@ -22,7 +22,21 @@
 set -euo pipefail
 
 # Update these together with a note in CHANGELOG.md saying what moved and why.
-EXPECTED_HPP=231
+#
+# The count is platform-dependent, which this check discovered on its first CI
+# run by failing on Linux and passing on macOS. Two headers are appended under
+# `if(APPLE)` in src/tessera/object-store/CMakeLists.txt --
+# sync/impl/apple/network_reachability_observer.hpp and
+# sync/impl/apple/system_configuration.hpp -- and both are included by an
+# installed header, so they are not removable: the Apple package genuinely has a
+# surface the Linux one does not.
+#
+# That is worth knowing on its own. Code that compiles against the macOS package
+# may not compile against the Linux one.
+case "$(uname -s)" in
+    Darwin) EXPECTED_HPP=231 ;;
+    *)      EXPECTED_HPP=229 ;;
+esac
 EXPECTED_H=4
 
 PREFIX="${1:-}"
@@ -44,4 +58,4 @@ if [ "$hpp" != "$EXPECTED_HPP" ] || [ "$h" != "$EXPECTED_H" ]; then
     exit 1
 fi
 
-echo "PASS: $hpp .hpp and $h .h headers install, as recorded"
+echo "PASS: $hpp .hpp and $h .h headers install on $(uname -s), as recorded"
