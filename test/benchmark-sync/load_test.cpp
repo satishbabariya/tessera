@@ -50,6 +50,7 @@ struct Options {
     bool verbose = false;
     bool converge = false;
     std::int64_t key_base = 0;
+    bool contend = false;
     bool tls = false;
     std::string tls_trust;
 };
@@ -70,6 +71,8 @@ void usage(const char* argv0)
                  "  --clients N        concurrent sessions (default: 4)\n"
                  "  --transactions N   write transactions per session (default: 50)\n"
                  "  --verbose          log at debug level\n"
+                 "  --contend          every client writes the SAME keys, so their writes\n"
+                 "                     conflict and the merge engine has to reconcile them\n"
                  "  --tls              connect over TLS (wss) rather than plain ws\n"
                  "  --tls-trust PATH   PEM trust anchor, for a self-signed server cert\n"
                  "  --key-base N       offset for the primary keys this run writes. Runs\n"
@@ -110,7 +113,7 @@ private:
 
 int run_one_client(const Options& opt, int index, std::atomic<int>& failures,
                    const std::shared_ptr<util::Logger>& logger, Latch& everyone_uploaded,
-                   std::vector<std::size_t>& seen)
+                   std::vector<std::size_t>& seen, std::vector<std::int64_t>& checksum)
 {
     try {
         std::string path = opt.root + "/client" + std::to_string(index) + ".tess";
@@ -162,8 +165,16 @@ int run_one_client(const Options& opt, int index, std::atomic<int>& failures,
             // Unique per client and per run. Without key_base a second run
             // against the same server path rewrites the first run's keys, so it
             // measures updates while appearing to measure inserts.
-            std::int64_t id = opt.key_base + std::int64_t(index) * 1000000 + i;
-            table->create_object_with_primary_key(id).set(col, id);
+            // With --contend the index term is dropped, so every client writes
+            // the same keys and their writes collide. That is the case the
+            // merge engine exists for, and the one a test where each client
+            // owns a disjoint range never reaches.
+            std::int64_t id = opt.contend ? opt.key_base + i
+                                          : opt.key_base + std::int64_t(index) * 1000000 + i;
+            // Under contention every client writes a different payload to the
+            // same key, so agreement is not trivial: the clients have to end up
+            // holding the same value, whichever write the engine kept.
+            table->create_object_with_primary_key(id).set(col, opt.contend ? std::int64_t(index) : id);
             wt.commit();
             ++committed;
         }
@@ -189,6 +200,20 @@ int run_one_client(const Options& opt, int index, std::atomic<int>& failures,
             std::size_t rows = table ? table->size() : 0;
             seen[std::size_t(index)] = rows;
 
+            // Row counts agreeing is not convergence. Two clients can hold the
+            // same number of rows and disagree about every value in them, which
+            // is exactly what a merge engine that did not converge would look
+            // like. Summing the payloads is a cheap way to notice.
+            std::int64_t sum = 0;
+            if (table) {
+                ColKey payload = table->get_column_key("payload");
+                if (payload) {
+                    for (auto& obj : *table)
+                        sum += obj.get<std::int64_t>(payload);
+                }
+            }
+            checksum[std::size_t(index)] = sum;
+
             // Only a lower bound is asserted here. An equality check against
             // clients * transactions holds solely on an empty server, and every
             // real one has history: pointed at a server that already held 200
@@ -196,7 +221,13 @@ int run_one_client(const Options& opt, int index, std::atomic<int>& failures,
             // successful restart a failure. What convergence means is that the
             // clients agree, and that is checked once, in main, where all the
             // counts are visible.
-            std::size_t at_least = std::size_t(opt.clients) * std::size_t(opt.transactions);
+            // Under contention the clients share their keys, so the whole run
+            // produces `transactions` rows rather than clients * transactions.
+            // Using the disjoint figure here reported eight failures against a
+            // run that had converged perfectly.
+            std::size_t at_least = opt.contend
+                                       ? std::size_t(opt.transactions)
+                                       : std::size_t(opt.clients) * std::size_t(opt.transactions);
             if (rows < at_least) {
                 std::fprintf(stderr, "client %d: sees %zu rows, expected at least %zu\n", index, rows,
                              at_least);
@@ -238,6 +269,7 @@ int main(int argc, char** argv)
         else if (arg == "--verbose")     opt.verbose = true;
         else if (arg == "--converge")    opt.converge = true;
         else if (arg == "--key-base")    opt.key_base = std::stoll(value("--key-base"));
+        else if (arg == "--contend")     opt.contend = true;
         else if (arg == "--tls")         opt.tls = true;
         else if (arg == "--tls-trust")   opt.tls_trust = value("--tls-trust");
         else if (arg == "-h" || arg == "--help") { usage(argv[0]); return 0; }
@@ -270,9 +302,10 @@ int main(int argc, char** argv)
 
     Latch everyone_uploaded{opt.clients};
     std::vector<std::size_t> seen(std::size_t(opt.clients), 0);
+    std::vector<std::int64_t> checksum(std::size_t(opt.clients), 0);
     for (int i = 0; i < opt.clients; ++i)
         threads.emplace_back([&, i] {
-            committed += run_one_client(opt, i, failures, logger, everyone_uploaded, seen);
+            committed += run_one_client(opt, i, failures, logger, everyone_uploaded, seen, checksum);
         });
     for (auto& t : threads)
         t.join();
@@ -289,7 +322,17 @@ int main(int argc, char** argv)
                 break;
             }
         }
-        std::fprintf(stderr, "every client sees %zu rows\n", first);
+        std::int64_t first_sum = checksum.empty() ? 0 : checksum[0];
+        for (std::size_t i = 1; i < checksum.size(); ++i) {
+            if (checksum[i] != first_sum) {
+                std::fprintf(stderr,
+                             "clients disagree on values: client 0 sums %lld, client %zu sums %lld\n",
+                             (long long)first_sum, i, (long long)checksum[i]);
+                ++failures;
+                break;
+            }
+        }
+        std::fprintf(stderr, "every client sees %zu rows summing %lld\n", first, (long long)first_sum);
     }
 
     auto elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count();

@@ -4,6 +4,25 @@
 
 ### Added
 
+* `tessera-load-test --contend`, and a conflicting-writes case in
+  `tools/verify/authorization-end-to-end.sh`. Every client writes the *same*
+  keys with a different value, so the merge engine has to reconcile them and the
+  clients have to end up holding the same thing.
+
+  A convergence test where each client owns a disjoint key range never reaches
+  that case, which is the one the engine exists for. Tessera's headline is
+  convergent sync; until now nothing had made two clients disagree about an
+  object through the deployed path.
+
+  The check compares payload sums as well as row counts, because two clients can
+  hold the same number of rows and disagree about every value in them -- which
+  is exactly what a merge engine that did not converge would look like. Four,
+  eight and sixteen clients contending on fifty keys all converge, on both count
+  and sum.
+
+
+### Added
+
 * `tools/verify/survives-a-hard-kill.sh`. The engine has crash-safety tests and
   CI asserts they ran; none of that covered the server. This writes 200 rows,
   sends `SIGKILL` rather than `SIGTERM`, restarts on the same directory and
