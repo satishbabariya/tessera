@@ -159,6 +159,10 @@ jobs:
         env:
           UNITTEST_THREADS: 1
 
+      - name: Authorization holds through the binaries
+        timeout-minutes: 10
+        run: tools/verify/authorization-end-to-end.sh build
+
       - name: Consumer smoke test
         timeout-minutes: 10
         run: tools/verify/consumer-smoke-test.sh build

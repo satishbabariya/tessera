@@ -28,6 +28,7 @@ structural violation should not wait on a build.
 | `check-cert-expiry.sh` | test certificates are neither near expiry nor over Apple's 825-day ceiling |
 | `test-pr-status.sh` | `pr-status.sh` still distinguishes a cancelled run from a running one |
 | `test-pre-push.sh` | the `pre-push` hook refuses main and permits everything else |
+| `verify/authorization-end-to-end.sh` | a scoped token is refused elsewhere, and a download-only token cannot upload -- through the shipped binaries, over a socket |
 | `verify/consumer-smoke-test.sh` | the installed package is consumable and exports the documented targets |
 | `verify/test-binary.sh` | resolves a test binary's path across platforms; used by the workflows |
 
