@@ -4,6 +4,22 @@
 
 ### Added
 
+* `tessera-load-test --tls` and `--tls-trust`, and a TLS case in
+  `tools/verify/authorization-end-to-end.sh`. `--tls-cert` was verified with an
+  `openssl s_client` handshake, which proves the server speaks TLS and not that a
+  sync client can complete a session over it. Two clients now converge over TLS
+  against the deployed server in CI, so authentication, authorization,
+  encryption and convergence are exercised in one path.
+
+  The trust anchor is `root-ca/crt.pem`, not `signing-ca/crt.pem`: the test
+  resources copy the root, and handing the client the signing CA does not fail --
+  it retries a handshake it can never complete. The TLS client run is therefore
+  bounded by hand, because an unbounded one would spend the job's whole step
+  timeout and report a timeout rather than a bad trust anchor.
+
+
+### Added
+
 * `tools/verify/authorization-end-to-end.sh` checks the authorization model
   through the shipped binaries, over a socket, in CI. A real server, a token
   minted by `tessera-token`, a real client: a token scoped to `/allowed` works
