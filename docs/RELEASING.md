@@ -100,10 +100,18 @@ within a single configuration is itself a factor:
 
 | Suite | Release, repeat runs of one binary | Spread |
 |---|---|---|
-| CoreTests | 10,188,745 / 12,417,707 / 48,889,143 / 93,027,810 | 9.1x |
+| CoreTests, `UNITTEST_THREADS=2` | 10,188,745 / 12,417,707 / 48,889,143 / 93,027,810 | 9.1x |
+| CoreTests, `UNITTEST_THREADS=1` | 99,442,447 / 99,508,221 / 99,655,290 | 0.2% |
 | SyncTests | 39,039 to 125,116 over twelve runs | 3.2x |
 
-Every run passed every test. So the numbers previously tabulated --
+Every run passed every test. For CoreTests the instability is the thread count,
+not a test: one thread is reproducible, two is not, and CI uses two. There is a
+matching accounting defect in the test framework -- the thread that goes on to
+run the nonconcurrent tests returns from `run()` without calling `finalize()`,
+and `nonconcur_run()` then calls `clear_counters()` -- so one thread's
+concurrent-phase checks are dropped on every run. That is demonstrable from the
+source; it is not on its own sufficient to explain the size or direction of the
+gap. See `docs/findings/0b-where-the-ci-minutes-go.md`. So the numbers previously tabulated --
 
 | Suite | Debug | Release |
 |---|---|---|

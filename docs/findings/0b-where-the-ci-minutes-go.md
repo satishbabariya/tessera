@@ -130,15 +130,78 @@ headline check total is mostly this one test's socket scheduling.
 (The test body is wrapped in `for (int i = 0; i < 1; ++i)`, a loop that runs
 once. Left alone: it is inert, and this was a measurement, not a cleanup.)
 
-## CoreTests is worse
+## CoreTests is worse, and it is the thread count
 
-The same measurement, four runs of one Release binary at the same thread count:
+Four runs of one Release binary at `UNITTEST_THREADS=2`:
 
 ```
 93,027,810   12,417,707   10,188,745   48,889,143
 ```
 
-A 9.1x spread, all 1659 tests passing every time. That has a consequence beyond
+A 9.1x spread, all 1659 tests passing every time. Three runs of the same binary
+at `UNITTEST_THREADS=1`:
+
+```
+99,508,221   99,442,447   99,655,290
+```
+
+Stable to 0.2%, 38-39 seconds each. So this is not a test whose work varies. It
+is the parallel runner's accounting, and CI runs CoreTests with
+`UNITTEST_THREADS: 2`.
+
+Bisecting by name prefix found nothing that could account for it -- the largest
+groups measured single-threaded are `Table*` at 4.2M, `LangBindHelper*` at 3.5M
+and `EncryptedFile*` at 3.2M, all stable across repeat runs. Nothing in one test
+explains a swing of eighty million.
+
+### There is a real accounting defect in the framework
+
+`test/util/unit_test.cpp`. Each thread accumulates into its own plain
+`num_checks` and folds it into the shared atomic total in `finalize()`. The
+thread that will go on to run the nonconcurrent tests does not do that:
+
+```cpp
+if (!shared_context.no_concur_tests.empty()) {
+    int num_remaining_threads = shared_context.num_threads - shared_context.num_ended_threads;
+    if (num_remaining_threads == 1) {
+        shared_context.last_thread_to_end = thread_index;
+        return;                       // <- returns without finalize(lock)
+    }
+}
+++shared_context.num_ended_threads;
+finalize(lock);
+```
+
+and `nonconcur_run()`, which that thread runs next, begins by discarding what it
+was holding:
+
+```cpp
+void TestList::ThreadContextImpl::nonconcur_run()
+{
+    clear_counters();                 // <- num_checks = 0
+    ...
+    finalize(lock);
+}
+```
+
+So one thread's entire concurrent-phase check count is dropped on every run,
+single-threaded included. The counter itself is atomic and not racy; the checks
+are simply never added.
+
+### What that does not explain
+
+The direction. If a fixed share were dropped, the multi-threaded totals would
+straddle the single-threaded one rather than sitting far below it, and they
+would not vary by a factor of nine. Which thread ends last, and how much of the
+suite it happened to have run, varies with scheduling -- that accounts for
+instability but not obviously for a deficit of eighty million against the
+single-threaded figure.
+
+So: the accounting is demonstrably wrong, the number moves by 9x with thread
+count, and the mechanism above is not sufficient on its own. What follows from
+that is the same either way -- the figure cannot be used -- and it is written
+down here rather than resolved, because resolving it means changing the test
+framework and that is not this change. That has a consequence beyond
 this suite, because `docs/RELEASING.md` tabulated assertion counts as a
 pre-release baseline -- one Debug sample and one Release sample each -- and drew
 inferences from the differences:
