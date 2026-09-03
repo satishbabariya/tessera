@@ -106,6 +106,31 @@ pass.
 With the fix, the same deliberately failing test at two threads reported
 `exit=1` on six runs out of six.
 
+## A guard, and why the first one was useless
+
+`test/test_unit_test_framework.cpp` is the first test in this repository aimed at
+the test framework rather than at the code under test. It builds an inner
+`TestList` holding one failing test, runs it silently at 1, 2 and 4 threads, and
+requires `run()` to report failure every time.
+
+The first version of it passed against the bug it was written for.
+
+Sixty-five trivial tests and one failing one are grabbed almost entirely by
+whichever thread starts first. That thread finishes before any other reaches the
+end-of-run check, so it takes the normal path, calls `finalize()`, and its
+failure is counted -- on a broken framework. Nothing ever landed on the thread
+that ends last, which is the only thread that loses anything.
+
+Making the failing test sleep for 60ms and putting it first in the list fixes
+that: the thread that picks it up is still working while the others run out of
+fast tests and finish, so it is deterministically the last thread to end. The
+test now fails on the buggy framework at 2 and 4 threads, passes at 1, and
+passes at all three once fixed.
+
+A regression test that does not fail on the regression is decoration. This one
+was, for about ten minutes, and only running it against the reintroduced bug
+showed that.
+
 ## What was exposed
 
 Only `CoreTests` in the merge gate, which runs at `UNITTEST_THREADS: 2`.

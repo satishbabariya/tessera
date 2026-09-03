@@ -75,6 +75,12 @@
   thread, where every test is nonconcurrent and nothing is discarded;
   `ObjectStoreTests` uses Catch2 and is unaffected.
 
+  `test/test_unit_test_framework.cpp` guards it -- the first test here aimed at
+  the framework rather than the code under test. It runs an inner `TestList`
+  containing one failing test at 1, 2 and 4 threads and requires the run to be
+  reported as a failure. Verified by reintroducing the bug: it fails at 2 and 4
+  threads and passes at 1, which is what the mechanism predicts.
+
   Check counts were the visible symptom and are now correct too: CoreTests at
   two threads went from 10,188,745-93,027,810 to 99,637,487-99,837,290, against
   a true 99,505,110 measured at one thread.
