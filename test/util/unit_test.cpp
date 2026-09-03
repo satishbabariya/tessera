@@ -717,6 +717,10 @@ void TestList::ThreadContextImpl::nonconcur_run()
     // One thread was never affected, which is why this survived: with
     // num_threads == 1 every test is placed in no_concur_tests, so the
     // concurrent phase holds nothing and discarding it discards zero.
+    //
+    // clear_counters() also reset last_line_seen, and dropping that is safe:
+    // run(entry, lock) assigns it from the test's own line number before every
+    // test, so it cannot be read stale here.
     UniqueLock lock(shared_context.mutex);
 
     for (auto entry : shared_context.no_concur_tests)
