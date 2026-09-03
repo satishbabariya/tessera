@@ -220,6 +220,18 @@ for what was missing and
 [docs/findings/0b-keyless-still-demanded-a-token.md](docs/findings/0b-keyless-still-demanded-a-token.md)
 for why the keyless case is a branch of its own.
 
+### Backing it up
+
+`cp -R` of the server's `--root` directory, while it is running, gives an
+openable database holding committed writes up to some point. Five copies taken a
+second apart under continuous write load all opened with no corruption, each
+holding a prefix of the writes; see
+[docs/findings/0b-copying-a-live-database.md](docs/findings/0b-copying-a-live-database.md).
+
+It is a snapshot, not a fence. Writes in flight when the copy began may or may
+not be in it. If you need a definite cut, stop the server first -- `SIGTERM`
+stops it cleanly -- and copy then.
+
 So "self-hostable" now means what it says: install the package, run
 `tessera-sync-server`, and you have your own sync server, with no cloud account
 and no vendor. Link `Tessera::SyncServer` instead if you would rather embed it.
