@@ -4,6 +4,43 @@
 
 ### Added
 
+* `tools/verify/survives-a-hard-kill.sh`. The engine has crash-safety tests and
+  CI asserts they ran; none of that covered the server. This writes 200 rows,
+  sends `SIGKILL` rather than `SIGTERM`, restarts on the same directory and
+  requires that a fresh client still sees them.
+
+  A clean shutdown proves much less: `tessera-sync-server` stops on `SIGTERM` by
+  waiting in `sigwait` and calling `Server::stop()`, which flushes. `SIGKILL`
+  gives it no such chance, and that is the case a machine losing power
+  resembles. 201 rows survive. Canaried by wiping the directory between the kill
+  and the restart, which reports `1 rows survived the kill, expected at least
+  201`.
+
+
+### Added
+
+* An expiry case in `tools/verify/authorization-end-to-end.sh`: a token minted
+  with a one-second life and used after it is refused at the handshake with "The
+  access token has expired", which the server distinguishes from a malformed
+  one. That is the last of the security properties to be checked through the
+  binaries rather than only in-process.
+
+* `tessera-load-test --tls` and `--tls-trust`, and a TLS case in
+  `tools/verify/authorization-end-to-end.sh`. `--tls-cert` was verified with an
+  `openssl s_client` handshake, which proves the server speaks TLS and not that a
+  sync client can complete a session over it. Two clients now converge over TLS
+  against the deployed server in CI, so authentication, authorization,
+  encryption and convergence are exercised in one path.
+
+  The trust anchor is `root-ca/crt.pem`, not `signing-ca/crt.pem`: the test
+  resources copy the root, and handing the client the signing CA does not fail --
+  it retries a handshake it can never complete. The TLS client run is therefore
+  bounded by hand, because an unbounded one would spend the job's whole step
+  timeout and report a timeout rather than a bad trust anchor.
+
+
+### Added
+
 * `tools/verify/authorization-end-to-end.sh` checks the authorization model
   through the shipped binaries, over a socket, in CI. A real server, a token
   minted by `tessera-token`, a real client: a token scoped to `/allowed` works

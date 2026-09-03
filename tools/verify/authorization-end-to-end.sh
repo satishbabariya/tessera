@@ -13,6 +13,11 @@
 #   a token scoped to /allowed          works on /allowed
 #   the same token                      is refused on /denied
 #   a download-only token               is refused when it uploads
+#   a token past its expiry             is refused at the handshake
+#
+# and then the same thing again over TLS, because --tls-cert was verified with an
+# openssl s_client handshake, which proves the server speaks TLS and not that a
+# sync client can complete a session over it.
 #
 # Usage: tools/verify/authorization-end-to-end.sh [build-dir]
 set -euo pipefail
@@ -121,4 +126,87 @@ if [ "$failures" -ne 0 ]; then
     exit 1
 fi
 
-echo "PASS: path scoping and upload privilege hold end to end"
+# Expiry. Minted with a one-second life and used after it, so this is the token
+# being past its expiry rather than malformed -- the server distinguishes them
+# and says which, and the assertion is on that wording.
+EXPIRED=$("$TK" --key "$WORK/private.pem" --identity shortlived --expires-in 1)
+sleep 2
+if refused_with /expiry "$EXPIRED" "The access token has expired"; then
+    say "a token past its expiry" "refused"
+else
+    say "a token past its expiry" "FAIL: accepted"; failures=1
+fi
+
+# TLS. The certificates come from certificate-authority/, which already holds a
+# chain issued for localhost -- test_sync.cpp uses the same ones. A self-signed
+# CN=Test certificate is refused by the client, correctly, and using one here
+# tests the client's certificate validation rather than the server's TLS.
+CA_DIR="certificate-authority"
+TLS_CERT="$CA_DIR/certs/localhost-chain.crt.pem"
+TLS_KEY="$CA_DIR/certs/localhost-server.key.pem"
+# The root CA, not the signing CA. The test resources copy root-ca/crt.pem, and
+# handing the client the signing CA instead makes it hang retrying a handshake
+# it can never complete rather than failing outright.
+TLS_TRUST="$CA_DIR/root-ca/crt.pem"
+
+if [ -r "$TLS_CERT" ] && [ -r "$TLS_KEY" ] && [ -r "$TLS_TRUST" ]; then
+    kill "$SERVER_PID" 2> /dev/null || true
+    wait "$SERVER_PID" 2> /dev/null || true
+    mkdir -p "$WORK/tlssrv"
+    "$SRV" --root "$WORK/tlssrv" --public-key "$WORK/public.pem" --port 0 \
+           --tls-cert "$TLS_CERT" --tls-key "$TLS_KEY" > "$WORK/tls.log" 2>&1 &
+    SERVER_PID=$!
+
+    TLS_PORT=""
+    for _ in $(seq 1 40); do
+        TLS_PORT=$(grep -oE 'Listening on localhost:[0-9]+' "$WORK/tls.log" 2> /dev/null \
+                   | head -1 | grep -oE '[0-9]+$' || true)
+        [ -n "$TLS_PORT" ] && break
+        sleep 0.5
+    done
+    [ -n "$TLS_PORT" ] || { echo "FAIL: the TLS server never reported a port"; cat "$WORK/tls.log"; exit 1; }
+
+    grep -q '(TLS)' "$WORK/tls.log" || { echo "FAIL: the server did not report TLS"; exit 1; }
+
+    ANY=$("$TK" --key "$WORK/private.pem" --identity tls --expires-in 3600)
+    # Bounded, because a client that cannot verify the chain does not fail --
+    # it retries the handshake forever. Handing it the signing CA instead of the
+    # root CA did exactly that, and an unbounded run would spend the job's whole
+    # step timeout on it and then report a timeout rather than a bad trust
+    # anchor. `timeout` is not on macOS by default, so this is done by hand.
+    tlsdir=$(mktemp -d)
+    "$LT" --root "$tlsdir" --port "$TLS_PORT" --clients 2 --transactions 5 \
+          --token "$ANY" --tls --tls-trust "$TLS_TRUST" --converge > "$tlsdir/out" 2>&1 &
+    tlspid=$!
+    tlsdone=1
+    for _ in $(seq 1 120); do
+        kill -0 "$tlspid" 2> /dev/null || { tlsdone=0; break; }
+        sleep 0.5
+    done
+    if [ "$tlsdone" -ne 0 ]; then
+        # Job-control notices ("Killed: 9 ...") would otherwise land in the
+        # middle of the failure output, which is the moment it most needs to be
+        # readable.
+        kill -9 "$tlspid" 2> /dev/null || true
+        wait "$tlspid" 2> /dev/null || true
+        say "two clients converging over TLS" "FAIL: still running after 60s"
+        grep -iE 'tls|certificate' "$tlsdir/out" | head -2 || true
+        failures=1
+    elif wait "$tlspid"; then
+        say "two clients converging over TLS" "$(grep -o 'every client sees [0-9]* rows' "$tlsdir/out" || echo ok)"
+    else
+        say "two clients converging over TLS" "FAIL"
+        cat "$tlsdir/out"
+        failures=1
+    fi
+    rm -rf "$tlsdir"
+else
+    say "two clients converging over TLS" "skipped: certificate-authority/ not readable"
+fi
+
+if [ "$failures" -ne 0 ]; then
+    echo "FAIL: the deployed path does not hold"
+    exit 1
+fi
+
+echo "PASS: path scoping, upload privilege, expiry and TLS sync hold end to end"

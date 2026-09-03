@@ -29,6 +29,7 @@ structural violation should not wait on a build.
 | `test-pr-status.sh` | `pr-status.sh` still distinguishes a cancelled run from a running one |
 | `test-pre-push.sh` | the `pre-push` hook refuses main and permits everything else |
 | `verify/authorization-end-to-end.sh` | a scoped token is refused elsewhere, and a download-only token cannot upload -- through the shipped binaries, over a socket |
+| `verify/survives-a-hard-kill.sh` | SIGKILL the server mid-life; the rows it acknowledged are still there and it reopens its directory |
 | `verify/consumer-smoke-test.sh` | the installed package is consumable and exports the documented targets |
 | `verify/test-binary.sh` | resolves a test binary's path across platforms; used by the workflows |
 
