@@ -50,7 +50,7 @@ using namespace tessera::test_util;
 #define CALLGRIND_STOP_INSTRUMENTATION
 #endif
 
-// valgrind --tool=callgrind --instr-atstart=no realm-tests
+// valgrind --tool=callgrind --instr-atstart=no tessera-tests
 
 // Test independence and thread-safety
 // -----------------------------------

@@ -23,7 +23,7 @@ structural violation should not wait on a build.
 | `check-repo-hygiene.sh` | no runtime artefacts, stray keys, or paths illegal on Windows |
 | `check-test-sources-listed.sh` | every test source is named by a `CMakeLists` |
 | `check-header-macros.sh` | no header decides on a macro only a `.cpp` defines |
-| `check-rename-residue.sh` | no pre-rename identifiers or identity strings |
+| `check-rename-residue.sh` | no pre-rename identifiers, identity strings, or binary names in scripts, workflows, manifests and ignore files |
 | `check-no-upstream-urls-in-output.sh` | a crash does not tell the user to report it to realm/* |
 | `check-cert-expiry.sh` | test certificates are neither near expiry nor over Apple's 825-day ceiling |
 | `test-pr-status.sh` | `pr-status.sh` still distinguishes a cancelled run from a running one |

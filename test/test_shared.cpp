@@ -337,12 +337,12 @@ TEST_IF(Shared_PipelinedWritesWithKills, false)
 // This unit test will test the case where the .tess file exceeds the available disk space. To run it, do
 // following:
 //
-// 1: Create a drive that has around 10 MB free disk space *after* the realm-tests binary has been copied to it
+// 1: Create a drive that has around 10 MB free disk space *after* the tessera-tests binary has been copied to it
 // (you can fill up the drive with random data files until you hit 10 MB).
 //
-// Repeatedly run the realm-tests binary in a loop, like from a bash script. You can even make the bash script
-// invoke `pkill realm-tests` with some intervals to test robustness too (if so, start the unit tests with `&`,
-// i.e. `realm-tests&` so it runs in the background.
+// Repeatedly run the tessera-tests binary in a loop, like from a bash script. You can even make the bash script
+// invoke `pkill tessera-tests` with some intervals to test robustness too (if so, start the unit tests with `&`,
+// i.e. `tessera-tests&` so it runs in the background.
 
 ONLY(Shared_DiskSpace)
 {

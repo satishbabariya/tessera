@@ -141,16 +141,29 @@ jobs:
               exit 1 ;;
           esac
 
+      # This suite holds 'sync: error handling / reports DNS error', which used
+      # to resolve invalid.com -- a registered domain, answering SERVFAIL rather
+      # than NXDOMAIN, so the resolver retried upstream. Four runs of this binary
+      # gave 4.2s, 680.6s (failing), 13.7s and 0.011s. It now resolves
+      # host.invalid, reserved by RFC 6761, which resolvers answer immediately:
+      # five consecutive runs of that section took 0.06-0.08s.
+      #
+      # The note describing that flakiness used to sit on the SyncTests step
+      # below, and said the suite was "excluded from the merge gate". The test is
+      # in this suite, and neither suite was ever excluded -- both steps gate,
+      # with no `if:` and no continue-on-error. A comment claiming a mitigation
+      # that does not exist is worse than no comment: it answers the question
+      # somebody would otherwise ask.
       - name: ObjectStoreTests
         timeout-minutes: 20
         run: |
           export TMPDIR="$(mktemp -d)/"
           "$(tools/verify/test-binary.sh build tessera-object-store-tests)"
 
-      # Excluded from the merge gate: 'reports DNS error' resolves a bogus
-      # hostname and depends on the runner's resolver. Four runs of one binary
-      # locally gave 4.2s, 680.6s (failing), 13.7s and 0.011s. A merge gate that
-      # fails on DNS conditions trains everyone to ignore red builds.
+      # UNITTEST_THREADS=1 here and in nightly.yml. Nothing in this repository
+      # records why, and it predates the rename; CoreTests runs with 2. Left as
+      # it is rather than changed on a guess -- but it is a guess either way
+      # until somebody measures whether this suite passes in parallel.
       - name: SyncTests
         timeout-minutes: 25
         run: |
