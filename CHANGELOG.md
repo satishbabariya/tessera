@@ -58,8 +58,11 @@
 
 ### Added
 
-* `docs/RELEASING.md` no longer treats assertion counts as a pre-release
-  baseline. It recorded one Debug and one Release sample per suite and drew
+* `docs/RELEASING.md` records that assertion counts were unusable as a
+  pre-release baseline and are usable again now that the framework defect behind
+  the instability is fixed -- within a tolerance rather than exactly: CoreTests
+  at two threads spreads 0.5% across five runs, SyncTests at four threads 1.7%.
+  Previously it treated them as a baseline they could not support. It recorded one Debug and one Release sample per suite and drew
   inferences from the differences; measured as repeat runs of a single binary in
   one configuration, CoreTests ranges over 10,188,745 to 93,027,810 checks -- a
   factor of 9.1 -- and SyncTests over 39,039 to 125,116, with every test passing
