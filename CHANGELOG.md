@@ -58,6 +58,17 @@
 
 ### Added
 
+* `SyncTests` keeps `UNITTEST_THREADS=1` in the merge gate, now as a recorded
+  decision rather than an inheritance. Twelve runs on macOS pass all 476 tests
+  at 1, 4 and 8 threads, and 4 threads is three times faster -- but the step is
+  2.9 minutes of a 21-minute job whose build alone is 13.6, so the prize is two
+  minutes and the cost is a concurrency change to the merge gate on one
+  platform's evidence.
+
+  The same twelve runs produced check-count totals from 39,039 to 125,116 with
+  every test passing, so a check-count baseline for this suite would be
+  meaningless. See `docs/findings/0b-where-the-ci-minutes-go.md`.
+
 * The `reports DNS error` test resolves `host.invalid` instead of
   `invalid.com`. RFC 6761 reserves the `.invalid` TLD and guarantees names under
   it do not exist, so resolvers answer NXDOMAIN immediately; `invalid.com` is a
