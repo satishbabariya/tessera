@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+### Fixed
+
+* The client runs in `tools/verify/survives-a-hard-kill.sh` are bounded. A sync
+  client that cannot get what it needs does not fail -- it retries, by design,
+  because the server it wants may be coming back. Pointed at a server whose
+  directory has been wiped, it hangs, so the check's own canary hung instead of
+  failing, and in CI that would have spent the step timeout and then reported a
+  timeout rather than data loss.
+
+  Bounded with a watchdog rather than a poll: polling with `kill -0` and then
+  calling `wait` misreports the status once the child is reaped, which failed a
+  scenario that works and looked like a defect in the server rather than in the
+  harness.
+
+
 ### Added
 
 * `tessera-load-test --contend`, and a conflicting-writes case in
