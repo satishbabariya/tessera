@@ -18,7 +18,7 @@ jobs:
       matrix:
         san: [address, undefined, thread]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with: { submodules: recursive }
       - run: |
           sudo apt-get update
@@ -72,10 +72,10 @@ jobs:
           - { target: android, os: ubuntu-latest }
           - { target: ios,     os: macos-latest }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with: { submodules: recursive }
       - if: matrix.target == 'wasm'
-        uses: mymindstorm/setup-emsdk@v14
+        uses: mymindstorm/setup-emsdk@6ab9eb1bda2574c4ddb79809fc9247783eaf9021 # v14
       - name: Build the storage engine
         run: |
           case "${{ matrix.target }}" in
@@ -110,7 +110,7 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with: { submodules: recursive }
       # Windows runners ship neither zlib nor OpenSSL, and both are needed for
       # sync. vcpkg is preinstalled on these images.
@@ -141,7 +141,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - run: |
           sudo apt-get update
           sudo apt-get install -y ninja-build libssl-dev zlib1g-dev libcurl4-openssl-dev
@@ -151,7 +151,7 @@ jobs:
   fuzzers:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with: { submodules: recursive }
       - run: |
           sudo apt-get update
