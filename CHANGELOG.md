@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+### Changed
+
+* Thirteen `object-store/impl/` headers are no longer installed. The package
+  shipped 243 headers; 165 are reachable from the documented entry points of the
+  five exported targets, and thirteen of the rest are implementation headers
+  under a directory called `impl` that no installed header includes --
+  `realm_coordinator.hpp`, `results_notifier.hpp`, `transact_log_handler.hpp`,
+  the platform `external_commit_helper.hpp` variants, and so on.
+
+  Shipping them advertised machinery that changes without notice as part of the
+  API. 231 headers now install.
+
+  Three impl headers stay, because they are genuinely reachable:
+  `object.hpp` includes `impl/collection_notifier.hpp`, and
+  `collection_change_builder.hpp` and `deep_change_checker.hpp` arrive the same
+  way. Excluding the directory wholesale breaks the package, which is how that
+  was found.
+
+  The cause was one list serving two purposes: `HEADERS` feeds `add_library`,
+  where listing every header is correct, and was also driving the install, where
+  it is not.
+
+
 ### Fixed
 
 * The client runs in `tools/verify/survives-a-hard-kill.sh` are bounded. A sync

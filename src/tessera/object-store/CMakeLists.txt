@@ -177,7 +177,50 @@ endif()
 
 set_target_properties(ObjectStore PROPERTIES OUTPUT_NAME "tessera-object-store")
 
+# HEADERS serves add_library, where listing every header is right: it is what
+# gives IDEs the file tree and CMake its dependency edges. It was also driving
+# the install, and those two lists want different things -- which is how
+# thirteen headers under impl/ came to ship in the package.
+#
+# Nothing installed includes any of them, checked header by header, and `impl`
+# says what they are. A consumer that reaches for realm_coordinator.hpp or
+# transact_log_helper.hpp is reaching past the API into machinery that changes
+# without notice, and shipping them advertises that as supported.
+#
+# So the install list is derived from HEADERS by excluding impl/. Deriving it
+# rather than writing a second list by hand is deliberate: a hand-maintained
+# copy drifts, and this project has a finding about a gate that enumerated its
+# own members and fell behind them.
+# The impl/ headers no installed header includes, measured by compiling every
+# documented entry point with -H and diffing the reached set against the
+# installed set. Not all of impl/ can go: object.hpp includes
+# impl/collection_notifier.hpp, and collection_change_builder.hpp and
+# deep_change_checker.hpp arrive the same way. Excluding the directory wholesale
+# breaks the package, which is how that was discovered.
+set(OBJECT_STORE_INTERNAL_HEADERS
+    impl/apple/external_commit_helper.hpp
+    impl/apple/keychain_helper.hpp
+    impl/epoll/external_commit_helper.hpp
+    impl/external_commit_helper.hpp
+    impl/generic/external_commit_helper.hpp
+    impl/list_notifier.hpp
+    impl/notification_wrapper.hpp
+    impl/object_accessor_impl.hpp
+    impl/object_notifier.hpp
+    impl/realm_coordinator.hpp
+    impl/results_notifier.hpp
+    impl/transact_log_handler.hpp
+    impl/weak_realm_notifier.hpp
+)
+
+set(OBJECT_STORE_INSTALL_HEADERS "")
 foreach(FILE ${HEADERS})
+    if(NOT FILE IN_LIST OBJECT_STORE_INTERNAL_HEADERS)
+        list(APPEND OBJECT_STORE_INSTALL_HEADERS ${FILE})
+    endif()
+endforeach()
+
+foreach(FILE ${OBJECT_STORE_INSTALL_HEADERS})
     get_filename_component(DIR ${FILE} DIRECTORY)
     INSTALL(FILES ${FILE}
             DESTINATION include/tessera/object-store/${DIR}
