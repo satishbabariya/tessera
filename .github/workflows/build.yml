@@ -142,16 +142,51 @@ jobs:
               exit 1 ;;
           esac
 
+      # This suite holds 'sync: error handling / reports DNS error', which used
+      # to resolve invalid.com -- a registered domain, answering SERVFAIL rather
+      # than NXDOMAIN, so the resolver retried upstream. Four runs of this binary
+      # gave 4.2s, 680.6s (failing), 13.7s and 0.011s. It now resolves
+      # host.invalid, reserved by RFC 6761, which resolvers answer immediately:
+      # five consecutive runs of that section took 0.06-0.08s.
+      #
+      # The note describing that flakiness used to sit on the SyncTests step
+      # below, and said the suite was "excluded from the merge gate". The test is
+      # in this suite, and neither suite was ever excluded -- both steps gate,
+      # with no `if:` and no continue-on-error. A comment claiming a mitigation
+      # that does not exist is worse than no comment: it answers the question
+      # somebody would otherwise ask.
       - name: ObjectStoreTests
         timeout-minutes: 20
         run: |
           export TMPDIR="$(mktemp -d)/"
           "$(tools/verify/test-binary.sh build tessera-object-store-tests)"
 
-      # Excluded from the merge gate: 'reports DNS error' resolves a bogus
-      # hostname and depends on the runner's resolver. Four runs of one binary
-      # locally gave 4.2s, 680.6s (failing), 13.7s and 0.011s. A merge gate that
-      # fails on DNS conditions trains everyone to ignore red builds.
+      # UNITTEST_THREADS=1, and deliberately left alone.
+      #
+      # Nothing records why it is 1 here, unlike nightly.yml, where 1 is a
+      # documented choice for the sanitizer baseline. So it was measured on
+      # macOS: twelve runs of this suite, all 476 tests passing at 1, 4 and 8
+      # threads, taking 21.1s at 1 and 6.8-7.3s at 4. Parallel works.
+      #
+      # It stays at 1 anyway. This step takes 2.9 minutes of a 21-minute job on
+      # ubuntu-latest gcc Release, where "Build everything" takes 13.6 -- so the
+      # whole prize is about two minutes, under a tenth of the job. Buying that
+      # with a concurrency change to the merge gate is a bad trade: the evidence
+      # is from one platform, a race that passes twelve times can fail the
+      # thirteenth, and a merge gate that fails intermittently trains everyone
+      # to ignore red builds. That last sentence is this repository's own
+      # reasoning, written about a different flaky test in this same file.
+      #
+      # The build is where the 13.6 minutes are. That is the thing worth
+      # attacking.
+      #
+      # Incidentally, this suite's check count is not reproducible: twelve runs
+      # gave totals from 39,039 to 125,116 with all 476 tests passing every
+      # time, at every thread count including 1. Pinning UNITTEST_RANDOM_SEED,
+      # which the framework otherwise draws nondeterministically, was measured
+      # and does not fix it. Any check-count baseline for SyncTests would be
+      # meaningless, which matters because this project uses such baselines
+      # elsewhere.
       - name: SyncTests
         timeout-minutes: 25
         run: |

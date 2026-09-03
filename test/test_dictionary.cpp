@@ -24,7 +24,7 @@
 #include <chrono>
 #include <set>
 // #include <valgrind/callgrind.h>
-// valgrind --tool=callgrind --instr-atstart=no ./realm-tests
+// valgrind --tool=callgrind --instr-atstart=no ./tessera-tests
 
 using namespace std::chrono;
 

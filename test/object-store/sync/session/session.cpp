@@ -369,7 +369,21 @@ TEST_CASE("sync: error handling", "[sync][session]") {
     };
 
     SECTION("reports DNS error") {
-        tsm.sync_manager()->set_sync_route("ws://invalid.com:9090", true);
+        // host.invalid, not invalid.com. RFC 6761 reserves the .invalid TLD and
+        // guarantees names under it do not exist, so a caching resolver answers
+        // NXDOMAIN immediately without asking anyone.
+        //
+        // invalid.com is a registered domain. Resolving it here returned
+        // SERVFAIL -- a resolver failure, not a missing host -- in 0.21s, 3.87s
+        // and 9.98s on three consecutive attempts on one machine, because
+        // SERVFAIL makes the resolver retry upstream. Four runs of this binary
+        // gave 4.2s, 680.6s (failing), 13.7s and 0.011s.
+        //
+        // The failure mattered as much as the delay: this section asserts the
+        // error reason starts with "Host not found", which is what NXDOMAIN
+        // produces. SERVFAIL does not reliably produce it. So the test was
+        // asserting a DNS outcome it had not arranged to get.
+        tsm.sync_manager()->set_sync_route("ws://host.invalid:9090", true);
 
         auto user = tsm.fake_user();
         auto session = sync_session(user, "/test", store_sync_error);
@@ -378,7 +392,7 @@ TEST_CASE("sync: error handling", "[sync][session]") {
                 std::lock_guard lock(mutex);
                 return error.has_value();
             },
-            std::chrono::seconds(35)); // this sometimes needs to wait for a 30s dns timeout
+            std::chrono::seconds(35)); // generous: NXDOMAIN for .invalid is immediate
         REQUIRE(error);
         CHECK(error->status.code() == ErrorCodes::SyncConnectFailed);
         // May end with either (authoritative) or (non-authoritative)

@@ -27,7 +27,7 @@
   <Applications>
     <Application Id="App"
       Executable="$targetnametoken$.exe"
-      EntryPoint="realm-tests.App"
+      EntryPoint="tessera-tests.App"
       desktop4:Subsystem="console"
       desktop4:SupportsMultipleInstances="true">
       <uap:VisualElements DisplayName="Realm Core Tests" 
@@ -41,10 +41,10 @@
       <Extensions>
         <uap5:Extension
           Category="windows.appExecutionAlias"
-          Executable="realm-tests.exe"
-          EntryPoint="realm-tests.App">
+          Executable="tessera-tests.exe"
+          EntryPoint="tessera-tests.App">
           <uap5:AppExecutionAlias desktop4:Subsystem="console">
-            <uap5:ExecutionAlias Alias="realm-tests.exe" />
+            <uap5:ExecutionAlias Alias="tessera-tests.exe" />
           </uap5:AppExecutionAlias>
         </uap5:Extension>
       </Extensions>

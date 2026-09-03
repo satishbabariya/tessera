@@ -185,6 +185,47 @@
 
 ### Added
 
+* `SyncTests` keeps `UNITTEST_THREADS=1` in the merge gate, now as a recorded
+  decision rather than an inheritance. Twelve runs on macOS pass all 476 tests
+  at 1, 4 and 8 threads, and 4 threads is three times faster -- but the step is
+  2.9 minutes of a 21-minute job whose build alone is 13.6, so the prize is two
+  minutes and the cost is a concurrency change to the merge gate on one
+  platform's evidence.
+
+  The same twelve runs produced check-count totals from 39,039 to 125,116 with
+  every test passing, so a check-count baseline for this suite would be
+  meaningless. Pinning `UNITTEST_RANDOM_SEED` -- the obvious cause, since the
+  framework otherwise seeds nondeterministically -- was measured and does not
+  produce a reproducible count either. See
+  `docs/findings/0b-where-the-ci-minutes-go.md`.
+
+* The `reports DNS error` test resolves `host.invalid` instead of
+  `invalid.com`. RFC 6761 reserves the `.invalid` TLD and guarantees names under
+  it do not exist, so resolvers answer NXDOMAIN immediately; `invalid.com` is a
+  registered domain that answered SERVFAIL in 0.21s, 3.87s and 9.98s on three
+  consecutive attempts, and one recorded run of the suite took 680.6 seconds and
+  failed. The section asserts the error reason starts with "Host not found",
+  which NXDOMAIN produces and SERVFAIL does not, so the test had been asserting
+  a DNS outcome it did not arrange to get. Five runs after the change: 0.06 to
+  0.08 seconds, all passing.
+
+  The note describing that flakiness sat on the SyncTests step, while the test
+  is in ObjectStoreTests, and said the suite was "excluded from the merge gate".
+  Neither suite was ever excluded.
+
+* `tools/check-rename-residue.sh` scans shell scripts, workflows, manifests,
+  ignore files and Markdown for pre-rename binary names. Its two existing scans
+  covered C++ and CMake only, and a binary is named in a script -- so eighteen
+  occurrences across eight files survived the rename.
+
+  `tools/run-tests-on-exfat.sh`, which mounts an exFAT image to exercise a
+  filesystem without proper locking, tested three hardcoded paths for the
+  pre-rename core-test binary and exited "Run this script from the build
+  directory after building tests" wherever it was run. `test/.gitignore` listed
+  the old binary name and no current suite, so a built test binary showed up as
+  untracked. `test/Package.appxmanifest` declared a Windows entry point under the
+  old name. The rest were `valgrind` invocations in comments.
+
 * A documented answer to how to back the server up. `cp -R` of a live `--root`
   directory yields an openable database holding committed writes up to some
   point: five copies taken a second apart under continuous write load all opened,
