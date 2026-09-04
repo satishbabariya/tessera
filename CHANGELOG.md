@@ -293,6 +293,32 @@
 
   That block also enumerated five of the sixteen checks. It is the same glob as
   `docs/RELEASING.md` now, with an install prefix handed to each one.
+* **The unit-test framework could report success while a test failed.** With
+  more than one thread, the thread that goes on to run the nonconcurrent tests
+  returned from `run()` without calling `finalize()`, and `nonconcur_run()` then
+  called `clear_counters()` -- discarding that thread's concurrent-phase
+  `num_checks`, `num_failed_checks` and `num_failed_tests`. The suite's exit
+  status is `shared_context.num_failed_tests == 0`, so a failure on that thread
+  was not counted.
+
+  Measured with one deliberately failing test at `UNITTEST_THREADS=2`: two runs
+  out of four printed `All 1660 tests passed` and exited 0. With the fix, six
+  out of six exit 1.
+
+  CI runs `CoreTests` with two threads, so that job could have been green with a
+  failing test. `SyncTests` runs at one thread there and the nightly jobs at one
+  thread, where every test is nonconcurrent and nothing is discarded;
+  `ObjectStoreTests` uses Catch2 and is unaffected.
+
+  `test/test_unit_test_framework.cpp` guards it -- the first test here aimed at
+  the framework rather than the code under test. It runs an inner `TestList`
+  containing one failing test at 1, 2 and 4 threads and requires the run to be
+  reported as a failure. Verified by reintroducing the bug: it fails at 2 and 4
+  threads and passes at 1, which is what the mechanism predicts.
+
+  Check counts were the visible symptom and are now correct too: CoreTests at
+  two threads went from 10,188,745-93,027,810 to 99,637,487-99,837,290, against
+  a true 99,505,110 measured at one thread.
 
 * A documented answer to how to back the server up. `cp -R` of a live `--root`
   directory yields an openable database holding committed writes up to some
