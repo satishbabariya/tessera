@@ -4,6 +4,80 @@
 
 ### Added
 
+* Four more headers no longer install, taking the package from 243 headers to
+  223.
+
+  `tessera/sync/impl/clock.hpp` and `tessera/sync/impl/clamped_hex_dump.hpp`
+  were installed to `include/tessera/impl/` -- not `include/tessera/sync/impl/`,
+  which is how every includer in the repository spells them. The installed
+  copies sat at a path no include directive names, inside a directory belonging
+  to the storage engine's own `impl/` headers. Nothing in the installed set
+  includes either, and `impl/` means internal everywhere else in the package.
+
+  `tessera/object-store/util/aligned_union.hpp` and
+  `.../util/tagged_string.hpp` are included by nothing in the repository at all.
+  They stay in the tree as removal candidates; what stops is publishing them as
+  API nobody asked for.
+
+* `tessera/object-store/audit_serializer.hpp` and the vendored
+  `external/json/json.hpp` no longer install. The serializer is included by
+  nothing in the repository, declares `AuditObjectSerializer` with no definition
+  anywhere and no symbol in the built library, and has no include guard -- so it
+  could not be linked against and could not be included twice. It was also the
+  only installed header needing the vendored json, which was published as
+  `include/external/json/json.hpp` and put a directory named `external` into
+  every consumer's include namespace.
+
+  `audit.hpp` still installs. Audit is an inert extension point --
+  `make_audit_context` terminates, since the Apple-only App Services
+  implementation was deleted -- but the extension point is documented. A
+  serializer for a backend that no longer exists is not.
+
+  `external/mpark/variant.hpp` still installs: it is reached from five installed
+  headers, so removing it is an API change rather than a packaging one.
+
+* `tools/check-include-root-is-clean.sh` checks the installed tree when given an
+  install prefix, and CI passes it the one the install-surface step builds. It
+  had been reading `install(FILES ...)` declarations out of `src/CMakeLists.txt`
+  and reporting "only tessera.hpp installs to the include root" while the tree
+  had an `external/` directory at top level, installed from a rule in a
+  different CMakeLists.
+
+* `tools/check-repo-hygiene.sh` checks that every `tools/check-*.sh` and
+  `tools/test-*.sh` is invoked by a workflow. CI names them one per line rather
+  than globbing, because the pre-configure step has no install tree for the two
+  that need one, so a script added to `tools/` and not to the workflow would run
+  nowhere.
+
+* Seven `sync/impl/` headers no longer install. `sync_client.hpp` and
+  `sync_file.hpp` were included by no installed header -- only by four `.cpp`
+  files in the library and one test helper, which compile against the source
+  tree -- and `network_reachability.hpp`, the two Apple headers under
+  `if(APPLE)`, and the two Emscripten headers were reachable only through them.
+
+  The installed surface is now identical on macOS and Linux. It had differed
+  solely because `sync_client.hpp` included
+  `sync/impl/apple/network_reachability_observer.hpp`, so an internal header was
+  publishing its platform's implementation details; no manifest line carries the
+  `apple:` prefix any more.
+
+  This also fixes a package that could not be built for Emscripten:
+  `sync_client.hpp` includes `sync/impl/emscripten/socket_provider.hpp` under
+  `#ifdef __EMSCRIPTEN__`, and that header installs only on Emscripten builds,
+  so every other platform's package referred to a file it did not contain. No CI
+  job builds that target.
+* The release gate runs `tools/verify/authorization-end-to-end.sh` and
+  `tools/verify/survives-a-hard-kill.sh`. CI ran both on every pull request, so
+  nothing looked wrong, and the gate that decides whether to tag a build checked
+  neither the authorization model nor crash durability -- five of the seven
+  properties verified through the shipped binaries.
+
+* Both scripts check that the load test in the build directory accepts the flags
+  they pass it, and name the missing flag when it does not. Run against a
+  `build.release` that predated `--converge`, they reported `FAIL: the deployed
+  path does not hold` for a server behaving correctly: the load test printed its
+  usage, and the script blamed the property it had never exercised.
+
 * `tools/check-repo-hygiene.sh` also checks that every document in
   `docs/findings/` is listed in that directory's `README.md`, and that no row
   there points at a file that does not exist. The index is the only way anyone

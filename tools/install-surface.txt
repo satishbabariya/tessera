@@ -1,12 +1,16 @@
 # The public installed header surface, one path per line, relative to the
-# install prefix's include/ directory. Generated on macOS; paths that only
-# install on Apple platforms carry an "apple:" prefix.
+# install prefix's include/ directory. A line prefixed "apple:" installs only on
+# Apple platforms.
+#
+# No line carries that prefix today, and that is the point of recording it here:
+# the surface used to differ by platform, because one installed header included
+# two headers that only exist under if(APPLE). That header was internal and no
+# longer ships, so the macOS and Linux packages now offer the same API. The
+# prefix stays supported so the next such divergence is written down in the same
+# file as everything else rather than in a second list.
 #
 # A header appearing here is a promise: it ships, so its contents are public
 # API. Adding a line is a deliberate act that needs a CHANGELOG entry.
-apple:tessera/object-store/sync/impl/apple/network_reachability_observer.hpp
-apple:tessera/object-store/sync/impl/apple/system_configuration.hpp
-external/json/json.hpp
 external/mpark/variant.hpp
 tessera.hpp
 tessera/aggregate_ops.hpp
@@ -68,8 +72,6 @@ tessera/handover_defs.hpp
 tessera/history.hpp
 tessera/impl/array_writer.hpp
 tessera/impl/changeset_input_stream.hpp
-tessera/impl/clamped_hex_dump.hpp
-tessera/impl/clock.hpp
 tessera/impl/cont_transact_hist.hpp
 tessera/impl/destroy_guard.hpp
 tessera/impl/output_stream.hpp
@@ -94,7 +96,6 @@ tessera/null.hpp
 tessera/obj.hpp
 tessera/obj_list.hpp
 tessera/object-store/audit.hpp
-tessera/object-store/audit_serializer.hpp
 tessera/object-store/binding_context.hpp
 tessera/object-store/class.hpp
 tessera/object-store/collection.hpp
@@ -120,21 +121,16 @@ tessera/object-store/set.hpp
 tessera/object-store/shared_db.hpp
 tessera/object-store/sync/async_open_task.hpp
 tessera/object-store/sync/generic_network_transport.hpp
-tessera/object-store/sync/impl/network_reachability.hpp
-tessera/object-store/sync/impl/sync_client.hpp
-tessera/object-store/sync/impl/sync_file.hpp
 tessera/object-store/sync/jwt.hpp
 tessera/object-store/sync/sync_client_config.hpp
 tessera/object-store/sync/sync_manager.hpp
 tessera/object-store/sync/sync_session.hpp
 tessera/object-store/sync/sync_user.hpp
 tessera/object-store/thread_safe_reference.hpp
-tessera/object-store/util/aligned_union.hpp
 tessera/object-store/util/atomic_shared_ptr.hpp
 tessera/object-store/util/copyable_atomic.hpp
 tessera/object-store/util/event_loop_dispatcher.hpp
 tessera/object-store/util/scheduler.hpp
-tessera/object-store/util/tagged_string.hpp
 tessera/object-store/util/uuid.hpp
 tessera/object_id.hpp
 tessera/owned_data.hpp
