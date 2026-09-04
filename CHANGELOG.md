@@ -2,6 +2,48 @@
 
 ## Unreleased
 
+## 0.5.0 (2026-09-04)
+
+### What 0.5.0 changes for you
+
+**The installed package is 42 headers smaller: 243 to 201.** Code that compiled
+against 0.4.0 may not compile against 0.5.0. Every removed header was one no
+declared entry point reached -- utilities, implementation details, a serializer
+with no implementation anywhere and no include guard -- but "nothing should have
+been using it" is a claim about intent, not about your code. If a build breaks,
+the header you are missing is listed in the 0.5.0 entries below, and
+`tools/api-entry-points.txt` says what to include instead.
+
+**The macOS and Linux packages are now identical.** They differed by two headers,
+because one internal header included two that exist only under `if(APPLE)`.
+Code that compiled against the macOS package and not the Linux one no longer
+has that reason to.
+
+**The package can be built for Emscripten.** It previously installed a header
+that included, under `#ifdef __EMSCRIPTEN__`, a file the package did not
+contain.
+
+**A test suite that reported success while a test failed now reports the
+failure.** This does not change the library. It changes what a green build
+means: with more than one thread, the unit-test framework discarded one thread's
+failures, and CI runs the largest suite with two. If you build Tessera from
+source and rely on its tests passing, they were telling you less than you
+thought.
+
+### What 0.5.0 still does not promise
+
+Unchanged from 0.4.0, and worth repeating:
+
+- Verified by CI on macOS (Apple clang, arm64) and Linux x86-64 (gcc-13 and
+  clang-18), in Debug and Release. Windows, Linux on ARM, iOS, Android and WASM
+  are not verified.
+- The API is stable in shape but not frozen; breaking changes are allowed in 0.x
+  minors, and this release uses that.
+- 201 headers install and all of them are reachable from the 36 declared entry
+  points, which is a statement about reachability, not about stability. A
+  reachable header is not thereby good API.
+
+
 ### Added
 
 * `main` requires its six checks to pass before a pull request can merge, and
