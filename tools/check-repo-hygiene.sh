@@ -73,5 +73,58 @@ if [ -n "$ROOTPEM" ]; then
     echo "  test fixtures belong beside the tests that use them"; FAIL=1
 fi
 
+# 6. Every findings document is listed in docs/findings/README.md, and every row
+#    there points at a file that exists. The index is the only way anyone finds
+#    these documents; one written and not indexed is one nobody reads, which
+#    makes writing it a waste rather than a record.
+#
+#    Both directions matter. A missing row hides a document. A dangling row
+#    sends a reader to a 404 and, worse, reads as evidence that a question was
+#    settled somewhere.
+#
+#    Added after a document was very nearly committed unindexed. All
+#    forty-three present at the time were listed, so this check codifies a
+#    property the repository already had rather than repairing one it lacked --
+#    which is the cheapest moment to add a check and the easiest to skip.
+INDEX=docs/findings/README.md
+if [ -f "$INDEX" ]; then
+    for f in docs/findings/*.md; do
+        b=$(basename "$f")
+        [ "$b" = "README.md" ] && continue
+        grep -q "($b)" "$INDEX" || {
+            echo "FAIL: docs/findings/$b is not listed in $INDEX"; FAIL=1
+        }
+    done
+    grep -oE '\]\([0-9a-z][a-z0-9-]*\.md\)' "$INDEX" \
+        | sed -e 's|^](||' -e 's|)$||' | sort -u \
+        | while read -r n; do
+            [ -f "docs/findings/$n" ] || echo "DANGLING:$n"
+        done > /tmp/.findings-dangling.$$
+    if [ -s /tmp/.findings-dangling.$$ ]; then
+        echo "FAIL: $INDEX links to findings that do not exist:"
+        sed 's|^DANGLING:|  |' /tmp/.findings-dangling.$$
+        FAIL=1
+    fi
+    rm -f /tmp/.findings-dangling.$$
+fi
+
+# 7. Every check and test script is invoked by a workflow. The workflow names
+#    them one per line rather than globbing, because the pre-configure step has
+#    no install tree to hand the two checks that need one -- so a script added to
+#    tools/ and not to the workflow runs nowhere, which is this project's most
+#    repeated finding in a new place.
+#
+#    docs/RELEASING.md solved the same problem with a glob and recorded why: a
+#    gate that enumerates its own members drifts behind them. This is that gate's
+#    enumeration, so it gets a check instead.
+for c in tools/check-*.sh tools/test-*.sh; do
+    b=$(basename "$c")
+    grep -rq -- "$b" .github/workflows/ 2>/dev/null || {
+        echo "FAIL: tools/$b is invoked by no workflow"
+        echo "  add it to .github/workflows/build.yml, or delete it"
+        FAIL=1
+    }
+done
+
 [ "$FAIL" -eq 0 ] && echo "PASS: repository surface is clean"
 exit "$FAIL"

@@ -38,4 +38,40 @@ if [ -n "$offenders" ]; then
     exit 1
 fi
 
-echo "PASS: only $ALLOWED installs to the include root"
+# The scan above reads declarations in src/CMakeLists.txt. That is not the
+# include root -- it is one file's opinion of it, and it said "only tessera.hpp"
+# while the installed tree had an `external/` directory at top level, holding a
+# vendored nlohmann/json published from src/tessera/sync/CMakeLists.txt. A check
+# that reads one CMakeLists cannot see an install rule in another.
+#
+# So when given an install prefix, the tree itself is checked. A consumer adds
+# -I<prefix>/include, so every name at that level enters their namespace: a
+# generic directory like `external/` collides with their own.
+PREFIX="${1:-}"
+if [ -n "$PREFIX" ] && [ -d "$PREFIX/include" ]; then
+    ALLOWED_DIRS="tessera external"
+    strays=""
+    for entry in "$PREFIX/include"/*; do
+        [ -e "$entry" ] || continue
+        name=$(basename "$entry")
+        if [ -d "$entry" ]; then
+            case " $ALLOWED_DIRS " in *" $name "*) continue ;; esac
+        else
+            [ "$name" = "$ALLOWED" ] && continue
+        fi
+        strays="$strays $name"
+    done
+    if [ -n "$strays" ]; then
+        echo "FAIL: unexpected names at the root of the installed include path:"
+        for n in $strays; do printf '    %s\n' "$n"; done
+        echo
+        echo "    A consumer compiles with -I\$PREFIX/include, so each of these enters"
+        echo "    their include namespace and can collide with their own headers."
+        exit 1
+    fi
+    echo "PASS: the installed include root holds only $ALLOWED and $ALLOWED_DIRS"
+    exit 0
+fi
+
+echo "PASS: only $ALLOWED installs to the include root (declarations only; pass an"
+echo "      install prefix to check the tree)"

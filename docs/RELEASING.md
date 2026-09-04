@@ -28,12 +28,17 @@ TMPDIR="$CLEAN/" ./build.release/test/tessera-tests.app/Contents/MacOS/tessera-t
 TMPDIR="$CLEAN/" UNITTEST_THREADS=1 ./build.release/test/tessera-sync-tests.app/Contents/MacOS/tessera-sync-tests
 TMPDIR="$CLEAN/" ./build.release/test/object-store/tessera-object-store-tests.app/Contents/MacOS/tessera-object-store-tests
 
+PREFIX="$(mktemp -d)/tessera"
+cmake --install build.release --prefix "$PREFIX" > /dev/null
+
 for c in tools/check-*.sh tools/test-*.sh; do
   case "$c" in
     *copyright*) "$c" 560 ;;
-    *)           "$c"     ;;
+    *)           "$c" "$PREFIX" ;;
   esac
 done
+tools/verify/authorization-end-to-end.sh build.release
+tools/verify/survives-a-hard-kill.sh build.release
 tools/verify/consumer-smoke-test.sh build.release
 tools/verify/clean-clone-test.sh
 ```
@@ -48,6 +53,33 @@ fixing. It matched `check-*.sh` only, and the two suites added for
 enumerating its members went back to missing two of them on a naming
 convention. Both patterns are matched now. `tools/README.md` says what each one
 does.
+
+Every check is handed the install prefix, whether it wants one or not. That is
+the same reason the loop is a glob: `check-install-surface.sh` needs an
+installed tree, and a gate that names its exceptions acquires a new hole every
+time a check is added. Passing the prefix to all of them means the next such
+check works without this document changing. It was verified that the other
+thirteen ignore an extra argument.
+
+Before that, the glob ran `check-install-surface.sh` with no arguments, and it
+exited 2 on its usage message without checking anything. The loop does not test
+exit codes, so the release gate reported nothing wrong while silently not
+running the check -- which is the failure mode this whole section exists to
+prevent, reappearing one level down.
+
+The two end-to-end verifications were missing from this list for the same
+reason: CI runs `authorization-end-to-end.sh` and `survives-a-hard-kill.sh` on
+every pull request, so nothing appeared to be wrong, and the gate that decides
+whether to *tag* a build checked neither the authorization model nor crash
+durability. Seven properties are verified through the shipped binaries and this
+gate named five of them.
+
+Both take a build directory, and both begin by checking that the load test in it
+accepts the flags they pass. That check exists because running them here against
+a stale `build.release` reported `FAIL: the deployed path does not hold` for a
+server that was behaving correctly -- the load test predated `--converge` and
+printed its usage instead, and the script blamed the property. A binary that
+rejects its arguments makes everything downstream of it look broken.
 
 Expected counts move whenever tests are added, so treat the table below as the
 last measured values rather than as constants, and check it against a recent

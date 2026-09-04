@@ -211,6 +211,54 @@ set(OBJECT_STORE_INTERNAL_HEADERS
     impl/results_notifier.hpp
     impl/transact_log_handler.hpp
     impl/weak_realm_notifier.hpp
+
+    # The sync half, found the same way. sync/impl/sync_client.hpp was the only
+    # installed header reaching any of these, and nothing installed reaches it:
+    # its four includers are all .cpp files in this library, plus one test
+    # helper that compiles against the source tree.
+    #
+    # Removing it takes the rest with it. network_reachability.hpp was reachable
+    # only through sync_client.hpp and the two Apple headers, which were
+    # themselves reachable only through sync_client.hpp -- so the installed
+    # surface stops being platform-dependent, which it had been solely because
+    # of this one header.
+    #
+    # It was also broken where nobody looked. Under __EMSCRIPTEN__,
+    # sync_client.hpp includes sync/impl/emscripten/socket_provider.hpp, which
+    # never installed: a consumer building the package for Emscripten got a
+    # missing header. No CI job builds that target, so the package was
+    # unbuildable there for as long as it has existed.
+    sync/impl/apple/network_reachability_observer.hpp
+    sync/impl/apple/system_configuration.hpp
+    sync/impl/emscripten/network_transport.hpp
+    sync/impl/emscripten/socket_provider.hpp
+    sync/impl/network_reachability.hpp
+    sync/impl/sync_client.hpp
+    sync/impl/sync_file.hpp
+
+    # Not under impl/, and internal on stronger grounds than anything above it.
+    # audit_serializer.hpp is included by nothing -- no header, no source, no
+    # test. It declares AuditObjectSerializer, which has no definition anywhere
+    # in the tree and no symbol in the built library, so a consumer who used it
+    # would not link. It has no include guard, so including it twice does not
+    # compile. And it was the only installed header needing
+    # external/json/json.hpp, which is why a vendored third-party directory was
+    # published at the root of the include path.
+    #
+    # Audit is an inert extension point: make_audit_context terminates with
+    # "Audit is not implemented in this build" since the Apple-only App Services
+    # implementation was deleted. audit.hpp stays installed as the documented
+    # extension point; the serializer for a backend that no longer exists does
+    # not.
+    audit_serializer.hpp
+
+    # Two headers that nothing in the repository includes -- no header, no
+    # source, no test -- and that no documented entry point reaches. Unlike
+    # audit_serializer.hpp they are self-contained and harmless, so they stay in
+    # the tree as removal candidates rather than being deleted here; what stops
+    # is publishing them as API nobody asked for.
+    util/aligned_union.hpp
+    util/tagged_string.hpp
 )
 
 set(OBJECT_STORE_INSTALL_HEADERS "")
