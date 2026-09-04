@@ -81,10 +81,12 @@ bool run_reports_failure(int num_threads)
 
 // A failing test must fail the run, whichever thread happens to execute it.
 //
-// Repeated, because the bug this guards against was probabilistic: with two
-// threads the failure was lost only when it landed on the thread that finished
-// last, which was about half the time. One iteration would have passed cleanly
-// on a broken framework often enough to be useless.
+// The arrangement above makes the failure land on the last thread to end
+// deterministically, so one attempt would do. It is repeated a few times anyway,
+// because that determinism rests on the sleeping test still being in flight when
+// the others finish -- true by a wide margin at 60ms against tests that do
+// nothing, but a property of timing rather than of the code, and a loaded
+// machine is exactly where it would stop holding.
 TEST(UnitTestFramework_FailureIsCountedFromEveryThread)
 {
     for (int num_threads : {1, 2, 4}) {
@@ -92,7 +94,8 @@ TEST(UnitTestFramework_FailureIsCountedFromEveryThread)
             bool reported = run_reports_failure(num_threads);
             CHECK(reported);
             if (!reported) {
-                // Say which configuration, once, rather than twelve times.
+                // Name the configuration once, then move to the next one rather
+                // than repeating the same failure.
                 std::cerr << "a failing inner test was not reported as a failure at " << num_threads
                           << " thread(s)\n";
                 break;

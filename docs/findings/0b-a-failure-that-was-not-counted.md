@@ -137,5 +137,5 @@ Only `CoreTests` in the merge gate, which runs at `UNITTEST_THREADS: 2`.
 `SyncTests` runs at one thread there, the nightly sanitizer jobs run both at one
 thread, and `ObjectStoreTests` uses Catch2 and not this framework at all.
 
-So the window was one job -- and it is the job that runs 1659 of the project's
+So the window was one job -- and it is the job that runs most of the project's
 tests on every pull request.
