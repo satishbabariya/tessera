@@ -21,79 +21,17 @@
   The installed package is 201 headers, down from the 243 this work started at.
   All 201 are reachable from a declared entry point; before, 160 were.
 
-* Four more headers no longer install, taking the package from 243 headers to
-  223.
-
-  `tessera/sync/impl/clock.hpp` and `tessera/sync/impl/clamped_hex_dump.hpp`
-  were installed to `include/tessera/impl/` -- not `include/tessera/sync/impl/`,
-  which is how every includer in the repository spells them. The installed
-  copies sat at a path no include directive names, inside a directory belonging
-  to the storage engine's own `impl/` headers. Nothing in the installed set
-  includes either, and `impl/` means internal everywhere else in the package.
-
-  `tessera/object-store/util/aligned_union.hpp` and
-  `.../util/tagged_string.hpp` are included by nothing in the repository at all.
-  They stay in the tree as removal candidates; what stops is publishing them as
-  API nobody asked for.
-
-* `tessera/object-store/audit_serializer.hpp` and the vendored
-  `external/json/json.hpp` no longer install. The serializer is included by
-  nothing in the repository, declares `AuditObjectSerializer` with no definition
-  anywhere and no symbol in the built library, and has no include guard -- so it
-  could not be linked against and could not be included twice. It was also the
-  only installed header needing the vendored json, which was published as
-  `include/external/json/json.hpp` and put a directory named `external` into
-  every consumer's include namespace.
-
-  `audit.hpp` still installs. Audit is an inert extension point --
-  `make_audit_context` terminates, since the Apple-only App Services
-  implementation was deleted -- but the extension point is documented. A
-  serializer for a backend that no longer exists is not.
-
-  `external/mpark/variant.hpp` still installs: it is reached from five installed
-  headers, so removing it is an API change rather than a packaging one.
-
-* `tools/check-include-root-is-clean.sh` checks the installed tree when given an
-  install prefix, and CI passes it the one the install-surface step builds. It
-  had been reading `install(FILES ...)` declarations out of `src/CMakeLists.txt`
-  and reporting "only tessera.hpp installs to the include root" while the tree
-  had an `external/` directory at top level, installed from a rule in a
-  different CMakeLists.
-
 * `tools/check-repo-hygiene.sh` checks that every `tools/check-*.sh` and
   `tools/test-*.sh` is invoked by a workflow. CI names them one per line rather
   than globbing, because the pre-configure step has no install tree for the two
   that need one, so a script added to `tools/` and not to the workflow would run
   nowhere.
 
-* Seven `sync/impl/` headers no longer install. `sync_client.hpp` and
-  `sync_file.hpp` were included by no installed header -- only by four `.cpp`
-  files in the library and one test helper, which compile against the source
-  tree -- and `network_reachability.hpp`, the two Apple headers under
-  `if(APPLE)`, and the two Emscripten headers were reachable only through them.
-
-  The installed surface is now identical on macOS and Linux. It had differed
-  solely because `sync_client.hpp` included
-  `sync/impl/apple/network_reachability_observer.hpp`, so an internal header was
-  publishing its platform's implementation details; no manifest line carries the
-  `apple:` prefix any more.
-
-  This also fixes a package that could not be built for Emscripten:
-  `sync_client.hpp` includes `sync/impl/emscripten/socket_provider.hpp` under
-  `#ifdef __EMSCRIPTEN__`, and that header installs only on Emscripten builds,
-  so every other platform's package referred to a file it did not contain. No CI
-  job builds that target.
 * The release gate runs `tools/verify/authorization-end-to-end.sh` and
   `tools/verify/survives-a-hard-kill.sh`. CI ran both on every pull request, so
   nothing looked wrong, and the gate that decides whether to tag a build checked
   neither the authorization model nor crash durability -- five of the seven
   properties verified through the shipped binaries.
-
-* Both scripts check that the load test in the build directory accepts the flags
-  they pass it, and name the missing flag when it does not. Run against a
-  `build.release` that predated `--converge`, they reported `FAIL: the deployed
-  path does not hold` for a server behaving correctly: the load test printed its
-  usage, and the script blamed the property it had never exercised.
 
 * `tools/check-repo-hygiene.sh` also checks that every document in
   `docs/findings/` is listed in that directory's `README.md`, and that no row
@@ -131,6 +69,56 @@
 
 ### Changed
 
+* Four more headers no longer install, taking the package from 243 headers to
+  223.
+
+  `tessera/sync/impl/clock.hpp` and `tessera/sync/impl/clamped_hex_dump.hpp`
+  were installed to `include/tessera/impl/` -- not `include/tessera/sync/impl/`,
+  which is how every includer in the repository spells them. The installed
+  copies sat at a path no include directive names, inside a directory belonging
+  to the storage engine's own `impl/` headers. Nothing in the installed set
+  includes either, and `impl/` means internal everywhere else in the package.
+
+  `tessera/object-store/util/aligned_union.hpp` and
+  `.../util/tagged_string.hpp` are included by nothing in the repository at all.
+  They stay in the tree as removal candidates; what stops is publishing them as
+  API nobody asked for.
+
+* `tessera/object-store/audit_serializer.hpp` and the vendored
+  `external/json/json.hpp` no longer install. The serializer is included by
+  nothing in the repository, declares `AuditObjectSerializer` with no definition
+  anywhere and no symbol in the built library, and has no include guard -- so it
+  could not be linked against and could not be included twice. It was also the
+  only installed header needing the vendored json, which was published as
+  `include/external/json/json.hpp` and put a directory named `external` into
+  every consumer's include namespace.
+
+  `audit.hpp` still installs. Audit is an inert extension point --
+  `make_audit_context` terminates, since the Apple-only App Services
+  implementation was deleted -- but the extension point is documented. A
+  serializer for a backend that no longer exists is not.
+
+  `external/mpark/variant.hpp` still installs: it is reached from five installed
+  headers, so removing it is an API change rather than a packaging one.
+
+* Seven `sync/impl/` headers no longer install. `sync_client.hpp` and
+  `sync_file.hpp` were included by no installed header -- only by four `.cpp`
+  files in the library and one test helper, which compile against the source
+  tree -- and `network_reachability.hpp`, the two Apple headers under
+  `if(APPLE)`, and the two Emscripten headers were reachable only through them.
+
+  The installed surface is now identical on macOS and Linux. It had differed
+  solely because `sync_client.hpp` included
+  `sync/impl/apple/network_reachability_observer.hpp`, so an internal header was
+  publishing its platform's implementation details; no manifest line carries the
+  `apple:` prefix any more.
+
+  This also fixes a package that could not be built for Emscripten:
+  `sync_client.hpp` includes `sync/impl/emscripten/socket_provider.hpp` under
+  `#ifdef __EMSCRIPTEN__`, and that header installs only on Emscripten builds,
+  so every other platform's package referred to a file it did not contain. No CI
+  job builds that target.
+
 * Thirteen `object-store/impl/` headers are no longer installed. The package
   shipped 243 headers; 165 are reachable from the documented entry points of the
   five exported targets, and thirteen of the rest are implementation headers
@@ -153,6 +141,66 @@
 
 
 ### Fixed
+
+* `tools/check-include-root-is-clean.sh` checks the installed tree when given an
+  install prefix, and CI passes it the one the install-surface step builds. It
+  had been reading `install(FILES ...)` declarations out of `src/CMakeLists.txt`
+  and reporting "only tessera.hpp installs to the include root" while the tree
+  had an `external/` directory at top level, installed from a rule in a
+  different CMakeLists.
+
+* Both scripts check that the load test in the build directory accepts the flags
+  they pass it, and name the missing flag when it does not. Run against a
+  `build.release` that predated `--converge`, they reported `FAIL: the deployed
+  path does not hold` for a server behaving correctly: the load test printed its
+  usage, and the script blamed the property it had never exercised.
+
+* The fuzzing rationale in `nightly.yml` sat on the clean-clone job, two
+  comments having run together, so the reason for fuzzing was filed under
+  cloning and the fuzzers job had no stated reason at all. The clean-clone note
+  also said the script "has never run in CI" while attached to the job that runs
+  it.
+
+* The `reports DNS error` test resolves `host.invalid` instead of
+  `invalid.com`. RFC 6761 reserves the `.invalid` TLD and guarantees names under
+  it do not exist, so resolvers answer NXDOMAIN immediately; `invalid.com` is a
+  registered domain that answered SERVFAIL in 0.21s, 3.87s and 9.98s on three
+  consecutive attempts, and one recorded run of the suite took 680.6 seconds and
+  failed. The section asserts the error reason starts with "Host not found",
+  which NXDOMAIN produces and SERVFAIL does not, so the test had been asserting
+  a DNS outcome it did not arrange to get. Five runs after the change: 0.06 to
+  0.08 seconds, all passing.
+
+  The note describing that flakiness sat on the SyncTests step, while the test
+  is in ObjectStoreTests, and said the suite was "excluded from the merge gate".
+  Neither suite was ever excluded.
+
+* **The unit-test framework could report success while a test failed.** With
+  more than one thread, the thread that goes on to run the nonconcurrent tests
+  returned from `run()` without calling `finalize()`, and `nonconcur_run()` then
+  called `clear_counters()` -- discarding that thread's concurrent-phase
+  `num_checks`, `num_failed_checks` and `num_failed_tests`. The suite's exit
+  status is `shared_context.num_failed_tests == 0`, so a failure on that thread
+  was not counted.
+
+  Measured with one deliberately failing test at `UNITTEST_THREADS=2`: two runs
+  out of four printed `All 1660 tests passed` and exited 0. With the fix, six
+  out of six exit 1.
+
+  CI runs `CoreTests` with two threads, so that job could have been green with a
+  failing test. `SyncTests` runs at one thread there and the nightly jobs at one
+  thread, where every test is nonconcurrent and nothing is discarded;
+  `ObjectStoreTests` uses Catch2 and is unaffected.
+
+  `test/test_unit_test_framework.cpp` guards it -- the first test here aimed at
+  the framework rather than the code under test. It runs an inner `TestList`
+  containing one failing test at 1, 2 and 4 threads and requires the run to be
+  reported as a failure. Verified by reintroducing the bug: it fails at 2 and 4
+  threads and passes at 1, which is what the mechanism predicts.
+
+  Check counts were the visible symptom and are now correct too: CoreTests at
+  two threads went from 10,188,745-93,027,810 to 99,637,487-99,837,290, against
+  a true 99,505,110 measured at one thread.
 
 * `<engine.hpp>` is no longer installed at the root of the include path.
   `install(FILES tessera.hpp tessera/engine.hpp DESTINATION include)` put a
@@ -247,12 +295,6 @@
   directly it passes -- 2135 core and sync tests, then 343 object-store cases --
   which had never been checked.
 
-* The fuzzing rationale in `nightly.yml` sat on the clean-clone job, two
-  comments having run together, so the reason for fuzzing was filed under
-  cloning and the fuzzers job had no stated reason at all. The clean-clone note
-  also said the script "has never run in CI" while attached to the job that runs
-  it.
-
 * `SyncTests` keeps `UNITTEST_THREADS=1` in the merge gate, now as a recorded
   decision rather than an inheritance. Twelve runs on macOS pass all 476 tests
   at 1, 4 and 8 threads, and 4 threads is three times faster -- but the step is
@@ -270,20 +312,6 @@
   one excluding that test would work. See
   `docs/findings/0b-where-the-ci-minutes-go.md`.
 
-* The `reports DNS error` test resolves `host.invalid` instead of
-  `invalid.com`. RFC 6761 reserves the `.invalid` TLD and guarantees names under
-  it do not exist, so resolvers answer NXDOMAIN immediately; `invalid.com` is a
-  registered domain that answered SERVFAIL in 0.21s, 3.87s and 9.98s on three
-  consecutive attempts, and one recorded run of the suite took 680.6 seconds and
-  failed. The section asserts the error reason starts with "Host not found",
-  which NXDOMAIN produces and SERVFAIL does not, so the test had been asserting
-  a DNS outcome it did not arrange to get. Five runs after the change: 0.06 to
-  0.08 seconds, all passing.
-
-  The note describing that flakiness sat on the SyncTests step, while the test
-  is in ObjectStoreTests, and said the suite was "excluded from the merge gate".
-  Neither suite was ever excluded.
-
 * `tools/check-rename-residue.sh` scans shell scripts, workflows, manifests,
   ignore files and Markdown for pre-rename binary names. Its two existing scans
   covered C++ and CMake only, and a binary is named in a script -- so eighteen
@@ -296,33 +324,6 @@
   the old binary name and no current suite, so a built test binary showed up as
   untracked. `test/Package.appxmanifest` declared a Windows entry point under the
   old name. The rest were `valgrind` invocations in comments.
-* **The unit-test framework could report success while a test failed.** With
-  more than one thread, the thread that goes on to run the nonconcurrent tests
-  returned from `run()` without calling `finalize()`, and `nonconcur_run()` then
-  called `clear_counters()` -- discarding that thread's concurrent-phase
-  `num_checks`, `num_failed_checks` and `num_failed_tests`. The suite's exit
-  status is `shared_context.num_failed_tests == 0`, so a failure on that thread
-  was not counted.
-
-  Measured with one deliberately failing test at `UNITTEST_THREADS=2`: two runs
-  out of four printed `All 1660 tests passed` and exited 0. With the fix, six
-  out of six exit 1.
-
-  CI runs `CoreTests` with two threads, so that job could have been green with a
-  failing test. `SyncTests` runs at one thread there and the nightly jobs at one
-  thread, where every test is nonconcurrent and nothing is discarded;
-  `ObjectStoreTests` uses Catch2 and is unaffected.
-
-  `test/test_unit_test_framework.cpp` guards it -- the first test here aimed at
-  the framework rather than the code under test. It runs an inner `TestList`
-  containing one failing test at 1, 2 and 4 threads and requires the run to be
-  reported as a failure. Verified by reintroducing the bug: it fails at 2 and 4
-  threads and passes at 1, which is what the mechanism predicts.
-
-  Check counts were the visible symptom and are now correct too: CoreTests at
-  two threads went from 10,188,745-93,027,810 to 99,637,487-99,837,290, against
-  a true 99,505,110 measured at one thread.
-
 * A documented answer to how to back the server up. `cp -R` of a live `--root`
   directory yields an openable database holding committed writes up to some
   point: five copies taken a second apart under continuous write load all opened,
