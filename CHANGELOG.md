@@ -2,6 +2,42 @@
 
 ## Unreleased
 
+### Added
+
+* `tools/check-repo-hygiene.sh` also checks that every document in
+  `docs/findings/` is listed in that directory's `README.md`, and that no row
+  there points at a file that does not exist. The index is the only way anyone
+  finds those documents, so one written and not indexed is one nobody reads, and
+  a dangling row sends a reader to nothing while reading as evidence that a
+  question was settled somewhere. Added after a document was nearly committed
+  unindexed; all forty-three then present were listed, so it records a property
+  the repository already had.
+
+* `tools/check-install-surface.sh` fails when the set of installed headers
+  differs from `tools/install-surface.txt`, naming every header that appeared or
+  disappeared. Every installed header is a promise, and thirteen were published
+  because one CMake list fed both `add_library` and an install rule -- so a
+  header added for the build became a header shipped to consumers, silently.
+
+  A manifest that has to be edited by hand turns that into a question somebody
+  answers, and the diff of that manifest is the answer, reviewable. The manifest
+  marks the two headers that only install under `if(APPLE)` with an `apple:`
+  prefix rather than keeping a second list, so the Apple package's extra surface
+  is recorded in the same place as the rest. It fires in both directions: a header appearing is a widened promise,
+  and one disappearing is a break. It makes no claim about the sixty-five
+  installed headers that are not reachable from the documented entry points;
+  that needs per-header judgment, and a pattern-based guess at it broke the
+  package once already.
+
+  Its first CI run found something: **the installed surface is
+  platform-dependent.** Linux ships 229 headers and macOS 231. Two are appended
+  under `if(APPLE)` -- `sync/impl/apple/network_reachability_observer.hpp` and
+  `sync/impl/apple/system_configuration.hpp` -- and both are included by an
+  installed header, so they are not removable. Code that compiles against the
+  macOS package may not compile against the Linux one, which nobody had
+  written down.
+
+
 ### Changed
 
 * Thirteen `object-store/impl/` headers are no longer installed. The package
