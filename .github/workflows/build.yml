@@ -169,6 +169,22 @@ jobs:
         timeout-minutes: 10
         run: tools/verify/survives-a-hard-kill.sh build
 
+      # CXX is set explicitly because the Configure step's env does not reach
+      # here, and this step compiles: an unset CXX would silently fall back to
+      # c++, so the clang matrix entries would have measured the include tree
+      # with whatever c++ happens to be. Header sets can differ by compiler --
+      # a __GNUC__ guard is enough to change one.
+      - name: The installed surface is what we recorded, and reachable
+        timeout-minutes: 10
+        env:
+          CXX: ${{ matrix.cxx }}
+        run: |
+          PREFIX="$(mktemp -d)/tessera"
+          cmake --install build --prefix "$PREFIX" > /dev/null
+          tools/check-install-surface.sh "$PREFIX"
+          tools/check-include-root-is-clean.sh "$PREFIX"
+          tools/check-surface-is-reachable.sh "$PREFIX" "$CXX"
+
       - name: Consumer smoke test
         timeout-minutes: 10
         run: tools/verify/consumer-smoke-test.sh build

@@ -125,7 +125,6 @@ set(TESSERA_INSTALL_HEADERS
     array_direct.hpp
     array_fixed_bytes.hpp
     array_integer.hpp
-    array_integer_tpl.hpp
     array_key.hpp
     array_list.hpp
     array_mixed.hpp
@@ -135,7 +134,6 @@ set(TESSERA_INSTALL_HEADERS
     array_timestamp.hpp
     array_typed_link.hpp
     array_unsigned.hpp
-    array_with_find.hpp
     binary_data.hpp
     bplustree.hpp
     chunked_binary.hpp
@@ -160,7 +158,6 @@ set(TESSERA_INSTALL_HEADERS
     exceptions.hpp
     global_key.hpp
     group.hpp
-    group_writer.hpp
     handover_defs.hpp
     history.hpp
     index_string.hpp
@@ -181,7 +178,6 @@ set(TESSERA_INSTALL_HEADERS
     query_expression.hpp
     query_state.hpp
     query_value.hpp
-    tessera_nmmintrin.h
     replication.hpp
     search_index.hpp
     set.hpp
@@ -217,7 +213,6 @@ set(TESSERA_INSTALL_HEADERS
     util/any.hpp
     util/assert.hpp
     util/backtrace.hpp
-    util/base64.hpp
     util/basic_system_errors.hpp
     util/bind_ptr.hpp
     util/bson/bson.hpp
@@ -228,44 +223,31 @@ set(TESSERA_INSTALL_HEADERS
     util/bson/regular_expression.hpp
     util/buffer.hpp
     util/buffer_stream.hpp
-    util/cf_ptr.hpp
     util/checked_mutex.hpp
-    util/compression.hpp
     util/encrypted_file_mapping.hpp
-    util/errno.hpp
     util/features.h
     util/flat_map.hpp
-    util/fifo_helper.hpp
     util/file.hpp
     util/file_mapper.hpp
-    util/fixed_size_buffer.hpp
     util/function_ref.hpp
     util/functional.hpp
     util/future.hpp
-    util/hex_dump.hpp
     util/input_stream.hpp
     util/interprocess_condvar.hpp
     util/interprocess_mutex.hpp
     util/logger.hpp
-    util/memory_stream.hpp
-    util/misc_errors.hpp
     util/misc_ext_errors.hpp
     util/optional.hpp
     util/overload.hpp
-    util/platform_info.hpp
-    util/priority_queue.hpp
-    util/random.hpp
     util/safe_int_ops.hpp
     util/scope_exit.hpp
     util/serializer.hpp
-    util/sha_crypto.hpp
     util/span.hpp
     util/tagged_bool.hpp
     util/terminate.hpp
     util/thread.hpp
     util/to_string.hpp
     util/type_traits.hpp
-    util/uri.hpp
 ) # TESSERA_INSTALL_HEADERS
 
 set(TESSERA_NOINST_HEADERS
@@ -289,6 +271,30 @@ set(TESSERA_NOINST_HEADERS
     util/timestamp_formatter.hpp
     util/timestamp_logger.hpp
     util/value_reset_guard.hpp
+
+    # Neither a declared entry point in tools/api-entry-points.txt nor reachable
+    # from one. They installed as public API for years with no public header
+    # mentioning them, so a consumer could not have arrived at them except by
+    # reading the include directory -- which is the definition of an accidental
+    # promise. tools/check-surface-is-reachable.sh now fails if that recurs.
+    array_integer_tpl.hpp
+    array_with_find.hpp
+    group_writer.hpp
+    tessera_nmmintrin.h
+    util/base64.hpp
+    util/cf_ptr.hpp
+    util/compression.hpp
+    util/errno.hpp
+    util/fifo_helper.hpp
+    util/fixed_size_buffer.hpp
+    util/hex_dump.hpp
+    util/memory_stream.hpp
+    util/misc_errors.hpp
+    util/platform_info.hpp
+    util/priority_queue.hpp
+    util/random.hpp
+    util/sha_crypto.hpp
+    util/uri.hpp
 ) # TESSERA_NOINST_HEADERS
 
 if(NOT MSVC)

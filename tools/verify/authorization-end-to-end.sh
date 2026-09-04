@@ -36,6 +36,33 @@ for b in "$SRV" "$TK" "$LT"; do
 done
 command -v openssl > /dev/null || { echo "SKIP: openssl not on PATH"; exit 0; }
 
+# The load test must accept the flags this script passes it. When it does not,
+# it prints its usage and exits non-zero, and the script that invoked it reports
+# the property as broken -- which is a lie about the code under test. A
+# build.release left over from before those flags existed produced exactly that:
+# "FAIL: the deployed path does not hold", followed by a usage message, for a
+# server that was behaving correctly.
+#
+# So the flags are checked first, against the binary's own usage text, and a
+# mismatch says which flag and that the binary is stale rather than blaming a
+# property that was never exercised.
+require_flags() {
+    local help
+    help=$("$LT" --help 2>&1 || true)
+    local f
+    for f in "$@"; do
+        case "$help" in
+            *"$f"*) ;;
+            *)  echo "FAIL: $LT does not accept $f"
+                echo "  This script needs it. The binary predates the flag -- rebuild the"
+                echo "  build directory rather than trusting what follows; a load test that"
+                echo "  rejects its arguments makes every property below look broken."
+                exit 1 ;;
+        esac
+    done
+}
+require_flags --contend --converge --tls --tls-trust
+
 WORK=$(mktemp -d)
 SERVER_PID=""
 cleanup() {
