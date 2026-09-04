@@ -20,7 +20,7 @@ structural violation should not wait on a build.
 | `check-layering.sh` | no upward includes between layers |
 | `check-merge-deps.sh` | `tessera-merge` depends only on storage |
 | `check-header-tiers.sh` | the public API does not leak private headers |
-| `check-repo-hygiene.sh` | no runtime artefacts, stray keys, or paths illegal on Windows |
+| `check-repo-hygiene.sh` | no runtime artefacts, stray keys, or paths illegal on Windows; every findings document is indexed |
 | `check-test-sources-listed.sh` | every test source is named by a `CMakeLists` |
 | `check-header-macros.sh` | no header decides on a macro only a `.cpp` defines |
 | `check-rename-residue.sh` | no pre-rename identifiers or identity strings |
@@ -30,6 +30,8 @@ structural violation should not wait on a build.
 | `test-pr-status.sh` | `pr-status.sh` still distinguishes a cancelled run from a running one |
 | `test-pre-push.sh` | the `pre-push` hook refuses main and permits everything else |
 | `verify/authorization-end-to-end.sh` | a scoped token is refused elsewhere, and a download-only token cannot upload -- through the shipped binaries, over a socket |
+| `check-install-surface.sh` | the installed headers are exactly `install-surface.txt`; it names what appeared or disappeared |
+| `check-surface-is-reachable.sh` | every installed header is reachable from a declared entry point in `api-entry-points.txt`, and every entry point compiles on its own |
 | `verify/survives-a-hard-kill.sh` | SIGKILL the server mid-life; the rows it acknowledged are still there and it reopens its directory |
 | `verify/consumer-smoke-test.sh` | the installed package is consumable and exports the documented targets |
 | `verify/test-binary.sh` | resolves a test binary's path across platforms; used by the workflows |

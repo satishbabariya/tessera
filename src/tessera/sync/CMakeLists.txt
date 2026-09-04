@@ -22,7 +22,9 @@ set(SYNC_SOURCES
     network/websocket.cpp
 )
 
-set(IMPL_INSTALL_HEADERS
+# Named INSTALL for historical reasons; these are no longer installed. They feed
+# SYNC_HEADERS below, which is a build input, not an install list.
+set(IMPL_HEADERS
     impl/clock.hpp
     impl/clamped_hex_dump.hpp
 )
@@ -64,7 +66,7 @@ set(NOINST_HEADERS
     noinst/sync_schema_migration.hpp
 )
 
-set(SYNC_HEADERS ${IMPL_INSTALL_HEADERS}
+set(SYNC_HEADERS ${IMPL_HEADERS}
     ${SYNC_INSTALL_HEADERS}
     ${SYNC_NETWORK_INSTALL_HEADERS}
     ${NOINST_HEADERS})
@@ -99,24 +101,52 @@ install(TARGETS Sync EXPORT tessera
     ARCHIVE COMPONENT devel
     PUBLIC_HEADER COMPONENT devel)
 
-install(FILES ${IMPL_INSTALL_HEADERS}
-        DESTINATION include/tessera/impl
-        COMPONENT devel)
+# impl/clock.hpp and impl/clamped_hex_dump.hpp are not installed.
+#
+# They were, and to the wrong place. Their source path is tessera/sync/impl/,
+# which is how every includer in this repository spells them, but the rule sent
+# them to include/tessera/impl/ -- so the installed copies sat at a path no
+# include directive names, in a directory belonging to the storage engine's own
+# impl/ headers. A consumer could neither find them where they asked nor had
+# reason to: nothing in the installed set includes either one, and impl/ means
+# internal everywhere else in this package.
+#
+# Two ways to be unusable at once, which is why nobody noticed: a header at the
+# wrong path that nothing wants produces no symptom.
 
 install(FILES ${SYNC_INSTALL_HEADERS}
         DESTINATION include/tessera/sync
         COMPONENT devel)
 
-install(FILES ${SYNC_NETWORK_INSTALL_HEADERS}
+# network_ssl.hpp and websocket.hpp are build inputs, not API. The declared
+# entry point for a consumer's own transport is sync/socket_provider.hpp, and
+# the shipped implementation it plugs into is network/default_socket.hpp; these
+# two are what default_socket is built out of, and no installed header includes
+# either. See tools/api-entry-points.txt.
+set(SYNC_NETWORK_INTERNAL_HEADERS
+    network/network_ssl.hpp
+    network/websocket.hpp
+)
+
+set(SYNC_NETWORK_PUBLIC_HEADERS "")
+foreach(FILE ${SYNC_NETWORK_INSTALL_HEADERS})
+    if(NOT FILE IN_LIST SYNC_NETWORK_INTERNAL_HEADERS)
+        list(APPEND SYNC_NETWORK_PUBLIC_HEADERS ${FILE})
+    endif()
+endforeach()
+
+install(FILES ${SYNC_NETWORK_PUBLIC_HEADERS}
         DESTINATION include/tessera/sync/network
         COMPONENT devel)
 
 install(FILES ../../external/mpark/variant.hpp
         DESTINATION include/external/mpark
         COMPONENT devel)
-install(FILES ../../external/json/json.hpp
-        DESTINATION include/external/json
-        COMPONENT devel)
+# external/json is not installed. Its only consumer in the installed set was
+# object-store/audit_serializer.hpp, which is internal now, so publishing a
+# vendored nlohmann/json at include/external/json/ put a generic directory on
+# every consumer's include path for nothing. mpark/variant.hpp above stays: it is
+# genuinely reached from the public headers.
 
 add_subdirectory(server)
 
