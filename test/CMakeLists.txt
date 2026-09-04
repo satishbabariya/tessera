@@ -269,6 +269,26 @@ if(TESSERA_ENABLE_SYNC)
 endif()
 
 # CombinedTests
+#
+# Runs CoreTests, SyncTests and ObjectStoreTests in one process, in that order.
+# No workflow runs it, and that is deliberate rather than an oversight, so it is
+# written down here: three other binaries already run exactly these tests, and a
+# fourth run of them costs a CI job several minutes to learn nothing new.
+#
+# What building it buys is a compile and a link. That is not nothing -- it is the
+# only target that links ObjectStoreTestLib, CoreTestLib and SyncTestLib
+# together, so a symbol collision or a duplicate definition between the three
+# test libraries shows up here and nowhere else. CI builds it because
+# "Build everything" takes no target argument, deliberately.
+#
+# What it is for is a platform where launching three binaries is awkward:
+# WINDOWS_STORE gets UWP_SOURCES appended to it below, as CoreTests does, so a
+# single deployable bundle can carry the whole suite.
+#
+# It was measured once rather than assumed: run directly it passes, 2135 core
+# and sync tests followed by 343 object-store cases. Worth knowing, since a
+# target nobody executes is how several things in this repository came to be
+# broken without anyone finding out.
 get_directory_property(OS_TEST_RESOURCES DIRECTORY object-store TEST_RESOURCES)
 set(COMBINED_RESOURCES "${REQUIRED_TEST_FILES};${SYNC_TEST_RESOURCES};${OS_TEST_RESOURCES}")
 

@@ -198,6 +198,79 @@
   actions by SHA. It was applied in one workflow out of three, which is how this
   project pins dependency tarballs by measured digest while granting its CI to a
   movable tag. Each pinned SHA was verified to resolve in its own repository.
+* `docs/RELEASING.md` records that assertion counts were unusable as a
+  pre-release baseline and are usable again now that the framework defect behind
+  the instability is fixed -- within a tolerance rather than exactly: CoreTests
+  at two threads spreads 0.5% across five runs, SyncTests at four threads 1.7%.
+  Previously it treated them as a baseline they could not support. It recorded one Debug and one Release sample per suite and drew
+  inferences from the differences; measured as repeat runs of a single binary in
+  one configuration, CoreTests ranges over 10,188,745 to 93,027,810 checks -- a
+  factor of 9.1 -- and SyncTests over 39,039 to 125,116, with every test passing
+  every time. For CoreTests the cause is the thread count: at
+  `UNITTEST_THREADS=1` the same binary reports 99,442,447 / 99,508,221 /
+  99,655,290, stable to 0.2%, and CI runs it with two. At one thread the total is
+  exactly right -- the suite's 1626 concurrent and 33 nonconcurrent tests measure
+  98,356,931 and 1,148,179 checks separately, summing to 99,505,110 -- while at
+  two threads up to 89 million checks go uncounted. Why is not established. The Debug-to-Release ratios the document asked someone to explain
+  are inside that noise, and its recorded Release figures are above every run
+  measured. Test counts are stable at 1659 / 476 / 343 and are the ones to check.
+
+* `test/CMakeLists.txt` records why `CombinedTests` exists and why no workflow
+  runs it: three binaries already run exactly those tests, and it is the only
+  target that links `ObjectStoreTestLib`, `CoreTestLib` and `SyncTestLib`
+  together, so building it is what catches a collision between them. Run
+  directly it passes -- 2135 core and sync tests, then 343 object-store cases --
+  which had never been checked.
+
+* The fuzzing rationale in `nightly.yml` sat on the clean-clone job, two
+  comments having run together, so the reason for fuzzing was filed under
+  cloning and the fuzzers job had no stated reason at all. The clean-clone note
+  also said the script "has never run in CI" while attached to the job that runs
+  it.
+
+* `SyncTests` keeps `UNITTEST_THREADS=1` in the merge gate, now as a recorded
+  decision rather than an inheritance. Twelve runs on macOS pass all 476 tests
+  at 1, 4 and 8 threads, and 4 threads is three times faster -- but the step is
+  2.9 minutes of a 21-minute job whose build alone is 13.6, so the prize is two
+  minutes and the cost is a concurrency change to the merge gate on one
+  platform's evidence.
+
+  The same twelve runs produced check-count totals from 39,039 to 125,116 with
+  every test passing. It is one test: `Network_RepeatedCancelAndRestartRead`,
+  about 70% of the suite's checks, which pushes 64 MiB through a socket pair and
+  checks once per read completion -- so its count is however many reads the
+  kernel and the scheduler decide to complete. Pinning `UNITTEST_RANDOM_SEED`
+  fixes the write sizes and not that, which is why it was measured and did not
+  help. A check-count baseline for this suite is therefore meaningless, though
+  one excluding that test would work. See
+  `docs/findings/0b-where-the-ci-minutes-go.md`.
+
+* The `reports DNS error` test resolves `host.invalid` instead of
+  `invalid.com`. RFC 6761 reserves the `.invalid` TLD and guarantees names under
+  it do not exist, so resolvers answer NXDOMAIN immediately; `invalid.com` is a
+  registered domain that answered SERVFAIL in 0.21s, 3.87s and 9.98s on three
+  consecutive attempts, and one recorded run of the suite took 680.6 seconds and
+  failed. The section asserts the error reason starts with "Host not found",
+  which NXDOMAIN produces and SERVFAIL does not, so the test had been asserting
+  a DNS outcome it did not arrange to get. Five runs after the change: 0.06 to
+  0.08 seconds, all passing.
+
+  The note describing that flakiness sat on the SyncTests step, while the test
+  is in ObjectStoreTests, and said the suite was "excluded from the merge gate".
+  Neither suite was ever excluded.
+
+* `tools/check-rename-residue.sh` scans shell scripts, workflows, manifests,
+  ignore files and Markdown for pre-rename binary names. Its two existing scans
+  covered C++ and CMake only, and a binary is named in a script -- so eighteen
+  occurrences across eight files survived the rename.
+
+  `tools/run-tests-on-exfat.sh`, which mounts an exFAT image to exercise a
+  filesystem without proper locking, tested three hardcoded paths for the
+  pre-rename core-test binary and exited "Run this script from the build
+  directory after building tests" wherever it was run. `test/.gitignore` listed
+  the old binary name and no current suite, so a built test binary showed up as
+  untracked. `test/Package.appxmanifest` declared a Windows entry point under the
+  old name. The rest were `valgrind` invocations in comments.
 * **The unit-test framework could report success while a test failed.** With
   more than one thread, the thread that goes on to run the nonconcurrent tests
   returned from `run()` without calling `finalize()`, and `nonconcur_run()` then
