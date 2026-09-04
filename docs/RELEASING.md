@@ -270,16 +270,34 @@ heading, and start a fresh `Unreleased`.
 
 ## Tag
 
+The version bump and the changelog move go through a pull request, like every
+other change. `main` is protected -- direct pushes are refused by the server and
+by `tools/pre-push` -- so there is no `git push origin main` step.
+
 ```sh
-git tag -a v0.1.0 -m "Tessera v0.1.0
+# on a branch, with dependencies.yml and CHANGELOG.md updated:
+gh pr create --title "release: v0.1.0"
+
+# once its six required checks pass and it has merged:
+git fetch origin
+git tag -a v0.1.0 origin/main -m "Tessera v0.1.0
 
 First release of the Tessera fork of realm-core (upstream f8752e180,
 v14.14.0). An embedded local-first database with a documented public API,
 no vendor dependencies, and a working open sync stack."
 
-git push origin main
 git push origin v0.1.0
 ```
+
+The tag is created against `origin/main` rather than whatever the working tree
+is on, so it names the commit that actually merged. Tags are not covered by the
+branch protection rule, so pushing one needs no exception.
+
+This section used to say `git push origin main`, which stopped working when
+`main` became protected. Recorded here rather than left for whoever next tries to
+cut a release to discover: making a rule stricter without checking what depended
+on the old behaviour is how a documented procedure comes to describe something
+that cannot be done.
 
 ## What 0.1.0 does not promise
 
