@@ -25,9 +25,18 @@
 /*-tsan-cov
 /*-tsan-cov-noinst
 
-/realm-tests
-/realm-tests-dbg
-/realm-tests-cov
+/tessera-tests
+/tessera-tests-dbg
+/tessera-tests-cov
+/tessera-sync-tests
+/tessera-sync-tests-dbg
+/tessera-sync-tests-cov
+/tessera-object-store-tests
+/tessera-object-store-tests-dbg
+/tessera-object-store-tests-cov
+/tessera-combined-tests
+/tessera-combined-tests-dbg
+/tessera-combined-tests-cov
 
 /benchmark/x64
 /benchmark

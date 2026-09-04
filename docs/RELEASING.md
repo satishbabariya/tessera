@@ -129,9 +129,44 @@ Expected counts, which differ legitimately between configurations:
 | ObjectStoreTests | 343 | 343 |
 | Tests disabled by `TEST_IF` | 32 | 36 |
 
-Assertion counts, for the staleness check below. These are noisier than the test
-counts -- several suites randomise -- so treat a small drift as normal and a
-factor as worth explaining:
+Assertion counts were unusable as a baseline, and are usable again.
+
+They were recorded here as one Debug sample and one Release sample per suite,
+with a note that "a factor is worth explaining". Measured as repeat runs of one
+binary in one configuration, the spread within that configuration was itself a
+factor:
+
+| Suite | Release, repeat runs of one binary | Spread |
+|---|---|---|
+| CoreTests, `UNITTEST_THREADS=2` | 10,188,745 / 12,417,707 / 48,889,143 / 93,027,810 | 9.1x |
+| CoreTests, `UNITTEST_THREADS=1` | 99,442,447 / 99,508,221 / 99,655,290 | 0.2% |
+| SyncTests | 39,039 to 125,116 over twelve runs | 3.2x |
+
+Every run passed every test. The cause was a defect in the test framework, not
+in any test: with more than one thread, one thread's accounting was discarded,
+and it took that thread's failures with it, so the suite could exit 0 with a
+failing test in it. With that fixed, the same binaries measure
+
+| Suite | Release, repeat runs | Spread |
+|---|---|---|
+| CoreTests, 2 threads | 99,372,550 / 99,564,475 / 99,637,487 / 99,772,242 / 99,837,290 | 0.5% |
+| SyncTests, 4 threads | 119,612 / 120,589 / 121,653 | 1.7% |
+
+so a count is worth comparing again, within a tolerance rather than exactly.
+Treat a drift of a percent or two in CoreTests as normal and more as worth
+explaining. SyncTests moves further, for a known reason:
+`Network_RepeatedCancelAndRestartRead` is about 70% of that suite's checks and
+checks once per socket read completion while moving 64 MiB, so its count is
+however many reads the kernel and the scheduler decide to complete.
+
+What established the true figure was splitting the suite by concurrency: its
+1626 concurrent and 33 nonconcurrent tests measure 98,356,931 and 1,148,179
+checks when run separately, summing to 99,505,110 against single-threaded full
+runs of 99,442,447 to 99,655,290. At two threads the same binary had reported as
+little as 10,188,745, so up to 89 million checks were going uncounted. See
+`docs/findings/0b-a-failure-that-was-not-counted.md`.
+
+So the numbers previously tabulated --
 
 | Suite | Debug | Release |
 |---|---|---|
@@ -139,10 +174,28 @@ factor as worth explaining:
 | SyncTests | 40,400 | 127,236 |
 | ObjectStoreTests | 70,129 | 370,586 |
 
-The two suites where Release is several times Debug are not a mistake and not a
-stale binary -- `build.release` was built from scratch for this measurement.
-Nobody has yet explained the ratio, which is why it is written down: the next
-person to see 370,586 should know it was 370,586 in 0.3.0 too.
+-- are single draws from distributions wider than the differences they were
+being used to explain. CoreTests' Debug-to-Release gap is 1.14x, inside a 9.1x
+noise band. SyncTests' Debug 40,400 and Release 127,236 both sit inside the
+range Release alone produces, so they are not evidence of a Debug-to-Release
+difference at all. The ratio nobody had explained may simply not exist.
+
+For SyncTests the mechanism is known: `Network_RepeatedCancelAndRestartRead` is
+about 70% of that suite's checks, and it checks once per socket read completion
+while moving 64 MiB, so its count is however many reads the kernel and the
+scheduler decide to complete. Pinning `UNITTEST_RANDOM_SEED` fixes the write
+sizes and not the scheduling, which was measured and does not help. CoreTests
+has not been bisected the same way.
+
+ObjectStoreTests is the exception worth noting: 370,423 assertions observed
+against 370,586 recorded. One sample, so not a claim.
+
+**Test counts are stable and are the ones to check.** 1659 / 476 / 343 in
+Release, every run, and they decompose into `#ifdef TESSERA_DEBUG` and
+`SimulatedFailure::is_enabled()` as described below. A test that vanishes shows
+up there. A test that stops asserting anything does not show up in either, which
+is what `tools/analyse-zero-check-tests.sh` is for -- it counts per test, one
+test at a time, because the framework tracks checks only in its summary.
 
 Measured on macOS, 2026-09-02, at `29ec34cbe`. The SyncTests rows moved from
 461/460 when the authentication work added sixteen tests; the one-test Debug to
