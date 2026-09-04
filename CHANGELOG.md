@@ -185,6 +185,19 @@
 
 ### Added
 
+* Every GitHub Action is pinned to a full commit SHA, with its version in a
+  trailing comment, and `tools/check-actions-are-pinned.sh` fails if one is not.
+
+  A tag is a mutable pointer: `actions/checkout@v4` means whatever `v4` points at
+  when the job runs, and whoever controls that repository can move it -- so a tag
+  reference is a standing grant to run code that does not exist yet, and for a
+  third-party action it is that grant to a stranger. `nightly.yml` ran
+  `mymindstorm/setup-emsdk@v14` on those terms.
+
+  The practice already existed here: `check-changelog.yml` pinned both of its
+  actions by SHA. It was applied in one workflow out of three, which is how this
+  project pins dependency tarballs by measured digest while granting its CI to a
+  movable tag. Each pinned SHA was verified to resolve in its own repository.
 * `docs/RELEASING.md` records that assertion counts were unusable as a
   pre-release baseline and are usable again now that the framework defect behind
   the instability is fixed -- within a tolerance rather than exactly: CoreTests
