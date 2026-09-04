@@ -236,7 +236,7 @@ So "self-hostable" now means what it says: install the package, run
 `tessera-sync-server`, and you have your own sync server, with no cloud account
 and no vendor. Link `Tessera::SyncServer` instead if you would rather embed it.
 
-## The two API tiers
+## What you can include
 
 ```cpp
 #include <tessera/api.hpp>      // schemas, typed objects, live results, notifications
@@ -246,9 +246,29 @@ and no vendor. Link `Tessera::SyncServer` instead if you would rather embed it.
 Tier 1 (`api.hpp`) is the high-level API most applications want: declare a schema,
 work with typed objects, subscribe to changes. Tier 2 (`engine.hpp`) is direct
 access to the storage engine for binding authors and anyone with unusual needs.
-
 Both are supported and stable from v1.0, and both can be used in the same program.
-Anything not reachable from these two headers carries no stability promise.
+
+Those two cover the database. The package also exports `Sync`, `SyncServer`,
+`Merge` and `QueryParser`, and each has its own entry points -- the sync server
+headers used under [Self-hosting](#self-hosting) are not reachable from either
+tier, and never were.
+
+The full list of headers you are meant to include is
+[`tools/api-entry-points.txt`](tools/api-entry-points.txt): 36 of them, grouped
+by target, with the extension points marked as such. It is not documentation
+that can drift, because `tools/check-surface-is-reachable.sh` compiles every
+entry in it against the installed package on every build and fails if any
+installed header is neither listed there nor reached from something that is.
+
+**Anything the package installs but that list does not reach carries no
+stability promise.** That used to be phrased as "not reachable from these two
+headers", which was wrong in both directions: it disowned the sync, server,
+merge and parser APIs this README tells you to use, and it said nothing useful
+about the headers that installed without any entry point reaching them at all.
+
+Forty-two of those have since been withdrawn -- the package went from 243
+installed headers to 201 -- and the rest turned out to be genuine API that no
+document had ever named, which is what writing the list down settled.
 
 ## Documentation
 

@@ -150,6 +150,14 @@
 
 ### Fixed
 
+* The README no longer says that anything not reachable from `api.hpp` and
+  `engine.hpp` carries no stability promise. That was wrong in both directions:
+  it disowned the sync, server, merge and parser entry points the same README
+  tells you to include, and it said nothing useful about headers that installed
+  with no entry point reaching them. It now points at `tools/api-entry-points.txt`,
+  the 36 declared entry points, which `tools/check-surface-is-reachable.sh`
+  enforces against the installed package on every build.
+
 * `tools/check-include-root-is-clean.sh` checks the installed tree when given an
   install prefix, and CI passes it the one the install-surface step builds. It
   had been reading `install(FILES ...)` declarations out of `src/CMakeLists.txt`
