@@ -150,6 +150,12 @@
 
 ### Fixed
 
+* `docs/RELEASING.md` no longer tells you to `git push origin main` when cutting
+  a release. That stopped working when `main` became a protected branch, in the
+  same batch of work: the version bump and changelog move go through a pull
+  request, and the tag is then created against `origin/main`, which also means it
+  names the commit that merged rather than whatever the working tree was on.
+
 * The README no longer says that anything not reachable from `api.hpp` and
   `engine.hpp` carries no stability promise. That was wrong in both directions:
   it disowned the sync, server, merge and parser entry points the same README
