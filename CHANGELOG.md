@@ -185,17 +185,20 @@
 
 ### Added
 
-* `docs/RELEASING.md` no longer treats assertion counts as a pre-release
-  baseline. It recorded one Debug and one Release sample per suite and drew
+* `docs/RELEASING.md` records that assertion counts were unusable as a
+  pre-release baseline and are usable again now that the framework defect behind
+  the instability is fixed -- within a tolerance rather than exactly: CoreTests
+  at two threads spreads 0.5% across five runs, SyncTests at four threads 1.7%.
+  Previously it treated them as a baseline they could not support. It recorded one Debug and one Release sample per suite and drew
   inferences from the differences; measured as repeat runs of a single binary in
   one configuration, CoreTests ranges over 10,188,745 to 93,027,810 checks -- a
   factor of 9.1 -- and SyncTests over 39,039 to 125,116, with every test passing
   every time. For CoreTests the cause is the thread count: at
   `UNITTEST_THREADS=1` the same binary reports 99,442,447 / 99,508,221 /
-  99,655,290, stable to 0.2%, and CI runs it with two. The framework also drops
-  one thread's concurrent-phase checks on every run -- the thread that goes on to
-  run the nonconcurrent tests returns without calling `finalize()`, and
-  `nonconcur_run()` then clears its counters. The Debug-to-Release ratios the document asked someone to explain
+  99,655,290, stable to 0.2%, and CI runs it with two. At one thread the total is
+  exactly right -- the suite's 1626 concurrent and 33 nonconcurrent tests measure
+  98,356,931 and 1,148,179 checks separately, summing to 99,505,110 -- while at
+  two threads up to 89 million checks go uncounted. Why is not established. The Debug-to-Release ratios the document asked someone to explain
   are inside that noise, and its recorded Release figures are above every run
   measured. Test counts are stable at 1659 / 476 / 343 and are the ones to check.
 
