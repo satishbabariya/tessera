@@ -83,6 +83,45 @@ Some of the checks want an installed tree, so the prefix is built first and
 handed to every one of them. The ones that do not want it ignore an extra
 argument.
 
+## What has to pass before a pull request can merge
+
+Six checks are required on `main`, and GitHub will not let a pull request merge
+until all six are green:
+
+```
+ubuntu-latest gcc Debug      ubuntu-latest gcc Release
+ubuntu-latest clang Debug    macos-latest clang Debug
+macos-latest clang Release   changelog
+```
+
+That is a branch protection rule rather than anything in this repository, so it
+is written down here: an invisible setting is one nobody can plan around.
+
+Three details of how it is configured, each deliberate:
+
+- **Branches do not have to be up to date with `main` before merging.** Requiring
+  that would force a rebase and a fresh CI run for every merge whenever anything
+  else lands first, which is expensive and, for a stack of pull requests, close
+  to unworkable.
+- **Administrators are not bound by it.** The rule exists to stop a red build
+  merging by accident, not to leave the maintainer unable to land a fix when
+  something is broken.
+- **`CodeRabbit` is not required.** It is a review bot; if it stopped running,
+  requiring it would block every merge.
+
+Force-pushing to `main` and deleting it are both blocked.
+
+The rule was added after a pull request merged the instant it was asked to,
+without waiting for the CI its rebase had invalidated. Nothing was wrong with
+that change, but nothing would have stopped one that was: until then the checks
+were advisory, in a project whose recurring finding is that a check nobody has
+seen fail is not a check.
+
+If a job is ever renamed or removed from the matrix in
+`.github/workflows/build.yml`, the required context list has to change with it.
+A required check that no longer runs never turns green, and every merge blocks
+until somebody notices.
+
 ## Things that will get a patch rejected
 
 **Removing a copyright notice.** 560 files carry `Copyright ... Realm Inc.`

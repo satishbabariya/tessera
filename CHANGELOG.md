@@ -4,6 +4,14 @@
 
 ### Added
 
+* `main` requires its six checks to pass before a pull request can merge, and
+  `CONTRIBUTING.md` says which six and how the rule is configured. Until now the
+  checks were advisory: a pull request merged the instant it was asked to,
+  without waiting for the CI its rebase had invalidated. Branches need not be up
+  to date before merging, administrators are not bound by the rule, and the
+  review bot is not among the required checks -- each of those would cost more
+  than it protects. Force-pushing to `main` and deleting it are blocked.
+
 * `tools/api-entry-points.txt` declares the 36 headers a consumer is expected to
   include, grouped by exported target, and
   `tools/check-surface-is-reachable.sh` requires that every installed header is
