@@ -54,6 +54,12 @@ enumerating its members went back to missing two of them on a naming
 convention. Both patterns are matched now. `tools/README.md` says what each one
 does.
 
+`check-surface-is-reachable.sh` compiles every declared entry point, so it
+wants a compiler as its second argument; the loop below does not pass one and it
+falls back to `c++`, which is fine for a release gate run on one machine. CI
+passes the matrix compiler explicitly, because a header set can differ by
+compiler.
+
 Every check is handed the install prefix, whether it wants one or not. That is
 the same reason the loop is a glob: `check-install-surface.sh` needs an
 installed tree, and a gate that names its exceptions acquires a new hole every

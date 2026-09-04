@@ -4,6 +4,23 @@
 
 ### Added
 
+* `tools/api-entry-points.txt` declares the 36 headers a consumer is expected to
+  include, grouped by exported target, and
+  `tools/check-surface-is-reachable.sh` requires that every installed header is
+  either declared there or reached from one -- compiling each entry point alone,
+  which also proves each is self-contained.
+
+  It retired 22 headers on its first run. `util/base64.hpp`, `util/uri.hpp`,
+  `util/compression.hpp`, `util/sha_crypto.hpp`, `util/hex_dump.hpp`,
+  `util/priority_queue.hpp`, `group_writer.hpp`, `merge/integer_codec.hpp`,
+  `sync/network/websocket.hpp` and thirteen more shipped as public API with no
+  public header mentioning them: a consumer could only have found them by
+  listing the include directory. They are build inputs now, in the internal
+  header list of their own CMakeLists.
+
+  The installed package is 201 headers, down from the 243 this work started at.
+  All 201 are reachable from a declared entry point; before, 160 were.
+
 * Four more headers no longer install, taking the package from 243 headers to
   223.
 

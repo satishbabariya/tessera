@@ -118,7 +118,24 @@ install(FILES ${SYNC_INSTALL_HEADERS}
         DESTINATION include/tessera/sync
         COMPONENT devel)
 
-install(FILES ${SYNC_NETWORK_INSTALL_HEADERS}
+# network_ssl.hpp and websocket.hpp are build inputs, not API. The declared
+# entry point for a consumer's own transport is sync/socket_provider.hpp, and
+# the shipped implementation it plugs into is network/default_socket.hpp; these
+# two are what default_socket is built out of, and no installed header includes
+# either. See tools/api-entry-points.txt.
+set(SYNC_NETWORK_INTERNAL_HEADERS
+    network/network_ssl.hpp
+    network/websocket.hpp
+)
+
+set(SYNC_NETWORK_PUBLIC_HEADERS "")
+foreach(FILE ${SYNC_NETWORK_INSTALL_HEADERS})
+    if(NOT FILE IN_LIST SYNC_NETWORK_INTERNAL_HEADERS)
+        list(APPEND SYNC_NETWORK_PUBLIC_HEADERS ${FILE})
+    endif()
+endforeach()
+
+install(FILES ${SYNC_NETWORK_PUBLIC_HEADERS}
         DESTINATION include/tessera/sync/network
         COMPONENT devel)
 

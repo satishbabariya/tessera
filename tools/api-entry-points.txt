@@ -1,0 +1,72 @@
+# The headers a consumer is expected to include, one per line, relative to the
+# install prefix's include/ directory.
+#
+# tools/check-surface-is-reachable.sh compiles each of these on its own against
+# the installed package -- which also proves each is self-contained -- and then
+# requires that every installed header is either listed here or reached from
+# something that is. A header that is neither is a promise nobody could have
+# found except by reading the include directory.
+#
+# That check retired twenty-two headers on its first run: util/base64.hpp,
+# util/uri.hpp, util/compression.hpp, util/sha_crypto.hpp, group_writer.hpp and
+# eighteen more had installed as public API with no public header mentioning
+# them.
+#
+# Adding a line here is a deliberate widening of the API. Removing one is a
+# break. Either needs a CHANGELOG entry.
+
+# The two documented tiers, plus the umbrella that predates them.
+tessera.hpp
+tessera/api.hpp
+tessera/engine.hpp
+
+# Storage: a knob, not a tier. Turns off fsync for throwaway databases.
+tessera/disable_sync_to_disk.hpp
+
+# QueryParser.
+tessera/parser/query_parser.hpp
+tessera/parser/keypath_mapping.hpp
+
+# Merge: the operational-transform engine. transform.hpp is the entry, but it
+# takes changesets it does not define, so the changeset types are entries too.
+tessera/merge/transform.hpp
+tessera/merge/changeset.hpp
+tessera/merge/changeset_parser.hpp
+tessera/merge/changeset_encoder.hpp
+tessera/merge/changeset_index.hpp
+tessera/merge/instruction_applier.hpp
+tessera/merge/instruction_replication.hpp
+
+# Sync, client side.
+tessera/sync/client.hpp
+tessera/sync/history.hpp
+tessera/sync/subscriptions.hpp
+# Extension points: a consumer implements these.
+tessera/sync/socket_provider.hpp
+tessera/sync/binding_callback_thread_observer.hpp
+# The socket implementation shipped for consumers who do not implement their own.
+tessera/sync/network/default_socket.hpp
+
+# Sync, server side.
+tessera/sync/server/server.hpp
+
+# ObjectStore: the tier-1 API's own types.
+tessera/object-store/shared_db.hpp
+tessera/object-store/object.hpp
+tessera/object-store/results.hpp
+tessera/object-store/sectioned_results.hpp
+# Extension points.
+tessera/object-store/binding_context.hpp
+tessera/object-store/audit.hpp
+tessera/object-store/util/scheduler.hpp
+tessera/object-store/util/event_loop_dispatcher.hpp
+tessera/object-store/util/uuid.hpp
+
+# ObjectStore, sync.
+tessera/object-store/sync/sync_manager.hpp
+tessera/object-store/sync/sync_session.hpp
+tessera/object-store/sync/sync_user.hpp
+tessera/object-store/sync/sync_client_config.hpp
+tessera/object-store/sync/async_open_task.hpp
+tessera/object-store/sync/jwt.hpp
+tessera/object-store/sync/generic_network_transport.hpp

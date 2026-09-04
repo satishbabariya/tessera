@@ -36,7 +36,16 @@ set_target_properties(Merge PROPERTIES OUTPUT_NAME "tessera-merge")
 # The layering contract, expressed as the build graph.
 target_link_libraries(Merge PUBLIC Storage)
 
+# integer_codec.hpp is a build input, not API: it is the varint encoding the
+# changeset format uses internally, reachable from no declared entry point and
+# included by no installed header. See tools/api-entry-points.txt.
+set(MERGE_INTERNAL_HEADERS
+    integer_codec.hpp
+)
+
 foreach(FILE ${MERGE_HEADERS})
-    install(FILES ${FILE} DESTINATION include/tessera/merge COMPONENT devel)
+    if(NOT FILE IN_LIST MERGE_INTERNAL_HEADERS)
+        install(FILES ${FILE} DESTINATION include/tessera/merge COMPONENT devel)
+    endif()
 endforeach()
 install(TARGETS Merge EXPORT tessera COMPONENT devel)

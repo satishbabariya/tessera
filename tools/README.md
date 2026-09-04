@@ -31,6 +31,7 @@ structural violation should not wait on a build.
 | `test-pre-push.sh` | the `pre-push` hook refuses main and permits everything else |
 | `verify/authorization-end-to-end.sh` | a scoped token is refused elsewhere, and a download-only token cannot upload -- through the shipped binaries, over a socket |
 | `check-install-surface.sh` | the installed headers are exactly `install-surface.txt`; it names what appeared or disappeared |
+| `check-surface-is-reachable.sh` | every installed header is reachable from a declared entry point in `api-entry-points.txt`, and every entry point compiles on its own |
 | `verify/survives-a-hard-kill.sh` | SIGKILL the server mid-life; the rows it acknowledged are still there and it reopens its directory |
 | `verify/consumer-smoke-test.sh` | the installed package is consumable and exports the documented targets |
 | `verify/test-binary.sh` | resolves a test binary's path across platforms; used by the workflows |
