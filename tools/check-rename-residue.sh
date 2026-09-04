@@ -10,12 +10,46 @@ SOURCES=(--include='*.cpp' --include='*.hpp' --include='*.h'
          --include='*.mm' --include='*.c'
          --include='CMakeLists.txt' --include='*.cmake')
 
+# A second file set, for scan 3. The first three scans below look for things a
+# compiler or a reader of source would see; the third looks for a binary being
+# named, and binaries are named in shell scripts, workflows, manifests and
+# ignore files -- none of which the SOURCES globs match.
+#
+# That mattered. tools/run-tests-on-exfat.sh checked three hardcoded paths for
+# the old core-test binary, all of which failed, so the script exited with
+# "Run this script from the build directory after building tests" wherever it
+# was run and whatever had been built. test/.gitignore ignored the old name and
+# named no current suite, so a built test binary showed up as untracked.
+# test/Package.appxmanifest declared an entry point under the old name.
+# Eighteen occurrences across eight files, none visible to a scan of C++ and
+# CMake.
+#
+# The old names are not spelled out in this comment on purpose: this file is one
+# of the files scanned, and a check whose own documentation trips it teaches
+# people to add exclusions.
+SCRIPTS=(--include='*.sh' --include='*.yml' --include='*.yaml'
+         --include='*.appxmanifest' --include='.gitignore'
+         --include='*.md' --include='*.plist')
+
 scan() {
   grep -rIn "$1" src test tools "${SOURCES[@]}" 2>/dev/null \
     | grep -v '^src/external/' \
     | grep -v '^test/external/' \
     | grep -v 'Copyright' \
     | grep -v 'Realm Inc' \
+    || true
+}
+
+# -E because the pattern is an alternation. Without it grep matched the
+# parentheses and pipes literally, so the scan below found nothing and passed on
+# every one of the eighteen occurrences it was written to catch. Three canaries
+# -- a shell script, a .gitignore entry and a workflow comment, each naming an
+# old binary -- all reported PASS before this was added.
+scan_scripts() {
+  grep -rIEn "$1" src test tools .github "${SCRIPTS[@]}" 2>/dev/null \
+    | grep -v '^src/external/' \
+    | grep -v '^test/external/' \
+    | grep -v '^docs/findings/' \
     || true
 }
 
@@ -81,7 +115,26 @@ for pat in "${IDENTITY_PATTERNS[@]}"; do
     fi
 done
 
+# ---------------------------------------------------------------------------
+# 3. Pre-rename binary and target names, in the files that name binaries.
+#
+#    These compile, pass every test, and break the moment somebody runs them: a
+#    script invoking a path that does not exist, an ignore file covering a
+#    filename nothing produces, a Windows manifest declaring an entry point that
+#    was renamed. The quote-anchored patterns above cannot see them, because a
+#    shell script names a binary without quoting it.
+# ---------------------------------------------------------------------------
+BINARY_NAMES='realm-(tests|sync-tests|object-store-tests|combined-tests|benchmark[a-z-]*)'
+HITS=$(scan_scripts "$BINARY_NAMES")
+if [ -n "$HITS" ]; then
+    echo "FAIL: a pre-rename binary name is still being used:"
+    echo "$HITS" | sed 's/^/    /'
+    echo "    These are paths and filenames, not identifiers, so nothing fails to"
+    echo "    compile -- it fails when someone runs it."
+    FAIL=1
+fi
+
 if [ "$FAIL" -eq 0 ]; then
-    echo "PASS: no residual pre-rename identifiers or identity strings"
+    echo "PASS: no residual pre-rename identifiers, identity strings or binary names"
 fi
 exit "$FAIL"
