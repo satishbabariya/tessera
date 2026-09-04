@@ -17,6 +17,7 @@ structural violation should not wait on a build.
 |---|---|
 | `check-copyright-notices.sh` | Apache 2.0 §4(b) attribution survives tree-wide edits |
 | `check-no-vendor-hosts.sh` | the build fetches nothing from hosts we do not control |
+| `check-actions-are-pinned.sh` | every workflow references its actions by full commit SHA, not by a mutable tag |
 | `check-layering.sh` | no upward includes between layers |
 | `check-merge-deps.sh` | `tessera-merge` depends only on storage |
 | `check-header-tiers.sh` | the public API does not leak private headers |
